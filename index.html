@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AdPulse OS - Campaign Builder & LinkRot Beta</title>
+    <title>AdPulse OS - Campaign Builder &amp; LinkRot Beta</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <style>
         .combo-list::-webkit-scrollbar { width: 6px; }
         .combo-list::-webkit-scrollbar-track { background: #020617; }
@@ -88,46 +89,42 @@
                 </div>
             </header>
 
-            <div class="p-8 max-w-7xl w-full mx-auto space-y-6">
-                <!-- VIEW 1: CAMPAIGN BUILDER -->
+            <div class="p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
+                <!-- MAIN WORKSPACE: 4 SECTIONS -->
                 <div id="view-builder" class="space-y-6">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                        <div>
-                            <h1 class="text-2xl font-bold tracking-tight">Campaign builder</h1>
-                            <p class="text-sm text-slate-400">Controlled taxonomy loaded from Supabase with multi-asset Creative Manager, DCO toggle, and batch CSV export.</p>
+                    <!-- SECTION 1: CAMPAIGN BUILDER -->
+                    <section class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-5 shadow-xl">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <div>
+                                <span class="text-[11px] font-mono uppercase tracking-wider text-emerald-400">Section 1</span>
+                                <h2 class="text-lg font-bold text-slate-100">Campaign Builder</h2>
+                            </div>
+                            <p class="text-xs text-slate-400">Source &amp; Placement start blank; all other dropdowns use exhaustive controlled vocabularies.</p>
                         </div>
-                        <button type="button" onclick="exportBuilderCsv()"
-                            class="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-emerald-400 cursor-pointer">
-                            ↓ Export Builder CSV
-                        </button>
-                    </div>
 
-                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-6 shadow-xl">
-                        <!-- Row 1: Workspace, Destination, Event -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label class="block text-xs text-slate-400 mb-1">Campaign Workspace / Label</label>
-                                <input id="f-workspace" type="text" value="Q4 Acquisition" oninput="renderPreview()"
+                                <input id="f-workspace" type="text" value="Q4 Acquisition" oninput="renderAllOutputs()"
                                     class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
                             </div>
                             <div>
                                 <label class="block text-xs text-slate-400 mb-1">Destination URL</label>
-                                <input id="f-dest" type="text" value="https://example.com/landing" oninput="renderPreview()"
+                                <input id="f-dest" type="text" value="https://example.com/landing" oninput="renderAllOutputs()"
                                     class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
                             </div>
                             <div>
                                 <label class="block text-xs text-slate-400 mb-1">Event / Promo Slug (Optional)</label>
-                                <input id="f-event" type="text" placeholder="e.g. black_friday_26" oninput="renderPreview()"
+                                <input id="f-event" type="text" placeholder="e.g. black_friday_26" oninput="renderAllOutputs()"
                                     class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
                             </div>
                         </div>
 
-                        <!-- Row 2: Taxonomy Comboboxes -->
                         <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                            <!-- Dynamic Source (Starts Blank, Remembers Unique Options) -->
+                            <!-- Source (Starts Blank, Remembers Unique Entries) -->
                             <div class="relative combo-wrapper" data-field="source">
-                                <label class="block text-xs text-slate-400 mb-1">Source (Blank slate • Type to add)</label>
-                                <input id="search-source" type="text" placeholder="Type new source..." autocomplete="off"
+                                <label class="block text-xs text-slate-400 mb-1">Source (Blank slate)</label>
+                                <input id="search-source" type="text" placeholder="Type source..." autocomplete="off"
                                     onfocus="openCombo('source')" oninput="filterCombo('source')"
                                     class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
                                 <input type="hidden" id="f-source" value="">
@@ -135,7 +132,18 @@
                                 <span id="preview-source" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
-                            <!-- Curated Locked Dropdowns -->
+                            <!-- Placement (Starts Blank, Remembers Unique Entries) -->
+                            <div class="relative combo-wrapper" data-field="placement">
+                                <label class="block text-xs text-slate-400 mb-1">Placement (Blank slate)</label>
+                                <input id="search-placement" type="text" placeholder="Type placement..." autocomplete="off"
+                                    onfocus="openCombo('placement')" oninput="filterCombo('placement')"
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                                <input type="hidden" id="f-placement" value="">
+                                <div id="list-placement" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
+                                <span id="preview-placement" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                            </div>
+
+                            <!-- Funnel -->
                             <div class="relative combo-wrapper" data-field="funnel">
                                 <label class="block text-xs text-slate-400 mb-1">Funnel</label>
                                 <input id="search-funnel" type="text" readonly onfocus="openCombo('funnel')"
@@ -145,6 +153,7 @@
                                 <span id="preview-funnel" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
+                            <!-- Objective -->
                             <div class="relative combo-wrapper" data-field="objective">
                                 <label class="block text-xs text-slate-400 mb-1">Objective</label>
                                 <input id="search-objective" type="text" readonly onfocus="openCombo('objective')"
@@ -154,6 +163,7 @@
                                 <span id="preview-objective" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
+                            <!-- Tactic -->
                             <div class="relative combo-wrapper" data-field="tactic">
                                 <label class="block text-xs text-slate-400 mb-1">Tactic</label>
                                 <input id="search-tactic" type="text" readonly onfocus="openCombo('tactic')"
@@ -163,6 +173,7 @@
                                 <span id="preview-tactic" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
+                            <!-- Journey -->
                             <div class="relative combo-wrapper" data-field="journey">
                                 <label class="block text-xs text-slate-400 mb-1">Journey</label>
                                 <input id="search-journey" type="text" readonly onfocus="openCombo('journey')"
@@ -172,6 +183,7 @@
                                 <span id="preview-journey" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
+                            <!-- Medium -->
                             <div class="relative combo-wrapper" data-field="medium">
                                 <label class="block text-xs text-slate-400 mb-1">Medium</label>
                                 <input id="search-medium" type="text" readonly onfocus="openCombo('medium')"
@@ -181,6 +193,7 @@
                                 <span id="preview-medium" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
+                            <!-- Country / Region -->
                             <div class="relative combo-wrapper" data-field="region">
                                 <label class="block text-xs text-slate-400 mb-1">Country (ISO 3166)</label>
                                 <input id="search-region" type="text" placeholder="Search country..." autocomplete="off"
@@ -191,6 +204,7 @@
                                 <span id="preview-region" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
+                            <!-- State / Province -->
                             <div class="relative combo-wrapper" data-field="state">
                                 <label class="block text-xs text-slate-400 mb-1">State / Province (ISO)</label>
                                 <input id="search-state" type="text" placeholder="Search state/province..." autocomplete="off"
@@ -201,6 +215,7 @@
                                 <span id="preview-state" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
+                            <!-- Language -->
                             <div class="relative combo-wrapper" data-field="lang">
                                 <label class="block text-xs text-slate-400 mb-1">Language (ISO 639-1)</label>
                                 <input id="search-lang" type="text" placeholder="Search language..." autocomplete="off"
@@ -210,74 +225,102 @@
                                 <div id="list-lang" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
                                 <span id="preview-lang" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
+                        </div>
+                    </section>
 
-                            <div class="relative combo-wrapper" data-field="placement">
-                                <label class="block text-xs text-slate-400 mb-1">Placement (4 chars + digits)</label>
-                                <input id="search-placement" type="text" placeholder="Search or add placement..." autocomplete="off"
-                                    onfocus="openCombo('placement')" oninput="filterCombo('placement')"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
-                                <input type="hidden" id="f-placement" value="">
-                                <div id="list-placement" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
-                                <span id="preview-placement" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                    <!-- SECTION 2: CREATIVE ASSETS -->
+                    <section class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-5 shadow-xl">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+                            <div>
+                                <span class="text-[11px] font-mono uppercase tracking-wider text-emerald-400">Section 2</span>
+                                <h2 class="text-lg font-bold text-slate-100">Creative Assets</h2>
                             </div>
+                            <label class="inline-flex items-center gap-2.5 cursor-pointer select-none bg-slate-950 border border-slate-800 px-3.5 py-2 rounded-lg">
+                                <input id="f-dynamic-creative" type="checkbox" onchange="toggleDynamicCreative()"
+                                    class="w-4 h-4 accent-emerald-500 rounded cursor-pointer">
+                                <span class="text-xs font-semibold text-slate-200">Dynamic Creative (Omits utm_term &amp; ck key)</span>
+                            </label>
                         </div>
 
-                        <!-- Row 3: Multi-Asset Creative Manager & Dynamic Creative Toggle -->
-                        <div class="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-4">
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                <div>
-                                    <h2 class="text-sm font-semibold text-slate-200">Creative Manager &amp; Dynamic Creative (DCO)</h2>
-                                    <p class="text-xs text-slate-400">Add multiple creative variants to generate distinct <code class="text-emerald-400">ck</code> keys under the same campaign <code class="text-emerald-400">k</code> key, or enable DCO macro mode.</p>
-                                </div>
-                                <label class="inline-flex items-center gap-2.5 cursor-pointer select-none bg-slate-900 border border-slate-800 px-3 py-2 rounded-lg">
-                                    <input id="f-dynamic-creative" type="checkbox" onchange="toggleDynamicCreative()"
-                                        class="w-4 h-4 accent-emerald-500 rounded cursor-pointer">
-                                    <span class="text-xs font-medium text-slate-200">Dynamic Creative (DCO)</span>
+                        <div id="dcoBanner" class="hidden p-3.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-300">
+                            Dynamic Creative is enabled. Individual creative asset selection is bypassed and URLs will be generated without <code class="font-mono">utm_term</code> or a <code class="font-mono">ck</code> parameter.
+                        </div>
+
+                        <div id="creativeWorkspace" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Upload Individual Assets or ZIP -->
+                                <label class="flex flex-col items-center justify-center p-5 border-2 border-dashed border-slate-700 hover:border-emerald-500/70 rounded-xl bg-slate-950/60 cursor-pointer transition-colors">
+                                    <span class="text-xs font-semibold text-slate-200">Upload individual files or a .ZIP archive</span>
+                                    <span class="text-[11px] text-slate-400 mt-1">ZIP files are unpacked automatically in your browser so you can select assets</span>
+                                    <input id="creativeFileInput" type="file" multiple accept="image/*,video/*,.zip,application/zip"
+                                        onchange="handleCreativeFilesUpload(event)" class="hidden">
                                 </label>
-                            </div>
 
-                            <div id="dcoNotice" class="hidden p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-300 font-mono">
-                                Dynamic Creative active: generates a single DCO tokenized URL (ck=dco_dyn) for ad-server dynamic feed rotation.
-                            </div>
-
-                            <div id="creativeAssetsPanel" class="space-y-3">
-                                <div class="flex flex-col sm:flex-row gap-2">
-                                    <input id="newCreativeInput" type="text" placeholder="Add creative asset name (e.g. summer_reel_15s_v1)..."
-                                        onkeydown="if(event.key==='Enter'){event.preventDefault();addCreativeAsset();}"
-                                        class="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
-                                    <button type="button" onclick="addCreativeAsset()"
-                                        class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-emerald-400 cursor-pointer">
-                                        + Add Creative
-                                    </button>
+                                <!-- Manual Add -->
+                                <div class="flex flex-col justify-center p-5 border border-slate-800 rounded-xl bg-slate-950/60 space-y-2">
+                                    <label class="text-xs font-semibold text-slate-200">Or add creative asset name manually</label>
+                                    <div class="flex gap-2">
+                                        <input id="manualCreativeInput" type="text" placeholder="e.g. hero_video_9x16_v1"
+                                            onkeydown="if(event.key==='Enter'){event.preventDefault();addManualCreative();}"
+                                            class="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+                                        <button type="button" onclick="addManualCreative()"
+                                            class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-emerald-400 cursor-pointer">
+                                            + Add
+                                        </button>
+                                    </div>
+                                    <p id="zipExtractStatus" class="text-[11px] text-slate-400 min-h-[1rem]"></p>
                                 </div>
+                            </div>
 
-                                <div id="creativeListContainer" class="divide-y divide-slate-800/80 border border-slate-800 rounded-lg bg-slate-900/60"></div>
+                            <!-- Extracted / Uploaded Selectable Assets List -->
+                            <div class="border border-slate-800 rounded-xl bg-slate-950 overflow-hidden">
+                                <div class="px-4 py-2.5 bg-slate-900/80 border-b border-slate-800 flex items-center justify-between text-xs">
+                                    <span class="font-medium text-slate-300">Extracted &amp; Available Assets (Tick assets to generate URLs)</span>
+                                    <div class="flex items-center gap-3">
+                                        <button type="button" onclick="toggleSelectAllCreatives(true)" class="text-emerald-400 hover:underline cursor-pointer">Select all</button>
+                                        <button type="button" onclick="toggleSelectAllCreatives(false)" class="text-slate-400 hover:underline cursor-pointer">Deselect all</button>
+                                    </div>
+                                </div>
+                                <div id="creativeAssetsList" class="divide-y divide-slate-800/70 max-h-60 overflow-y-auto"></div>
                             </div>
                         </div>
+                    </section>
 
-                        <!-- Row 4: Live Tokenized Output Variants & Batch Save -->
-                        <div class="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-3">
-                            <div class="flex items-center justify-between">
-                                <p class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
-                                    Generated Tokenized Links (<span id="variantCountLabel">1</span>)
-                                </p>
-                                <span id="sharedCampaignKeyBadge" class="text-[11px] font-mono text-emerald-400"></span>
+                    <!-- SECTION 3: EXAMPLE URLS (FULL UTM URLS) -->
+                    <section class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4 shadow-xl">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <div>
+                                <span class="text-[11px] font-mono uppercase tracking-wider text-emerald-400">Section 3</span>
+                                <h2 class="text-lg font-bold text-slate-100">Example URLs (Full UTM Structure)</h2>
                             </div>
-
-                            <div id="generatedVariantsList" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
-
-                            <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-800/80">
-                                <span id="saveLinkStatus" class="text-xs text-slate-400"></span>
-                                <button type="button" id="saveCampaignLinkBtn" onclick="saveGeneratedLinksToHistory()"
-                                    class="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-semibold text-sm transition-colors cursor-pointer">
-                                    Save all variants to domain history
-                                </button>
-                            </div>
+                            <span class="text-xs text-slate-400">Includes <code class="text-emerald-400 font-mono">utm_term</code> only when Dynamic Creative is unchecked</span>
                         </div>
-                    </div>
+                        <div id="exampleUtmUrlsContainer" class="space-y-2 max-h-64 overflow-y-auto pr-1"></div>
+                    </section>
+
+                    <!-- SECTION 4: FINAL URLS (TOKENIZED KEY URLS + CSV + COMMIT TO HISTORY) -->
+                    <section class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4 shadow-xl">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+                            <div>
+                                <span class="text-[11px] font-mono uppercase tracking-wider text-emerald-400">Section 4</span>
+                                <h2 class="text-lg font-bold text-slate-100">Final URLs (Tokenized Keys)</h2>
+                            </div>
+                            <span id="sharedCampaignKeyBadge" class="text-xs font-mono text-emerald-400"></span>
+                        </div>
+
+                        <div id="finalKeyUrlsContainer" class="space-y-2 max-h-64 overflow-y-auto pr-1"></div>
+
+                        <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-800">
+                            <span id="commitStatusMessage" class="text-xs text-slate-400"></span>
+                            <button type="button" id="generateCsvAndCommitBtn" onclick="generateCsvAndCommitHistory()"
+                                class="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-semibold text-sm transition-colors cursor-pointer">
+                                Generate CSV &amp; Commit URLs to History
+                            </button>
+                        </div>
+                    </section>
                 </div>
 
-                <!-- VIEW 2: CAMPAIGN HISTORY & LINKROT SENTINEL -->
+                <!-- HISTORY VIEW -->
                 <div id="view-history" class="space-y-6 hidden">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
@@ -305,12 +348,12 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="border-b border-slate-800 text-xs text-slate-400 uppercase tracking-wider">
-                                    <th class="py-3 px-3">Keys (k / ck)</th>
+                                    <th class="py-3 px-3">Keys</th>
                                     <th class="py-3 px-3">Creative / Mode</th>
-                                    <th class="py-3 px-3">Tokenized URL</th>
+                                    <th class="py-3 px-3">Final URL</th>
+                                    <th class="py-3 px-3">Example UTM URL</th>
                                     <th class="py-3 px-3">Created By</th>
-                                    <th class="py-3 px-3">LinkRot Status</th>
-                                    <th class="py-3 px-3">Created At</th>
+                                    <th class="py-3 px-3">LinkRot</th>
                                     <th class="py-3 px-3 text-right">Action</th>
                                 </tr>
                             </thead>
@@ -327,31 +370,85 @@
     </div>
 
     <script>
-        // Replace these two placeholders with your base Supabase Project URL (no /rest/v1/) and anon/public key
-        const SUPABASE_URL = 'https://stouegbesuceggnegeie.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_QUglOE6uDThXZRZ48kEPhA_ifXTfUok';
+        // Replace with your base Supabase Project URL (no /rest/v1/) and anon/public key
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const DYNAMIC_MEMORY_CATEGORIES = new Set(['source', 'placement']);
         const VOWELS = new Set(['a', 'e', 'i', 'o', 'u']);
 
-        let TAXONOMY = {
-            source: [],
-            funnel: [],
-            objective: [],
-            tactic: [],
-            journey: [],
-            medium: [],
-            region: [],
-            state: [],
-            lang: [],
-            placement: []
+        // Exhaustive baseline dictionaries (Source & Placement intentionally start blank)
+        const EXHAUSTIVE_DEFAULTS = {
+            funnel: [
+                { display_name: 'Awareness', abbreviation: 'awr' },
+                { display_name: 'Consideration', abbreviation: 'csr' },
+                { display_name: 'Conversion', abbreviation: 'cvr' },
+                { display_name: 'Retention', abbreviation: 'rtt' }
+            ],
+            objective: [
+                { display_name: 'Brand Recall', abbreviation: 'brl' },
+                { display_name: 'Traffic', abbreviation: 'trf' },
+                { display_name: 'Joins', abbreviation: 'v2j' },
+                { display_name: 'FTD', abbreviation: 'ftd' },
+                { display_name: 'Deposit', abbreviation: 'dps' }
+            ],
+            tactic: [
+                { display_name: 'Prospecting', abbreviation: 'prs' },
+                { display_name: 'Retargeting', abbreviation: 'rtg' },
+                { display_name: 'Audience Targeting', abbreviation: 'aud' },
+                { display_name: 'Customer Audience Targeting', abbreviation: 'cat' },
+                { display_name: 'Reactivation', abbreviation: 'rvn' }
+            ],
+            journey: [
+                { display_name: 'New User', abbreviation: 'nu' },
+                { display_name: 'Exposed to CTV', abbreviation: 'ectv' },
+                { display_name: 'Exposed to Audio', abbreviation: 'eaud' },
+                { display_name: 'Exposed to Prospecting', abbreviation: 'eprs' },
+                { display_name: 'Exposed to DOOH', abbreviation: 'edooh' },
+                { display_name: 'Web Visitor', abbreviation: 'vst' },
+                { display_name: 'Join to Deposit', abbreviation: 'j2d' },
+                { display_name: 'Subsequent Deposit', abbreviation: '2dds' },
+                { display_name: '.NET to Operator', abbreviation: 'nto' },
+                { display_name: '0 to 29 days since last login', abbreviation: '0_29ll' },
+                { display_name: '30 to 59 days since last login', abbreviation: '30_59ll' },
+                { display_name: '60 to 89 days since last login', abbreviation: '60_89ll' },
+                { display_name: '90+ days since last login', abbreviation: '90_ll' },
+                { display_name: '0 to 29 days since last deposit', abbreviation: '0_29ld' },
+                { display_name: '30 to 59 days since last deposit', abbreviation: '30_59ld' },
+                { display_name: '60 to 89 days since last deposit', abbreviation: '60_89ld' },
+                { display_name: '90+ days since last deposit', abbreviation: '90_ld' }
+            ],
+            medium: [
+                { display_name: 'Paid Search', abbreviation: 'cpc' },
+                { display_name: 'Video', abbreviation: 'video' },
+                { display_name: 'Display', abbreviation: 'display' },
+                { display_name: 'Paid Social', abbreviation: 'paid' },
+                { display_name: 'Email', abbreviation: 'email' },
+                { display_name: 'Referral', abbreviation: 'referral' },
+                { display_name: 'Affiliates', abbreviation: 'affiliates' },
+                { display_name: 'QR', abbreviation: 'qr' },
+                { display_name: 'SMS', abbreviation: 'sms' },
+                { display_name: 'Organic Social', abbreviation: 'social' }
+            ]
         };
 
-        let creativeAssets = [
-            { id: 'cr-1', name: 'hero_video_v1' },
-            { id: 'cr-2', name: 'static_banner_300x250' }
+        let TAXONOMY = {
+            source: [],
+            placement: [],
+            funnel: [...EXHAUSTIVE_DEFAULTS.funnel],
+            objective: [...EXHAUSTIVE_DEFAULTS.objective],
+            tactic: [...EXHAUSTIVE_DEFAULTS.tactic],
+            journey: [...EXHAUSTIVE_DEFAULTS.journey],
+            medium: [...EXHAUSTIVE_DEFAULTS.medium],
+            region: [],
+            state: [],
+            lang: []
+        };
+
+        let uploadedCreatives = [
+            { id: 'cr-default-1', name: 'hero_video_v1.mp4', sourceType: 'Preset', selected: true }
         ];
 
         let activeUser = null;
@@ -366,24 +463,22 @@
                 .replace(/"/g, '&quot;');
         }
 
+        function stripFileExtension(filename) {
+            return String(filename || '').replace(/\.[^/.]+$/, '');
+        }
+
         // 4 chars + any digits; drops vowels unless the input starts with a vowel
         function abbreviate4PlusDigits(rawName) {
-            const clean = String(rawName || '').toLowerCase().trim();
+            const clean = stripFileExtension(rawName).toLowerCase().trim();
             if (!clean) return '';
 
             const startsWithVowel = VOWELS.has(clean[0]);
             const digits = (clean.match(/[0-9]/g) || []).join('');
             const lettersOnly = clean.replace(/[^a-z]/g, '');
 
-            let processedLetters = '';
-            if (startsWithVowel) {
-                processedLetters = lettersOnly;
-            } else {
-                processedLetters = lettersOnly
-                    .split('')
-                    .filter((ch, idx) => idx === 0 || !VOWELS.has(ch))
-                    .join('');
-            }
+            const processedLetters = startsWithVowel
+                ? lettersOnly
+                : lettersOnly.split('').filter((ch, idx) => idx === 0 || !VOWELS.has(ch)).join('');
 
             const base4 = processedLetters.slice(0, 4);
             return `${base4}${digits}` || digits || 'item';
@@ -431,7 +526,7 @@
             document.getElementById('authGate').classList.add('hidden');
             document.getElementById('appShell').classList.remove('hidden');
 
-            renderCreativeList();
+            renderCreativeAssetsList();
             await loadTaxonomyFromSupabase();
             await loadDomainHistory();
         }
@@ -446,29 +541,42 @@
                 .order('display_name', { ascending: true });
 
             if (error) {
-                statusEl.textContent = `Error: ${error.message}`;
+                statusEl.textContent = `Vocab warning: ${error.message}`;
                 return;
             }
 
-            Object.keys(TAXONOMY).forEach(k => { TAXONOMY[k] = []; });
+            // Reset dynamic categories to empty; keep exhaustive defaults for locked dropdowns and merge DB rows
+            TAXONOMY.source = [];
+            TAXONOMY.placement = [];
+            TAXONOMY.region = [];
+            TAXONOMY.state = [];
+            TAXONOMY.lang = [];
 
             for (const row of (data || [])) {
                 if (!TAXONOMY[row.category]) continue;
-                if (DYNAMIC_MEMORY_CATEGORIES.has(row.category) && row.created_by_domain && row.created_by_domain !== activeDomain) {
+                if (DYNAMIC_MEMORY_CATEGORIES.has(row.category)) {
+                    // Only include user/domain-contributed source & placement memory (ignore old starter placement presets if global)
+                    if (row.created_by_domain === activeDomain) {
+                        TAXONOMY[row.category].push(row);
+                    }
                     continue;
                 }
-                TAXONOMY[row.category].push(row);
+                const exists = TAXONOMY[row.category].some(i => i.abbreviation === row.abbreviation);
+                if (!exists) {
+                    TAXONOMY[row.category].push(row);
+                }
             }
 
-            ['funnel', 'objective', 'tactic', 'journey', 'medium', 'region', 'state', 'lang', 'placement'].forEach(field => {
+            // Populate defaults ONLY for exhaustive lists; leave source and placement completely empty
+            ['funnel', 'objective', 'tactic', 'journey', 'medium', 'region', 'state', 'lang'].forEach(field => {
                 const first = TAXONOMY[field][0];
                 if (first) {
                     selectComboItem(field, first.display_name, first.abbreviation, false);
                 }
             });
 
-            statusEl.textContent = `Loaded ${(data || []).length} vocab rows • Source options: ${TAXONOMY.source.length}`;
-            renderPreview();
+            statusEl.textContent = `Ready • Source (${TAXONOMY.source.length}), Placement (${TAXONOMY.placement.length}), Countries (${TAXONOMY.region.length})`;
+            renderAllOutputs();
         }
 
         function openCombo(field) {
@@ -542,7 +650,6 @@
 
             TAXONOMY[field].unshift(data);
             selectComboItem(field, data.display_name, data.abbreviation, true);
-            document.getElementById('vocabLoadStatus').textContent = `Saved unique ${field}: ${data.display_name} (${data.abbreviation})`;
         }
 
         function selectComboItem(field, displayName, abbreviation, shouldRender = true) {
@@ -550,81 +657,134 @@
             document.getElementById(`f-${field}`).value = abbreviation;
             document.getElementById(`preview-${field}`).textContent = `URL code: ${abbreviation}`;
             document.getElementById(`list-${field}`).classList.add('hidden');
-            if (shouldRender) renderPreview();
+            if (shouldRender) renderAllOutputs();
         }
 
-        // Creative Manager & Dynamic Creative Controls
+        // Section 2: Creative Assets (Individual Upload, ZIP Extraction, Selection, & Dynamic Creative Toggle)
         function toggleDynamicCreative() {
             const isDco = document.getElementById('f-dynamic-creative').checked;
-            document.getElementById('dcoNotice').classList.toggle('hidden', !isDco);
-            document.getElementById('creativeAssetsPanel').classList.toggle('hidden', isDco);
-            renderPreview();
+            document.getElementById('dcoBanner').classList.toggle('hidden', !isDco);
+            document.getElementById('creativeWorkspace').classList.toggle('hidden', isDco);
+            renderAllOutputs();
         }
 
-        function addCreativeAsset() {
-            const input = document.getElementById('newCreativeInput');
+        async function handleCreativeFilesUpload(event) {
+            const files = Array.from(event.target.files || []);
+            const statusEl = document.getElementById('zipExtractStatus');
+            if (!files.length) return;
+
+            statusEl.textContent = 'Processing files...';
+            let addedCount = 0;
+
+            for (const file of files) {
+                if (file.name.toLowerCase().endsWith('.zip')) {
+                    try {
+                        const zip = await window.JSZip.loadAsync(file);
+                        const entries = Object.values(zip.files);
+                        for (const entry of entries) {
+                            if (entry.dir) continue;
+                            const cleanPath = entry.name.split('/').pop();
+                            if (!cleanPath || cleanPath.startsWith('.') || entry.name.startsWith('__MACOSX')) continue;
+                            uploadedCreatives.push({
+                                id: `cr-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                                name: cleanPath,
+                                sourceType: `ZIP (${file.name})`,
+                                selected: true
+                            });
+                            addedCount++;
+                        }
+                    } catch (err) {
+                        statusEl.textContent = `ZIP error on ${file.name}: ${err.message}`;
+                        return;
+                    }
+                } else {
+                    uploadedCreatives.push({
+                        id: `cr-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                        name: file.name,
+                        sourceType: 'File Upload',
+                        selected: true
+                    });
+                    addedCount++;
+                }
+            }
+
+            event.target.value = '';
+            statusEl.textContent = `Added ${addedCount} asset(s). Tick the assets you want to include in your URLs.`;
+            renderCreativeAssetsList();
+            renderAllOutputs();
+        }
+
+        function addManualCreative() {
+            const input = document.getElementById('manualCreativeInput');
             const name = input.value.trim();
             if (!name) return;
 
-            creativeAssets.push({
-                id: `cr-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-                name
+            uploadedCreatives.push({
+                id: `cr-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                name,
+                sourceType: 'Manual',
+                selected: true
             });
             input.value = '';
-            renderCreativeList();
-            renderPreview();
+            renderCreativeAssetsList();
+            renderAllOutputs();
         }
 
-        function updateCreativeAsset(id, newName) {
-            const item = creativeAssets.find(c => c.id === id);
+        function toggleCreativeSelection(id) {
+            const item = uploadedCreatives.find(c => c.id === id);
             if (!item) return;
-            item.name = newName;
-            renderCreativeList(false);
-            renderPreview();
+            item.selected = !item.selected;
+            renderAllOutputs();
+        }
+
+        function toggleSelectAllCreatives(selectAll) {
+            uploadedCreatives.forEach(c => { c.selected = selectAll; });
+            renderCreativeAssetsList();
+            renderAllOutputs();
         }
 
         function removeCreativeAsset(id) {
-            if (creativeAssets.length <= 1) return;
-            creativeAssets = creativeAssets.filter(c => c.id !== id);
-            renderCreativeList();
-            renderPreview();
+            uploadedCreatives = uploadedCreatives.filter(c => c.id !== id);
+            renderCreativeAssetsList();
+            renderAllOutputs();
         }
 
-        function renderCreativeList(rebuildInputs = true) {
-            const container = document.getElementById('creativeListContainer');
-            if (!rebuildInputs) {
-                creativeAssets.forEach(asset => {
-                    const badge = document.getElementById(`ck-badge-${asset.id}`);
-                    if (badge) badge.textContent = `ck=${abbreviate4PlusDigits(asset.name) || 'crtv'}`;
-                });
+        function renderCreativeAssetsList() {
+            const listEl = document.getElementById('creativeAssetsList');
+            if (!uploadedCreatives.length) {
+                listEl.innerHTML = `<div class="px-4 py-5 text-xs text-slate-500 text-center">No creative assets uploaded yet. Upload files, a .ZIP archive, or add an asset name above.</div>`;
                 return;
             }
 
-            container.innerHTML = creativeAssets.map((asset, idx) => {
+            listEl.innerHTML = uploadedCreatives.map(asset => {
                 const ck = abbreviate4PlusDigits(asset.name) || 'crtv';
                 return `
-                    <div class="flex items-center justify-between gap-3 px-3 py-2">
-                        <span class="text-[11px] font-mono text-slate-500 w-6">#${idx + 1}</span>
-                        <input type="text" value="${escapeHtml(asset.name)}"
-                            oninput="updateCreativeAsset('${asset.id}', this.value)"
-                            class="flex-1 bg-slate-950 border border-slate-800 rounded px-2.5 py-1 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
-                        <span id="ck-badge-${asset.id}" class="text-[11px] font-mono text-emerald-400 px-2 py-0.5 rounded bg-emerald-500/10">ck=${escapeHtml(ck)}</span>
-                        <button type="button" onclick="removeCreativeAsset('${asset.id}')"
-                            ${creativeAssets.length <= 1 ? 'disabled' : ''}
-                            class="text-xs text-slate-400 hover:text-rose-400 disabled:opacity-30 px-1.5 cursor-pointer" title="Remove creative">
-                            ✕
-                        </button>
+                    <div class="px-4 py-2.5 flex items-center justify-between gap-3 hover:bg-slate-900/70">
+                        <label class="flex items-center gap-3 min-w-0 flex-1 cursor-pointer">
+                            <input type="checkbox" ${asset.selected ? 'checked' : ''} onchange="toggleCreativeSelection('${asset.id}')"
+                                class="w-4 h-4 accent-emerald-500 rounded cursor-pointer">
+                            <span class="text-xs text-slate-200 truncate font-medium">${escapeHtml(asset.name)}</span>
+                            <span class="text-[11px] text-slate-500 shrink-0">${escapeHtml(asset.sourceType)}</span>
+                        </label>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <span class="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">ck=${escapeHtml(ck)}</span>
+                            <button type="button" onclick="removeCreativeAsset('${asset.id}')"
+                                class="text-xs text-slate-500 hover:text-rose-400 px-1 cursor-pointer" title="Remove">✕</button>
+                        </div>
                     </div>
                 `;
             }).join('');
         }
 
-        function buildCurrentLinkPayloads() {
+        // Build Payload Variants for Sections 3 & 4
+        function buildCurrentVariants() {
             const workspace = (document.getElementById('f-workspace').value || '').trim() || 'Default Campaign';
             const rawDest = (document.getElementById('f-dest').value || '').trim() || 'https://example.com';
             const normalizedDest = /^https?:\/\//i.test(rawDest) ? rawDest : `https://${rawDest}`;
             const eventSlug = abbreviate4PlusDigits(document.getElementById('f-event').value || '');
+
             const src = document.getElementById('f-source').value || '';
+            const placement = document.getElementById('f-placement').value || '';
             const funnel = document.getElementById('f-funnel').value || '';
             const obj = document.getElementById('f-objective').value || '';
             const tactic = document.getElementById('f-tactic').value || '';
@@ -633,7 +793,6 @@
             const region = document.getElementById('f-region').value || '';
             const state = document.getElementById('f-state').value || '';
             const lang = document.getElementById('f-lang').value || '';
-            const placement = document.getElementById('f-placement').value || '';
             const isDco = document.getElementById('f-dynamic-creative').checked;
 
             const hashSource = `${activeDomain}|${src}|${medium}|${funnel}|${obj}|${tactic}|${journey}|${region}|${state}|${lang}|${placement}|${eventSlug}`;
@@ -643,43 +802,31 @@
                 hash |= 0;
             }
             const k = Math.abs(hash).toString(36);
-
-            const variants = isDco
-                ? [{ name: 'Dynamic Creative Feed (DCO)', ck: 'dco_dyn', isDynamic: true }]
-                : creativeAssets.map((a, idx) => ({
-                    name: a.name.trim() || `creative_${idx + 1}`,
-                    ck: abbreviate4PlusDigits(a.name) || `crtv${idx + 1}`,
-                    isDynamic: false
-                }));
-
             const campaignSlug = [funnel, obj, tactic, journey, region, state, eventSlug, lang].filter(Boolean).join('-');
 
-            return variants.map(variant => {
-                let finalShortenedUrl = `${normalizedDest}?k=${k}&ck=${variant.ck}`;
+            if (isDco) {
+                let finalShortenedUrl = `${normalizedDest}?k=${k}`;
                 let fullUtmUrl = normalizedDest;
                 try {
                     const shortObj = new URL(normalizedDest);
                     shortObj.searchParams.set('k', k);
-                    shortObj.searchParams.set('ck', variant.ck);
                     finalShortenedUrl = shortObj.toString();
 
                     const utmObj = new URL(normalizedDest);
-                    utmObj.searchParams.set('utm_source', src);
-                    utmObj.searchParams.set('utm_medium', medium);
-                    utmObj.searchParams.set('utm_campaign', campaignSlug);
-                    utmObj.searchParams.set('utm_content', placement);
-                    utmObj.searchParams.set('utm_term', variant.ck);
+                    if (src) utmObj.searchParams.set('utm_source', src);
+                    if (medium) utmObj.searchParams.set('utm_medium', medium);
+                    if (campaignSlug) utmObj.searchParams.set('utm_campaign', campaignSlug);
+                    if (placement) utmObj.searchParams.set('utm_content', placement);
+                    // Dynamic Creative checked: NO utm_term and NO ck key
                     fullUtmUrl = utmObj.toString();
-                } catch {
-                    // Fallback already constructed above
-                }
+                } catch {}
 
-                return {
+                return [{
                     owner_domain: activeDomain,
                     created_by_email: activeUser ? activeUser.email.toLowerCase() : '',
                     campaign_workspace: workspace,
                     url_key: k,
-                    creative_key: variant.ck,
+                    creative_key: 'dco',
                     destination_url: normalizedDest,
                     final_shortened_url: finalShortenedUrl,
                     full_utm_url: fullUtmUrl,
@@ -694,30 +841,102 @@
                     event_campaign: eventSlug || null,
                     language: lang,
                     placement,
-                    creative_name: variant.name,
-                    is_dynamic_creative: variant.isDynamic
+                    creative_name: 'Dynamic Creative (DCO)',
+                    is_dynamic_creative: true
+                }];
+            }
+
+            const selectedAssets = uploadedCreatives.filter(c => c.selected);
+            return selectedAssets.map((asset, idx) => {
+                const ck = abbreviate4PlusDigits(asset.name) || `crtv${idx + 1}`;
+                let finalShortenedUrl = `${normalizedDest}?k=${k}&ck=${ck}`;
+                let fullUtmUrl = normalizedDest;
+                try {
+                    const shortObj = new URL(normalizedDest);
+                    shortObj.searchParams.set('k', k);
+                    shortObj.searchParams.set('ck', ck);
+                    finalShortenedUrl = shortObj.toString();
+
+                    const utmObj = new URL(normalizedDest);
+                    if (src) utmObj.searchParams.set('utm_source', src);
+                    if (medium) utmObj.searchParams.set('utm_medium', medium);
+                    if (campaignSlug) utmObj.searchParams.set('utm_campaign', campaignSlug);
+                    if (placement) utmObj.searchParams.set('utm_content', placement);
+                    utmObj.searchParams.set('utm_term', ck);
+                    fullUtmUrl = utmObj.toString();
+                } catch {}
+
+                return {
+                    owner_domain: activeDomain,
+                    created_by_email: activeUser ? activeUser.email.toLowerCase() : '',
+                    campaign_workspace: workspace,
+                    url_key: k,
+                    creative_key: ck,
+                    destination_url: normalizedDest,
+                    final_shortened_url: finalShortenedUrl,
+                    full_utm_url: fullUtmUrl,
+                    source: src,
+                    funnel,
+                    objective: obj,
+                    tactic,
+                    journey,
+                    medium,
+                    region,
+                    state_province: state,
+                    event_campaign: eventSlug || null,
+                    language: lang,
+                    placement,
+                    creative_name: asset.name,
+                    is_dynamic_creative: false
                 };
             });
         }
 
-        function renderPreview() {
-            const payloads = buildCurrentLinkPayloads();
-            document.getElementById('variantCountLabel').textContent = payloads.length;
-            document.getElementById('sharedCampaignKeyBadge').textContent = payloads[0] ? `Shared campaign key: k=${payloads[0].url_key}` : '';
+        function renderAllOutputs() {
+            const variants = buildCurrentVariants();
+            const utmContainer = document.getElementById('exampleUtmUrlsContainer');
+            const finalContainer = document.getElementById('finalKeyUrlsContainer');
+            const keyBadge = document.getElementById('sharedCampaignKeyBadge');
 
-            const listEl = document.getElementById('generatedVariantsList');
-            listEl.innerHTML = payloads.map(p => `
-                <div class="p-3 rounded-lg bg-slate-900 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            if (!variants.length) {
+                keyBadge.textContent = '';
+                const emptyMsg = `<div class="p-4 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-500">Select at least one creative asset in Section 2 (or enable Dynamic Creative) to generate URLs.</div>`;
+                utmContainer.innerHTML = emptyMsg;
+                finalContainer.innerHTML = emptyMsg;
+                return;
+            }
+
+            keyBadge.textContent = `Campaign Key: k=${variants[0].url_key}`;
+
+            // Section 3: Example Full UTM URLs
+            utmContainer.innerHTML = variants.map(v => `
+                <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div class="min-w-0 space-y-1">
+                        <span class="text-[11px] font-medium text-slate-400">${escapeHtml(v.creative_name)}</span>
+                        <p class="font-mono text-xs text-sky-400 break-all">${escapeHtml(v.full_utm_url)}</p>
+                    </div>
+                    <button type="button" onclick="copyText('${v.full_utm_url.replace(/'/g, "\\'")}', this)"
+                        class="shrink-0 px-3 py-1.5 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs text-slate-200 cursor-pointer">
+                        Copy UTM
+                    </button>
+                </div>
+            `).join('');
+
+            // Section 4: Final Tokenized Key URLs
+            finalContainer.innerHTML = variants.map(v => `
+                <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div class="min-w-0 space-y-1">
                         <div class="flex items-center gap-2">
-                            <span class="text-xs font-medium text-slate-200">${escapeHtml(p.creative_name)}</span>
-                            <span class="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">ck=${escapeHtml(p.creative_key)}</span>
+                            <span class="text-[11px] font-medium text-slate-300">${escapeHtml(v.creative_name)}</span>
+                            <span class="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                                ${v.is_dynamic_creative ? `k=${escapeHtml(v.url_key)} (DCO)` : `k=${escapeHtml(v.url_key)} & ck=${escapeHtml(v.creative_key)}`}
+                            </span>
                         </div>
-                        <p class="font-mono text-xs text-emerald-400 break-all">${escapeHtml(p.final_shortened_url)}</p>
+                        <p class="font-mono text-xs text-emerald-400 break-all">${escapeHtml(v.final_shortened_url)}</p>
                     </div>
-                    <button type="button" onclick="copyText('${p.final_shortened_url.replace(/'/g, "\\'")}', this)"
-                        class="shrink-0 px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs text-slate-200 cursor-pointer">
-                        Copy URL
+                    <button type="button" onclick="copyText('${v.final_shortened_url.replace(/'/g, "\\'")}', this)"
+                        class="shrink-0 px-3 py-1.5 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs text-slate-200 cursor-pointer">
+                        Copy Final URL
                     </button>
                 </div>
             `).join('');
@@ -734,44 +953,7 @@
             }
         }
 
-        async function saveGeneratedLinksToHistory() {
-            const statusEl = document.getElementById('saveLinkStatus');
-            const btn = document.getElementById('saveCampaignLinkBtn');
-            if (!activeUser || !activeDomain) {
-                statusEl.textContent = 'You must be signed in to save links.';
-                statusEl.className = 'text-xs text-rose-400';
-                return;
-            }
-
-            const payloads = buildCurrentLinkPayloads();
-            if (!payloads.length || !payloads[0].source) {
-                statusEl.textContent = 'Please select or enter a Source before saving.';
-                statusEl.className = 'text-xs text-amber-400';
-                return;
-            }
-
-            btn.disabled = true;
-            statusEl.textContent = `Saving ${payloads.length} variant(s) to campaign_links...`;
-            statusEl.className = 'text-xs text-slate-400';
-
-            const { error } = await supabaseClient
-                .from('campaign_links')
-                .upsert(payloads, { onConflict: 'owner_domain,url_key,creative_key' });
-
-            btn.disabled = false;
-
-            if (error) {
-                statusEl.textContent = `Save failed: ${error.message}`;
-                statusEl.className = 'text-xs text-rose-400';
-                return;
-            }
-
-            statusEl.textContent = `Saved ${payloads.length} link variant(s) under k=${payloads[0].url_key} for ${activeDomain}.`;
-            statusEl.className = 'text-xs text-emerald-400';
-            await loadDomainHistory();
-        }
-
-        // CSV Export Helpers
+        // Section 4 Action: Generate CSV + Commit to Supabase History
         function downloadCsvFile(filename, rows) {
             if (!rows.length) return;
             const headers = Object.keys(rows[0]);
@@ -791,30 +973,72 @@
             URL.revokeObjectURL(url);
         }
 
-        function exportBuilderCsv() {
-            const payloads = buildCurrentLinkPayloads();
-            if (!payloads.length) return;
-            const rows = payloads.map(p => ({
-                workspace: p.campaign_workspace,
-                url_key: p.url_key,
-                creative_key: p.creative_key,
-                creative_name: p.creative_name,
-                is_dynamic_creative: p.is_dynamic_creative,
-                tokenized_url: p.final_shortened_url,
-                full_utm_url: p.full_utm_url,
-                source: p.source,
-                medium: p.medium,
-                funnel: p.funnel,
-                objective: p.objective,
-                tactic: p.tactic,
-                journey: p.journey,
-                region: p.region,
-                state_province: p.state_province,
-                language: p.language,
-                placement: p.placement,
-                event_campaign: p.event_campaign || ''
+        async function generateCsvAndCommitHistory() {
+            const statusEl = document.getElementById('commitStatusMessage');
+            const btn = document.getElementById('generateCsvAndCommitBtn');
+
+            if (!activeUser || !activeDomain) {
+                statusEl.textContent = 'Sign in required before committing URLs.';
+                statusEl.className = 'text-xs text-rose-400';
+                return;
+            }
+
+            const variants = buildCurrentVariants();
+            if (!variants.length) {
+                statusEl.textContent = 'Select at least one creative asset (or enable Dynamic Creative) first.';
+                statusEl.className = 'text-xs text-amber-400';
+                return;
+            }
+            if (!variants[0].source || !variants[0].placement) {
+                statusEl.textContent = 'Please enter and select both Source and Placement in Section 1 before committing.';
+                statusEl.className = 'text-xs text-amber-400';
+                return;
+            }
+
+            btn.disabled = true;
+            statusEl.textContent = 'Generating CSV and committing to Supabase history...';
+            statusEl.className = 'text-xs text-slate-400';
+
+            // 1. Generate & download CSV with campaign parameters, example UTM URLs, and final URLs with keys
+            const csvRows = variants.map(v => ({
+                campaign_workspace: v.campaign_workspace,
+                destination_url: v.destination_url,
+                source: v.source,
+                placement: v.placement,
+                funnel: v.funnel,
+                objective: v.objective,
+                tactic: v.tactic,
+                journey: v.journey,
+                medium: v.medium,
+                region: v.region,
+                state_province: v.state_province,
+                language: v.language,
+                event_campaign: v.event_campaign || '',
+                creative_asset: v.creative_name,
+                dynamic_creative: v.is_dynamic_creative,
+                campaign_key_k: v.url_key,
+                creative_key_ck: v.is_dynamic_creative ? '' : v.creative_key,
+                example_utm_url: v.full_utm_url,
+                final_key_url: v.final_shortened_url
             }));
-            downloadCsvFile(`adpulse-builder-${payloads[0].url_key}.csv`, rows);
+            downloadCsvFile(`adpulse-${variants[0].url_key}.csv`, csvRows);
+
+            // 2. Commit records to Supabase campaign_links
+            const { error } = await supabaseClient
+                .from('campaign_links')
+                .upsert(variants, { onConflict: 'owner_domain,url_key,creative_key' });
+
+            btn.disabled = false;
+
+            if (error) {
+                statusEl.textContent = `CSV downloaded, but history commit failed: ${error.message}`;
+                statusEl.className = 'text-xs text-rose-400';
+                return;
+            }
+
+            statusEl.textContent = `CSV downloaded and ${variants.length} URL(s) committed to ${activeDomain} history.`;
+            statusEl.className = 'text-xs text-emerald-400';
+            await loadDomainHistory();
         }
 
         function exportHistoryCsv() {
@@ -827,16 +1051,24 @@
                 created_by_email: r.created_by_email,
                 owner_domain: r.owner_domain,
                 campaign_workspace: r.campaign_workspace,
-                url_key: r.url_key,
-                creative_key: r.creative_key,
+                source: r.source,
+                placement: r.placement,
+                funnel: r.funnel,
+                objective: r.objective,
+                tactic: r.tactic,
+                journey: r.journey,
+                medium: r.medium,
+                region: r.region,
+                state_province: r.state_province,
+                language: r.language,
                 creative_name: r.creative_name,
                 is_dynamic_creative: r.is_dynamic_creative,
-                tokenized_url: r.final_shortened_url,
-                full_utm_url: r.full_utm_url,
+                url_key: r.url_key,
+                creative_key: r.is_dynamic_creative ? '' : r.creative_key,
+                example_utm_url: r.full_utm_url,
+                final_key_url: r.final_shortened_url,
                 link_health_status: r.link_health_status,
-                http_status: r.http_status ?? '',
-                params_preserved: r.params_preserved ?? '',
-                last_checked_at: r.last_checked_at ?? ''
+                http_status: r.http_status ?? ''
             }));
             downloadCsvFile(`adpulse-history-${activeDomain || 'domain'}.csv`, rows);
         }
@@ -869,9 +1101,9 @@
                 ? historyRecords.filter(r =>
                     String(r.created_by_email || '').toLowerCase().includes(q) ||
                     String(r.final_shortened_url || '').toLowerCase().includes(q) ||
+                    String(r.full_utm_url || '').toLowerCase().includes(q) ||
                     String(r.creative_name || '').toLowerCase().includes(q) ||
-                    String(r.url_key || '').toLowerCase().includes(q) ||
-                    String(r.creative_key || '').toLowerCase().includes(q)
+                    String(r.url_key || '').toLowerCase().includes(q)
                 )
                 : historyRecords;
 
@@ -887,20 +1119,20 @@
                     row.link_health_status === 'cors_restricted' ? 'text-amber-400 bg-amber-500/10' :
                     'text-slate-400 bg-slate-800';
 
-                const modeBadge = row.is_dynamic_creative
-                    ? `<span class="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 font-mono">DCO</span>`
-                    : `<span class="text-slate-300">${escapeHtml(row.creative_name || '—')}</span>`;
+                const keyDisplay = row.is_dynamic_creative
+                    ? `?k=${escapeHtml(row.url_key)} (DCO)`
+                    : `?k=${escapeHtml(row.url_key)}&amp;ck=${escapeHtml(row.creative_key)}`;
 
                 return `
                     <tr class="hover:bg-slate-800/30">
-                        <td class="py-3 px-3 font-mono text-emerald-400">?k=${escapeHtml(row.url_key)}&amp;ck=${escapeHtml(row.creative_key)}</td>
-                        <td class="py-3 px-3">${modeBadge}</td>
-                        <td class="py-3 px-3 font-mono text-slate-300 truncate max-w-xs" title="${escapeHtml(row.final_shortened_url)}">${escapeHtml(row.final_shortened_url)}</td>
-                        <td class="py-3 px-3 text-slate-200">${escapeHtml(row.created_by_email)}</td>
+                        <td class="py-3 px-3 font-mono text-emerald-400 whitespace-nowrap">${keyDisplay}</td>
+                        <td class="py-3 px-3 text-slate-200">${escapeHtml(row.creative_name || '—')}</td>
+                        <td class="py-3 px-3 font-mono text-emerald-300 truncate max-w-[220px]" title="${escapeHtml(row.final_shortened_url)}">${escapeHtml(row.final_shortened_url)}</td>
+                        <td class="py-3 px-3 font-mono text-sky-400 truncate max-w-[220px]" title="${escapeHtml(row.full_utm_url)}">${escapeHtml(row.full_utm_url)}</td>
+                        <td class="py-3 px-3 text-slate-300">${escapeHtml(row.created_by_email)}</td>
                         <td class="py-3 px-3">
                             <span class="px-2 py-0.5 rounded font-mono ${badgeColor}">${escapeHtml(row.link_health_status || 'pending')}${row.http_status ? ` (${row.http_status})` : ''}</span>
                         </td>
-                        <td class="py-3 px-3 text-slate-400">${escapeHtml(new Date(row.created_at).toLocaleString())}</td>
                         <td class="py-3 px-3 text-right">
                             <button type="button" onclick="runLinkRotCheck('${row.id}')"
                                 class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 cursor-pointer">
@@ -925,7 +1157,7 @@
                 httpStatus = resp.status;
                 const resolvedUrl = resp.url || '';
                 const hasK = resolvedUrl.includes(`k=${row.url_key}`);
-                const hasCk = resolvedUrl.includes(`ck=${row.creative_key}`);
+                const hasCk = row.is_dynamic_creative ? true : resolvedUrl.includes(`ck=${row.creative_key}`);
                 paramsPreserved = hasK && hasCk;
 
                 if (!resp.ok || resp.status >= 400) {
