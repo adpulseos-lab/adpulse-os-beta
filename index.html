@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -90,13 +90,11 @@
             </header>
 
             <div class="p-8 max-w-7xl w-full mx-auto space-y-6">
-                <!-- MAIN WORKSPACE: 4 SECTIONS -->
                 <div id="view-builder" class="space-y-6">
 
-                    <!-- SECTION 1: CAMPAIGN BUILDER -->
+                    <!-- CAMPAIGN BUILDER -->
                     <section class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-6 shadow-xl">
                         <div class="border-b border-slate-800 pb-4">
-                            <span class="text-[11px] font-mono uppercase tracking-wider text-emerald-400">Section 1</span>
                             <h1 class="text-xl font-bold tracking-tight">Campaign Builder</h1>
                             <p class="text-xs text-slate-400">
                                 Curated ISO and taxonomy lists load automatically. <span class="text-slate-200 font-medium">Source, Product, Sub-Product, and Placement</span> start empty and are scoped strictly to your email domain (<span id="builderDomainInline" class="font-mono text-emerald-400">—</span>).
@@ -122,7 +120,7 @@
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            <!-- DOMAIN-SCOPED BLANK FIELD 1: SOURCE -->
+                            <!-- DOMAIN-SCOPED BLANK FIELDS -->
                             <div class="relative combo-wrapper" data-field="source">
                                 <label class="block text-xs text-slate-400 mb-1">Source <span class="text-emerald-400/80">(Domain-only • Blank)</span></label>
                                 <input id="search-source" type="text" placeholder="Type to search or add..." autocomplete="off"
@@ -133,7 +131,6 @@
                                 <span id="preview-source" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
-                            <!-- DOMAIN-SCOPED BLANK FIELD 2: PRODUCT -->
                             <div class="relative combo-wrapper" data-field="product">
                                 <label class="block text-xs text-slate-400 mb-1">Product <span class="text-emerald-400/80">(Domain-only • Blank)</span></label>
                                 <input id="search-product" type="text" placeholder="Type to search or add..." autocomplete="off"
@@ -144,7 +141,6 @@
                                 <span id="preview-product" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
-                            <!-- DOMAIN-SCOPED BLANK FIELD 3: SUB-PRODUCT -->
                             <div class="relative combo-wrapper" data-field="subproduct">
                                 <label class="block text-xs text-slate-400 mb-1">Sub-Product <span class="text-emerald-400/80">(Domain-only • Blank)</span></label>
                                 <input id="search-subproduct" type="text" placeholder="Type to search or add..." autocomplete="off"
@@ -155,7 +151,6 @@
                                 <span id="preview-subproduct" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
-                            <!-- DOMAIN-SCOPED BLANK FIELD 4: PLACEMENT -->
                             <div class="relative combo-wrapper" data-field="placement">
                                 <label class="block text-xs text-slate-400 mb-1">Placement <span class="text-emerald-400/80">(Domain-only • Blank)</span></label>
                                 <input id="search-placement" type="text" placeholder="Type to search or add..." autocomplete="off"
@@ -244,11 +239,10 @@
                         </div>
                     </section>
 
-                    <!-- SECTION 2: CREATIVE ASSETS -->
+                    <!-- CREATIVE ASSETS -->
                     <section class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-5 shadow-xl">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
                             <div>
-                                <span class="text-[11px] font-mono uppercase tracking-wider text-emerald-400">Section 2</span>
                                 <h2 class="text-xl font-bold tracking-tight">Creative Assets</h2>
                                 <p class="text-xs text-slate-400">Upload individual files or a <code class="text-emerald-400">.zip</code> archive (auto-unzipped in browser) and select assets to generate URLs.</p>
                             </div>
@@ -298,13 +292,12 @@
                         </div>
                     </section>
 
-                    <!-- SECTION 3: EXAMPLE URLS -->
+                    <!-- EXAMPLE URLS -->
                     <section class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4 shadow-xl">
                         <div class="flex items-center justify-between border-b border-slate-800 pb-4">
                             <div>
-                                <span class="text-[11px] font-mono uppercase tracking-wider text-emerald-400">Section 3</span>
                                 <h2 class="text-xl font-bold tracking-tight">Example URLs</h2>
-                                <p class="text-xs text-slate-400">Full expanded UTM query string preview (<code class="text-emerald-400">utm_term</code> included unless Dynamic Creative is checked).</p>
+                                <p class="text-xs text-slate-400">Full expanded UTM query string preview.</p>
                             </div>
                             <span id="exampleCountBadge" class="text-xs font-mono text-slate-400">0 URLs</span>
                         </div>
@@ -312,13 +305,12 @@
                         <div id="exampleUrlsList" class="space-y-2.5 max-h-72 overflow-y-auto pr-1"></div>
                     </section>
 
-                    <!-- SECTION 4: FINAL URLS -->
+                    <!-- FINAL URLS -->
                     <section class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4 shadow-xl">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
                             <div>
-                                <span class="text-[11px] font-mono uppercase tracking-wider text-emerald-400">Section 4</span>
                                 <h2 class="text-xl font-bold tracking-tight">Final URLs</h2>
-                                <p class="text-xs text-slate-400">Tokenized production URLs with campaign key (<code class="text-emerald-400">k</code>) and creative key (<code class="text-emerald-400">ck</code> when not Dynamic Creative).</p>
+                                <p class="text-xs text-slate-400">Tokenized production URLs with campaign key (<code class="text-emerald-400">k</code>) and creative key (<code class="text-emerald-400">ck</code>).</p>
                             </div>
                             <button type="button" id="commitAndCsvBtn" onclick="commitHistoryAndExportCsv()"
                                 class="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-semibold text-xs sm:text-sm transition-colors cursor-pointer">
@@ -378,13 +370,11 @@
     </div>
 
     <script>
-        // Replace with your base Supabase Project URL (no /rest/v1/) and anon/public key
-        const SUPABASE_URL = 'https://stouegbesuceggnegeie.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_QUglOE6uDThXZRZ48kEPhA_ifXTfUok';
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Only these 4 fields start empty and are strictly isolated by user email domain
         const DOMAIN_SCOPED_FIELDS = new Set(['source', 'product', 'subproduct', 'placement']);
         const EXHAUSTIVE_PREPOPULATED_FIELDS = ['funnel', 'objective', 'tactic', 'journey', 'medium', 'region', 'state', 'lang'];
         const VOWELS = new Set(['a', 'e', 'i', 'o', 'u']);
@@ -417,7 +407,6 @@
                 .replace(/"/g, '&quot;');
         }
 
-        // 4 chars + any digits; strips vowels unless the input starts with a vowel
         function abbreviate4PlusDigits(rawName) {
             const clean = String(rawName || '').toLowerCase().trim();
             if (!clean) return '';
@@ -511,8 +500,7 @@
             for (const row of (data || [])) {
                 if (!TAXONOMY[row.category]) continue;
                 if (DOMAIN_SCOPED_FIELDS.has(row.category)) {
-                    // Only show domain-scoped entries belonging to the active user's domain
-                    if (row.created_by_domain === activeDomain) {
+                    if ((row.created_by_domain || '').toLowerCase() === activeDomain) {
                         TAXONOMY[row.category].push(row);
                     }
                 } else {
@@ -520,7 +508,6 @@
                 }
             }
 
-            // Pre-populate ONLY the exhaustive locked lists; leave source, product, subproduct, placement blank
             EXHAUSTIVE_PREPOPULATED_FIELDS.forEach(field => {
                 const first = TAXONOMY[field][0];
                 if (first) {
@@ -613,7 +600,6 @@
             if (shouldRender) renderAllOutputs();
         }
 
-        // SECTION 2: CREATIVE ASSETS & ZIP UNPACKING
         function toggleDynamicCreative() {
             const isDco = document.getElementById('f-dynamic-creative').checked;
             document.getElementById('dcoBanner').classList.toggle('hidden', !isDco);
@@ -737,7 +723,6 @@
             }).join('');
         }
 
-        // BUILD PAYLOADS FOR SECTIONS 3 & 4
         function buildGeneratedRecords() {
             const workspace = (document.getElementById('f-workspace').value || '').trim() || 'Default Campaign';
             const rawDest = (document.getElementById('f-dest').value || '').trim() || 'https://example.com';
@@ -792,7 +777,6 @@
                     if (medium) utmObj.searchParams.set('utm_medium', medium);
                     if (campaignSlug) utmObj.searchParams.set('utm_campaign', campaignSlug);
                     if (placement) utmObj.searchParams.set('utm_content', placement);
-                    // Only include utm_term when Dynamic Creative is NOT checked
                     if (!target.isDynamic) {
                         utmObj.searchParams.set('utm_term', target.ck);
                     }
@@ -800,7 +784,6 @@
 
                     const keyObj = new URL(normalizedDest);
                     keyObj.searchParams.set('k', k);
-                    // Only include ck key when Dynamic Creative is NOT checked
                     if (!target.isDynamic) {
                         keyObj.searchParams.set('ck', target.ck);
                     }
@@ -848,8 +831,8 @@
             const finalEl = document.getElementById('finalUrlsList');
 
             if (!records.length) {
-                exampleEl.innerHTML = `<div class="p-4 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-500">Select at least one creative asset in Section 2 (or check Dynamic Creative) to preview Example URLs.</div>`;
-                finalEl.innerHTML = `<div class="p-4 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-500">Select at least one creative asset in Section 2 (or check Dynamic Creative) to preview Final URLs.</div>`;
+                exampleEl.innerHTML = `<div class="p-4 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-500">Select at least one creative asset above (or check Dynamic Creative) to preview Example URLs.</div>`;
+                finalEl.innerHTML = `<div class="p-4 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-500">Select at least one creative asset above (or check Dynamic Creative) to preview Final URLs.</div>`;
                 return;
             }
 
@@ -896,7 +879,6 @@
             }
         }
 
-        // SECTION 4: COMMIT TO DOMAIN HISTORY & GENERATE CSV
         async function commitHistoryAndExportCsv() {
             const statusEl = document.getElementById('commitStatusMessage');
             const btn = document.getElementById('commitAndCsvBtn');
@@ -915,7 +897,7 @@
             }
 
             if (!records[0].source) {
-                statusEl.textContent = 'Please select or add a Source in Section 1 before committing.';
+                statusEl.textContent = 'Please select or add a Source before committing.';
                 statusEl.className = 'text-xs text-amber-400';
                 return;
             }
