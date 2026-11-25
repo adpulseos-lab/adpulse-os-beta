@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdPulse OS - Campaign Builder & LinkRot Beta</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .combo-list::-webkit-scrollbar { width: 6px; }
+        .combo-list::-webkit-scrollbar-track { background: #020617; }
+        .combo-list::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+        .combo-list::-webkit-scrollbar-thumb:hover { background: #10b981; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-emerald-500 selection:text-slate-950">
+    <!-- Beta Login Overlay -->
+    <div id="authGate" class="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5 shadow-2xl">
+            <div class="space-y-1">
+                <span class="text-xs font-mono uppercase tracking-wider text-emerald-400">AdPulse OS • Private Beta</span>
+                <h1 class="text-xl font-bold text-slate-100">Sign in to workspace</h1>
+                <p class="text-xs text-slate-400">Access is restricted to approved beta emails. Teammates on the same email domain share campaign history.</p>
+            </div>
+            <form id="loginForm" onsubmit="handleSignIn(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Work / Beta Email</label>
+                    <input id="loginEmail" type="email" required placeholder="name@company.com"
+                        class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Password</label>
+                    <input id="loginPassword" type="password" required placeholder="••••••••"
+                        class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                </div>
+                <button type="submit" id="loginSubmitBtn"
+                    class="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-semibold text-sm transition-colors cursor-pointer">
+                    Sign in
+                </button>
+                <p id="loginError" class="text-xs text-rose-400 min-h-[1rem]"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App Shell -->
+    <div id="appShell" class="min-h-screen flex hidden">
+        <aside class="w-64 bg-slate-900 border-r border-slate-800 p-4 flex flex-col justify-between hidden lg:flex select-none">
+            <div>
+                <div class="flex items-center gap-3 px-2 mb-8">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-400 flex items-center justify-center text-slate-950 font-bold">AP</div>
+                    <div class="flex items-baseline font-bold tracking-tight text-lg">
+                        <span>AdPulse</span>
+                        <span class="text-emerald-400 text-xs ml-1 font-semibold uppercase tracking-wider">OS</span>
+                    </div>
+                </div>
+                <nav class="space-y-1 text-sm font-medium">
+                    <button onclick="switchView('builder')" id="nav-builder" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-emerald-500/10 text-emerald-400 text-left cursor-pointer">
+                        Campaign builder
+                    </button>
+                    <button onclick="switchView('history')" id="nav-history" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-200 text-left cursor-pointer">
+                        Campaign history & LinkRot
+                    </button>
+                </nav>
+            </div>
+            <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs text-slate-400 space-y-2">
+                <div>
+                    <p class="font-medium text-slate-300">Active Domain</p>
+                    <p id="sidebarDomain" class="text-emerald-400 font-mono truncate">—</p>
+                </div>
+                <button onclick="handleSignOut()" class="w-full py-1.5 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-xs cursor-pointer">
+                    Sign out
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col min-w-0">
+            <header class="h-16 border-b border-slate-800 bg-slate-900/50 backdrop-blur px-6 flex items-center justify-between">
+                <div class="text-sm text-slate-400">
+                    Workspace / <span id="breadcrumb-current" class="text-slate-100 font-medium">Campaign builder</span>
+                </div>
+                <div class="text-right">
+                    <p id="headerUserEmail" class="text-xs font-mono text-emerald-400"></p>
+                    <p id="vocabLoadStatus" class="text-[11px] text-slate-400">Connecting to Supabase...</p>
+                </div>
+            </header>
+
+            <div class="p-8 max-w-7xl w-full mx-auto space-y-6">
+                <div id="view-builder" class="space-y-6">
+                    <div>
+                        <h1 class="text-2xl font-bold tracking-tight">Campaign builder</h1>
+                        <p class="text-sm text-slate-400">Dropdowns loaded live from Supabase. Source starts blank and remembers unique entries per workspace.</p>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-6 shadow-xl">
+                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">Destination URL</label>
+                                <input id="f-dest" type="text" value="https://example.com/landing" oninput="renderPreview()"
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                            </div>
+
+                            <!-- Dynamic Source (Starts Blank, Remembers Unique Options) -->
+                            <div class="relative combo-wrapper" data-field="source">
+                                <label class="block text-xs text-slate-400 mb-1">Source (Blank slate • Type to add)</label>
+                                <input id="search-source" type="text" placeholder="Type new source (e.g. Reddit)..." autocomplete="off"
+                                    onfocus="openCombo('source')" oninput="filterCombo('source')"
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                                <input type="hidden" id="f-source" value="">
+                                <div id="list-source" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
+                                <span id="preview-source" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                            </div>
+
+                            <!-- Curated Locked Dropdowns -->
+                            <div class="relative combo-wrapper" data-field="funnel">
+                                <label class="block text-xs text-slate-400 mb-1">Funnel</label>
+                                <input id="search-funnel" type="text" readonly onfocus="openCombo('funnel')"
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 cursor-pointer">
+                                <input type="hidden" id="f-funnel" value="">
+                                <div id="list-funnel" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
+                                <span id="preview-funnel" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                            </div>
+
+                            <div class="relative combo-wrapper" data-field="objective">
+                                <label class="block text-xs text-slate-400 mb-1">Objective</label>
+                                <input id="search-objective" type="text" readonly onfocus="openCombo('objective')"
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 cursor-pointer">
+                                <input type="hidden" id="f-objective" value="">
+                                <div id="list-objective" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
+                                <span id="preview-objective" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                            </div>
+
+                            <div class="relative combo-wrapper" data-field="tactic">
+                                <label class="block text-xs text-slate-400 mb-1">Tactic</label>
+                                <input id="search-tactic" type="text" readonly onfocus="openCombo('tactic')"
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 cursor-pointer">
+                                <input type="hidden" id="f-tactic" value="">
+                                <div id="list-tactic" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
+                                <span id="preview-tactic" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                            </div>
+
+                            <div class="relative combo-wrapper" data-field="journey">
+                                <label class="block text-xs text-slate-400 mb-1">Journey</label>
+                                <input id="search-journey" type="text" readonly onfocus="openCombo('journey')"
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 cursor-pointer">
+                                <input type="hidden" id="f-journey" value="">
+                                <div id="list-journey" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
+                                <span id="preview-journey" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                            </div>
+
+                            <div class="relative combo-wrapper" data-field="medium">
+                                <label class="block text-xs text-slate-400 mb-1">Medium</label>
+                                <input id="search-medium" type="text" readonly onfocus="openCombo('medium')"
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 cursor-pointer">
+                                <input type="hidden" id="f-medium" value="">
+                                <div id="list-medium" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
+                                <span id="preview-medium" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                            </div>
+
+                            <div class="relative combo-wrapper" data-field="region">
+                                <label class="block text-xs text-slate-400 mb-1">Country (ISO 3166)</label>
+                                <input id="search-region" type="text" placeholder="Search country..." autocomplete="off"
+                                    onfocus="openCombo('region')" oninput="filterCombo('region')"
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                                <input type="hidden" id="f-region" value="">
+                                <div id="list-region" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
+                                <span id="preview-region" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                            </div>
+
+                            <div class="relative combo-wrapper" data-field="state">
+                                <label class="block text-xs text-slate-400 mb-1">State / Province (ISO)</label>
+                                <input id="search-state" type="text" placeholder="Search state/province..." autocomplete="off"
+                                    onfocus="openCombo('state')" oninput="filterCombo('state')"
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                                <input type="hidden" id="f-state" value="">
+                                <div id="list-state" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
+                                <span id="preview-state" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                            </div>
+
+                            <div class="relative combo-wrapper" data-field="lang">
+                                <label class="block text-xs text-slate-400 mb-1">Language (ISO 639-1)</label>
+                                <input id="search-lang" type="text" placeholder="Search language..." autocomplete="off"
+                                    onfocus="openCombo('lang')" oninput="filterCombo('lang')"
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                                <input type="hidden" id="f-lang" value="">
+                                <div id="list-lang" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
+                                <span id="preview-lang" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                            </div>
+
+                            <div class="relative combo-wrapper" data-field="placement">
+                                <label class="block text-xs text-slate-400 mb-1">Placement (4 chars + digits)</label>
+                                <input id="search-placement" type="text" placeholder="Search or add placement..." autocomplete="off"
+                                    onfocus="openCombo('placement')" oninput="filterCombo('placement')"
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                                <input type="hidden" id="f-placement" value="">
+                                <div id="list-placement" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
+                                <span id="preview-placement" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">Creative Name</label>
+                                <input id="f-creative" type="text" value="hero_video_v2" oninput="renderPreview()"
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                                <span id="preview-creative" class="text-[11px] text-emerald-400 mt-1 block font-mono">ck: —</span>
+                            </div>
+                        </div>
+
+                        <div class="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2">
+                            <p class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Final Tokenized URL Preview</p>
+                            <p id="finalTokenizedPreview" class="font-mono text-xs text-emerald-400 break-all"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-history" class="space-y-4 hidden">
+                    <h1 class="text-2xl font-bold tracking-tight">Campaign history & LinkRot Sentinel</h1>
+                    <p class="text-sm text-slate-400">Domain-isolated logs will be wired in Micro-Step 5.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Replace these two placeholders with your Supabase Project URL and anon/public key
+        const SUPABASE_URL = 'https://stouegbesuceggnegeie.supabase.co/rest/v1/';
+        const SUPABASE_ANON_KEY = 'sb_publishable_QUglOE6uDThXZRZ48kEPhA_ifXTfUok';
+
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const DYNAMIC_MEMORY_CATEGORIES = new Set(['source', 'placement']);
+        const VOWELS = new Set(['a', 'e', 'i', 'o', 'u']);
+
+        let TAXONOMY = {
+            source: [],
+            funnel: [],
+            objective: [],
+            tactic: [],
+            journey: [],
+            medium: [],
+            region: [],
+            state: [],
+            lang: [],
+            placement: []
+        };
+
+        let activeUser = null;
+        let activeDomain = '';
+
+        // 4 chars + any digits; drops vowels unless the input starts with a vowel
+        function abbreviate4PlusDigits(rawName) {
+            const clean = String(rawName || '').toLowerCase().trim();
+            if (!clean) return '';
+
+            const startsWithVowel = VOWELS.has(clean[0]);
+            const digits = (clean.match(/[0-9]/g) || []).join('');
+            const lettersOnly = clean.replace(/[^a-z]/g, '');
+
+            let processedLetters = '';
+            if (startsWithVowel) {
+                processedLetters = lettersOnly;
+            } else {
+                processedLetters = lettersOnly
+                    .split('')
+                    .filter((ch, idx) => idx === 0 || !VOWELS.has(ch))
+                    .join('');
+            }
+
+            const base4 = processedLetters.slice(0, 4);
+            return `${base4}${digits}` || digits || 'item';
+        }
+
+        async function handleSignIn(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const errEl = document.getElementById('loginError');
+            const btn = document.getElementById('loginSubmitBtn');
+
+            errEl.textContent = '';
+            btn.disabled = true;
+            btn.textContent = 'Signing in...';
+
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+            btn.disabled = false;
+            btn.textContent = 'Sign in';
+
+            if (error) {
+                errEl.textContent = error.message;
+                return;
+            }
+            await onAuthenticated(data.user);
+        }
+
+        async function handleSignOut() {
+            await supabaseClient.auth.signOut();
+            activeUser = null;
+            activeDomain = '';
+            document.getElementById('appShell').classList.add('hidden');
+            document.getElementById('authGate').classList.remove('hidden');
+        }
+
+        async function onAuthenticated(user) {
+            if (!user || !user.email) return;
+            activeUser = user;
+            activeDomain = user.email.toLowerCase().split('@')[1] || '';
+
+            document.getElementById('headerUserEmail').textContent = user.email;
+            document.getElementById('sidebarDomain').textContent = activeDomain;
+            document.getElementById('authGate').classList.add('hidden');
+            document.getElementById('appShell').classList.remove('hidden');
+
+            await loadTaxonomyFromSupabase();
+        }
+
+        async function loadTaxonomyFromSupabase() {
+            const statusEl = document.getElementById('vocabLoadStatus');
+            statusEl.textContent = 'Loading controlled_vocab...';
+
+            const { data, error } = await supabaseClient
+                .from('controlled_vocab')
+                .select('category, display_name, abbreviation, is_locked_dropdown, created_by_domain')
+                .order('display_name', { ascending: true });
+
+            if (error) {
+                statusEl.textContent = `Error: ${error.message}`;
+                return;
+            }
+
+            // Reset arrays; 'source' intentionally remains empty until users add unique sources
+            Object.keys(TAXONOMY).forEach(k => { TAXONOMY[k] = []; });
+
+            for (const row of (data || [])) {
+                if (!TAXONOMY[row.category]) continue;
+                // Keep source & placement scoped to global or user's own domain
+                if (DYNAMIC_MEMORY_CATEGORIES.has(row.category) && row.created_by_domain && row.created_by_domain !== activeDomain) {
+                    continue;
+                }
+                TAXONOMY[row.category].push(row);
+            }
+
+            // Set initial defaults for locked dropdowns (leaving source blank)
+            ['funnel', 'objective', 'tactic', 'journey', 'medium', 'region', 'state', 'lang', 'placement'].forEach(field => {
+                const first = TAXONOMY[field][0];
+                if (first) {
+                    selectComboItem(field, first.display_name, first.abbreviation, false);
+                }
+            });
+
+            statusEl.textContent = `Loaded ${data.length} vocab rows • Source options: ${TAXONOMY.source.length}`;
+            renderPreview();
+        }
+
+        function openCombo(field) {
+            document.querySelectorAll('.combo-list').forEach(el => el.classList.add('hidden'));
+            const rawVal = document.getElementById(`search-${field}`).value;
+            renderComboList(field, TAXONOMY[field] || [], rawVal);
+            document.getElementById(`list-${field}`).classList.remove('hidden');
+        }
+
+        function filterCombo(field) {
+            const rawVal = document.getElementById(`search-${field}`).value;
+            const q = rawVal.toLowerCase().trim();
+            const matches = (TAXONOMY[field] || []).filter(item =>
+                item.display_name.toLowerCase().includes(q) || item.abbreviation.toLowerCase().includes(q)
+            );
+            renderComboList(field, matches, rawVal.trim());
+            document.getElementById(`list-${field}`).classList.remove('hidden');
+        }
+
+        function renderComboList(field, items, rawQuery) {
+            const listEl = document.getElementById(`list-${field}`);
+            let html = items.map(item => `
+                <button type="button"
+                    onclick="selectComboItem('${field}', '${item.display_name.replace(/'/g, "\\'")}', '${item.abbreviation.replace(/'/g, "\\'")}', true)"
+                    class="w-full px-3 py-2 text-left text-xs hover:bg-slate-800 flex items-center justify-between cursor-pointer">
+                    <span class="text-slate-200 truncate">${item.display_name}</span>
+                    <span class="text-emerald-400 font-mono ml-2">${item.abbreviation}</span>
+                </button>
+            `).join('');
+
+            if (!items.length && !rawQuery) {
+                html += `<div class="px-3 py-2 text-xs text-slate-500">Empty — type a unique value to add.</div>`;
+            }
+
+            if (DYNAMIC_MEMORY_CATEGORIES.has(field) && rawQuery) {
+                const exists = (TAXONOMY[field] || []).some(
+                    i => i.display_name.trim().toLowerCase() === rawQuery.toLowerCase()
+                );
+                if (!exists) {
+                    const abbr = abbreviate4PlusDigits(rawQuery);
+                    html += `
+                        <button type="button"
+                            onclick="saveDynamicVocab('${field}', '${rawQuery.replace(/'/g, "\\'")}', '${abbr}')"
+                            class="w-full px-3 py-2 text-left text-xs bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border-t border-slate-700 cursor-pointer">
+                            + Save "${rawQuery}" → code: <span class="font-mono">${abbr}</span>
+                        </button>
+                    `;
+                }
+            }
+
+            listEl.innerHTML = html;
+        }
+
+        async function saveDynamicVocab(field, displayName, abbreviation) {
+            const { data, error } = await supabaseClient
+                .from('controlled_vocab')
+                .insert({
+                    category: field,
+                    display_name: displayName,
+                    abbreviation,
+                    is_locked_dropdown: false,
+                    created_by_domain: activeDomain
+                })
+                .select()
+                .single();
+
+            if (error) {
+                alert(`Could not save option: ${error.message}`);
+                return;
+            }
+
+            TAXONOMY[field].unshift(data);
+            selectComboItem(field, data.display_name, data.abbreviation, true);
+            document.getElementById('vocabLoadStatus').textContent = `Saved unique ${field}: ${data.display_name} (${data.abbreviation})`;
+        }
+
+        function selectComboItem(field, displayName, abbreviation, shouldRender = true) {
+            document.getElementById(`search-${field}`).value = displayName;
+            document.getElementById(`f-${field}`).value = abbreviation;
+            document.getElementById(`preview-${field}`).textContent = `URL code: ${abbreviation}`;
+            document.getElementById(`list-${field}`).classList.add('hidden');
+            if (shouldRender) renderPreview();
+        }
+
+        function renderPreview() {
+            const dest = document.getElementById('f-dest').value.trim() || 'https://example.com';
+            const src = document.getElementById('f-source').value || 'none';
+            const funnel = document.getElementById('f-funnel').value || 'none';
+            const obj = document.getElementById('f-objective').value || 'none';
+            const tactic = document.getElementById('f-tactic').value || 'none';
+            const journey = document.getElementById('f-journey').value || 'none';
+            const medium = document.getElementById('f-medium').value || 'none';
+            const region = document.getElementById('f-region').value || 'none';
+            const state = document.getElementById('f-state').value || 'none';
+            const lang = document.getElementById('f-lang').value || 'none';
+            const placement = document.getElementById('f-placement').value || 'none';
+            const creativeRaw = document.getElementById('f-creative').value;
+            const ck = abbreviate4PlusDigits(creativeRaw) || 'crtv';
+
+            const payloadString = `${src}|${medium}|${funnel}|${obj}|${tactic}|${journey}|${region}|${state}|${lang}|${placement}`;
+            let hash = 0;
+            for (let i = 0; i < payloadString.length; i++) {
+                hash = ((hash << 5) - hash) + payloadString.charCodeAt(i);
+                hash |= 0;
+            }
+            const k = Math.abs(hash).toString(36);
+            document.getElementById('preview-creative').textContent = `ck: ${ck}`;
+
+            const sep = dest.includes('?') ? '&' : '?';
+            document.getElementById('finalTokenizedPreview').textContent = `${dest}${sep}k=${k}&ck=${ck}`;
+        }
+
+        function switchView(viewName) {
+            ['builder', 'history'].forEach(v => {
+                document.getElementById(`view-${v}`).classList.toggle('hidden', v !== viewName);
+                const nav = document.getElementById(`nav-${v}`);
+                nav.className = v === viewName
+                    ? 'w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-emerald-500/10 text-emerald-400 text-left cursor-pointer'
+                    : 'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-200 text-left cursor-pointer';
+            });
+            document.getElementById('breadcrumb-current').textContent =
+                viewName === 'builder' ? 'Campaign builder' : 'Campaign history & LinkRot';
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.combo-wrapper')) {
+                document.querySelectorAll('.combo-list').forEach(el => el.classList.add('hidden'));
+            }
+        });
+
+        (async () => {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session?.user) {
+                await onAuthenticated(session.user);
+            }
+        })();
+    </script>
+</body>
+</html>
