@@ -21,7 +21,7 @@
             <div class="space-y-1">
                 <span class="text-xs font-mono uppercase tracking-wider text-emerald-400">AdPulse OS • Private Beta</span>
                 <h1 class="text-xl font-bold text-slate-100">Sign in to workspace</h1>
-                <p class="text-xs text-slate-400">Access is restricted to approved beta emails. Teammates on the same email domain share campaign history.</p>
+                <p class="text-xs text-slate-400">Access is restricted to approved beta emails. Users on the same email domain share custom taxonomies and campaign history.</p>
             </div>
             <form id="loginForm" onsubmit="handleSignIn(event)" class="space-y-4">
                 <div>
@@ -65,7 +65,7 @@
             </div>
             <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs text-slate-400 space-y-2">
                 <div>
-                    <p class="font-medium text-slate-300">Active Domain</p>
+                    <p class="font-medium text-slate-300">Active Domain Scope</p>
                     <p id="sidebarDomain" class="text-emerald-400 font-mono truncate">—</p>
                 </div>
                 <button type="button" onclick="handleSignOut()" class="w-full py-1.5 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-xs cursor-pointer">
@@ -89,23 +89,24 @@
                 </div>
             </header>
 
-            <div class="p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
+            <div class="p-8 max-w-7xl w-full mx-auto space-y-6">
                 <!-- MAIN WORKSPACE: 4 SECTIONS -->
                 <div id="view-builder" class="space-y-6">
+
                     <!-- SECTION 1: CAMPAIGN BUILDER -->
-                    <section class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-5 shadow-xl">
-                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                            <div>
-                                <span class="text-[11px] font-mono uppercase tracking-wider text-emerald-400">Section 1</span>
-                                <h2 class="text-lg font-bold text-slate-100">Campaign Builder</h2>
-                            </div>
-                            <p class="text-xs text-slate-400">Source &amp; Placement start blank; all other dropdowns use exhaustive controlled vocabularies.</p>
+                    <section class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-6 shadow-xl">
+                        <div class="border-b border-slate-800 pb-4">
+                            <span class="text-[11px] font-mono uppercase tracking-wider text-emerald-400">Section 1</span>
+                            <h1 class="text-xl font-bold tracking-tight">Campaign Builder</h1>
+                            <p class="text-xs text-slate-400">
+                                Curated ISO and taxonomy lists load automatically. <span class="text-slate-200 font-medium">Source, Product, Sub-Product, and Placement</span> start empty and are scoped strictly to your email domain (<span id="builderDomainInline" class="font-mono text-emerald-400">—</span>).
+                            </p>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label class="block text-xs text-slate-400 mb-1">Campaign Workspace / Label</label>
-                                <input id="f-workspace" type="text" value="Q4 Acquisition" oninput="renderAllOutputs()"
+                                <input id="f-workspace" type="text" value="Default Campaign" oninput="renderAllOutputs()"
                                     class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
                             </div>
                             <div>
@@ -115,16 +116,16 @@
                             </div>
                             <div>
                                 <label class="block text-xs text-slate-400 mb-1">Event / Promo Slug (Optional)</label>
-                                <input id="f-event" type="text" placeholder="e.g. black_friday_26" oninput="renderAllOutputs()"
+                                <input id="f-event" type="text" placeholder="e.g. summer_promo_26" oninput="renderAllOutputs()"
                                     class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                            <!-- Source (Starts Blank, Remembers Unique Entries) -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <!-- DOMAIN-SCOPED BLANK FIELD 1: SOURCE -->
                             <div class="relative combo-wrapper" data-field="source">
-                                <label class="block text-xs text-slate-400 mb-1">Source (Blank slate)</label>
-                                <input id="search-source" type="text" placeholder="Type source..." autocomplete="off"
+                                <label class="block text-xs text-slate-400 mb-1">Source <span class="text-emerald-400/80">(Domain-only • Blank)</span></label>
+                                <input id="search-source" type="text" placeholder="Type to search or add..." autocomplete="off"
                                     onfocus="openCombo('source')" oninput="filterCombo('source')"
                                     class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
                                 <input type="hidden" id="f-source" value="">
@@ -132,10 +133,32 @@
                                 <span id="preview-source" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
-                            <!-- Placement (Starts Blank, Remembers Unique Entries) -->
+                            <!-- DOMAIN-SCOPED BLANK FIELD 2: PRODUCT -->
+                            <div class="relative combo-wrapper" data-field="product">
+                                <label class="block text-xs text-slate-400 mb-1">Product <span class="text-emerald-400/80">(Domain-only • Blank)</span></label>
+                                <input id="search-product" type="text" placeholder="Type to search or add..." autocomplete="off"
+                                    onfocus="openCombo('product')" oninput="filterCombo('product')"
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                                <input type="hidden" id="f-product" value="">
+                                <div id="list-product" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
+                                <span id="preview-product" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                            </div>
+
+                            <!-- DOMAIN-SCOPED BLANK FIELD 3: SUB-PRODUCT -->
+                            <div class="relative combo-wrapper" data-field="subproduct">
+                                <label class="block text-xs text-slate-400 mb-1">Sub-Product <span class="text-emerald-400/80">(Domain-only • Blank)</span></label>
+                                <input id="search-subproduct" type="text" placeholder="Type to search or add..." autocomplete="off"
+                                    onfocus="openCombo('subproduct')" oninput="filterCombo('subproduct')"
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                                <input type="hidden" id="f-subproduct" value="">
+                                <div id="list-subproduct" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
+                                <span id="preview-subproduct" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                            </div>
+
+                            <!-- DOMAIN-SCOPED BLANK FIELD 4: PLACEMENT -->
                             <div class="relative combo-wrapper" data-field="placement">
-                                <label class="block text-xs text-slate-400 mb-1">Placement (Blank slate)</label>
-                                <input id="search-placement" type="text" placeholder="Type placement..." autocomplete="off"
+                                <label class="block text-xs text-slate-400 mb-1">Placement <span class="text-emerald-400/80">(Domain-only • Blank)</span></label>
+                                <input id="search-placement" type="text" placeholder="Type to search or add..." autocomplete="off"
                                     onfocus="openCombo('placement')" oninput="filterCombo('placement')"
                                     class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
                                 <input type="hidden" id="f-placement" value="">
@@ -143,7 +166,7 @@
                                 <span id="preview-placement" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
-                            <!-- Funnel -->
+                            <!-- EXHAUSTIVE PRE-POPULATED LISTS -->
                             <div class="relative combo-wrapper" data-field="funnel">
                                 <label class="block text-xs text-slate-400 mb-1">Funnel</label>
                                 <input id="search-funnel" type="text" readonly onfocus="openCombo('funnel')"
@@ -153,7 +176,6 @@
                                 <span id="preview-funnel" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
-                            <!-- Objective -->
                             <div class="relative combo-wrapper" data-field="objective">
                                 <label class="block text-xs text-slate-400 mb-1">Objective</label>
                                 <input id="search-objective" type="text" readonly onfocus="openCombo('objective')"
@@ -163,7 +185,6 @@
                                 <span id="preview-objective" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
-                            <!-- Tactic -->
                             <div class="relative combo-wrapper" data-field="tactic">
                                 <label class="block text-xs text-slate-400 mb-1">Tactic</label>
                                 <input id="search-tactic" type="text" readonly onfocus="openCombo('tactic')"
@@ -173,7 +194,6 @@
                                 <span id="preview-tactic" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
-                            <!-- Journey -->
                             <div class="relative combo-wrapper" data-field="journey">
                                 <label class="block text-xs text-slate-400 mb-1">Journey</label>
                                 <input id="search-journey" type="text" readonly onfocus="openCombo('journey')"
@@ -183,7 +203,6 @@
                                 <span id="preview-journey" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
-                            <!-- Medium -->
                             <div class="relative combo-wrapper" data-field="medium">
                                 <label class="block text-xs text-slate-400 mb-1">Medium</label>
                                 <input id="search-medium" type="text" readonly onfocus="openCombo('medium')"
@@ -193,7 +212,6 @@
                                 <span id="preview-medium" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
-                            <!-- Country / Region -->
                             <div class="relative combo-wrapper" data-field="region">
                                 <label class="block text-xs text-slate-400 mb-1">Country (ISO 3166)</label>
                                 <input id="search-region" type="text" placeholder="Search country..." autocomplete="off"
@@ -204,7 +222,6 @@
                                 <span id="preview-region" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
-                            <!-- State / Province -->
                             <div class="relative combo-wrapper" data-field="state">
                                 <label class="block text-xs text-slate-400 mb-1">State / Province (ISO)</label>
                                 <input id="search-state" type="text" placeholder="Search state/province..." autocomplete="off"
@@ -215,7 +232,6 @@
                                 <span id="preview-state" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
-                            <!-- Language -->
                             <div class="relative combo-wrapper" data-field="lang">
                                 <label class="block text-xs text-slate-400 mb-1">Language (ISO 639-1)</label>
                                 <input id="search-lang" type="text" placeholder="Search language..." autocomplete="off"
@@ -230,93 +246,89 @@
 
                     <!-- SECTION 2: CREATIVE ASSETS -->
                     <section class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-5 shadow-xl">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
                             <div>
                                 <span class="text-[11px] font-mono uppercase tracking-wider text-emerald-400">Section 2</span>
-                                <h2 class="text-lg font-bold text-slate-100">Creative Assets</h2>
+                                <h2 class="text-xl font-bold tracking-tight">Creative Assets</h2>
+                                <p class="text-xs text-slate-400">Upload individual files or a <code class="text-emerald-400">.zip</code> archive (auto-unzipped in browser) and select assets to generate URLs.</p>
                             </div>
-                            <label class="inline-flex items-center gap-2.5 cursor-pointer select-none bg-slate-950 border border-slate-800 px-3.5 py-2 rounded-lg">
+                            <label class="inline-flex items-center gap-2.5 cursor-pointer select-none bg-slate-950 border border-slate-800 px-3.5 py-2.5 rounded-lg">
                                 <input id="f-dynamic-creative" type="checkbox" onchange="toggleDynamicCreative()"
                                     class="w-4 h-4 accent-emerald-500 rounded cursor-pointer">
-                                <span class="text-xs font-semibold text-slate-200">Dynamic Creative (Omits utm_term &amp; ck key)</span>
+                                <span class="text-xs font-semibold text-slate-200">Dynamic Creative (No <code class="text-emerald-400">utm_term</code> or <code class="text-emerald-400">ck</code>)</span>
                             </label>
                         </div>
 
                         <div id="dcoBanner" class="hidden p-3.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-300">
-                            Dynamic Creative is enabled. Individual creative asset selection is bypassed and URLs will be generated without <code class="font-mono">utm_term</code> or a <code class="font-mono">ck</code> parameter.
+                            <strong>Dynamic Creative Enabled:</strong> Asset-level <code class="font-mono">utm_term</code> and <code class="font-mono">ck</code> keys are omitted from both Example URLs and Final URLs.
                         </div>
 
-                        <div id="creativeWorkspace" class="space-y-4">
+                        <div id="assetUploadControls" class="space-y-4">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <!-- Upload Individual Assets or ZIP -->
-                                <label class="flex flex-col items-center justify-center p-5 border-2 border-dashed border-slate-700 hover:border-emerald-500/70 rounded-xl bg-slate-950/60 cursor-pointer transition-colors">
-                                    <span class="text-xs font-semibold text-slate-200">Upload individual files or a .ZIP archive</span>
-                                    <span class="text-[11px] text-slate-400 mt-1">ZIP files are unpacked automatically in your browser so you can select assets</span>
-                                    <input id="creativeFileInput" type="file" multiple accept="image/*,video/*,.zip,application/zip"
-                                        onchange="handleCreativeFilesUpload(event)" class="hidden">
+                                <label class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-700 hover:border-emerald-500 rounded-xl bg-slate-950/60 cursor-pointer transition-colors">
+                                    <span class="text-xs font-semibold text-slate-200">Upload Individual Files or .ZIP Archive</span>
+                                    <span class="text-[11px] text-slate-400 mt-1">Select images, videos, HTML5 banners, or .zip packages</span>
+                                    <input id="creativeFileInput" type="file" multiple accept=".zip,image/*,video/*,.html,.pdf"
+                                        onchange="handleAssetFilesUpload(event)" class="hidden">
                                 </label>
 
-                                <!-- Manual Add -->
-                                <div class="flex flex-col justify-center p-5 border border-slate-800 rounded-xl bg-slate-950/60 space-y-2">
-                                    <label class="text-xs font-semibold text-slate-200">Or add creative asset name manually</label>
+                                <div class="flex flex-col justify-center p-4 border border-slate-800 rounded-xl bg-slate-950/60 space-y-2">
+                                    <label class="text-xs text-slate-400">Or enter a creative asset name manually:</label>
                                     <div class="flex gap-2">
-                                        <input id="manualCreativeInput" type="text" placeholder="e.g. hero_video_9x16_v1"
-                                            onkeydown="if(event.key==='Enter'){event.preventDefault();addManualCreative();}"
+                                        <input id="manualCreativeInput" type="text" placeholder="e.g. hero_banner_300x250_v1"
+                                            onkeydown="if(event.key==='Enter'){event.preventDefault();addManualCreativeAsset();}"
                                             class="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
-                                        <button type="button" onclick="addManualCreative()"
-                                            class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-emerald-400 cursor-pointer">
+                                        <button type="button" onclick="addManualCreativeAsset()"
+                                            class="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-emerald-400 cursor-pointer">
                                             + Add
                                         </button>
                                     </div>
-                                    <p id="zipExtractStatus" class="text-[11px] text-slate-400 min-h-[1rem]"></p>
                                 </div>
                             </div>
 
-                            <!-- Extracted / Uploaded Selectable Assets List -->
-                            <div class="border border-slate-800 rounded-xl bg-slate-950 overflow-hidden">
-                                <div class="px-4 py-2.5 bg-slate-900/80 border-b border-slate-800 flex items-center justify-between text-xs">
-                                    <span class="font-medium text-slate-300">Extracted &amp; Available Assets (Tick assets to generate URLs)</span>
-                                    <div class="flex items-center gap-3">
-                                        <button type="button" onclick="toggleSelectAllCreatives(true)" class="text-emerald-400 hover:underline cursor-pointer">Select all</button>
-                                        <button type="button" onclick="toggleSelectAllCreatives(false)" class="text-slate-400 hover:underline cursor-pointer">Deselect all</button>
-                                    </div>
+                            <div class="flex items-center justify-between text-xs text-slate-400">
+                                <span id="assetUploadStatus">No files uploaded yet. Select assets below to include in URL generation.</span>
+                                <div class="flex gap-3">
+                                    <button type="button" onclick="setAllAssetsSelected(true)" class="text-emerald-400 hover:underline cursor-pointer">Select all</button>
+                                    <button type="button" onclick="setAllAssetsSelected(false)" class="text-slate-400 hover:underline cursor-pointer">Deselect all</button>
                                 </div>
-                                <div id="creativeAssetsList" class="divide-y divide-slate-800/70 max-h-60 overflow-y-auto"></div>
                             </div>
+
+                            <div id="creativeAssetsTable" class="divide-y divide-slate-800 border border-slate-800 rounded-xl bg-slate-950 overflow-hidden"></div>
                         </div>
                     </section>
 
-                    <!-- SECTION 3: EXAMPLE URLS (FULL UTM URLS) -->
+                    <!-- SECTION 3: EXAMPLE URLS -->
                     <section class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4 shadow-xl">
-                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-4">
                             <div>
                                 <span class="text-[11px] font-mono uppercase tracking-wider text-emerald-400">Section 3</span>
-                                <h2 class="text-lg font-bold text-slate-100">Example URLs (Full UTM Structure)</h2>
+                                <h2 class="text-xl font-bold tracking-tight">Example URLs</h2>
+                                <p class="text-xs text-slate-400">Full expanded UTM query string preview (<code class="text-emerald-400">utm_term</code> included unless Dynamic Creative is checked).</p>
                             </div>
-                            <span class="text-xs text-slate-400">Includes <code class="text-emerald-400 font-mono">utm_term</code> only when Dynamic Creative is unchecked</span>
+                            <span id="exampleCountBadge" class="text-xs font-mono text-slate-400">0 URLs</span>
                         </div>
-                        <div id="exampleUtmUrlsContainer" class="space-y-2 max-h-64 overflow-y-auto pr-1"></div>
+
+                        <div id="exampleUrlsList" class="space-y-2.5 max-h-72 overflow-y-auto pr-1"></div>
                     </section>
 
-                    <!-- SECTION 4: FINAL URLS (TOKENIZED KEY URLS + CSV + COMMIT TO HISTORY) -->
+                    <!-- SECTION 4: FINAL URLS -->
                     <section class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4 shadow-xl">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
                             <div>
                                 <span class="text-[11px] font-mono uppercase tracking-wider text-emerald-400">Section 4</span>
-                                <h2 class="text-lg font-bold text-slate-100">Final URLs (Tokenized Keys)</h2>
+                                <h2 class="text-xl font-bold tracking-tight">Final URLs</h2>
+                                <p class="text-xs text-slate-400">Tokenized production URLs with campaign key (<code class="text-emerald-400">k</code>) and creative key (<code class="text-emerald-400">ck</code> when not Dynamic Creative).</p>
                             </div>
-                            <span id="sharedCampaignKeyBadge" class="text-xs font-mono text-emerald-400"></span>
-                        </div>
-
-                        <div id="finalKeyUrlsContainer" class="space-y-2 max-h-64 overflow-y-auto pr-1"></div>
-
-                        <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-800">
-                            <span id="commitStatusMessage" class="text-xs text-slate-400"></span>
-                            <button type="button" id="generateCsvAndCommitBtn" onclick="generateCsvAndCommitHistory()"
-                                class="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-semibold text-sm transition-colors cursor-pointer">
-                                Generate CSV &amp; Commit URLs to History
+                            <button type="button" id="commitAndCsvBtn" onclick="commitHistoryAndExportCsv()"
+                                class="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-semibold text-xs sm:text-sm transition-colors cursor-pointer">
+                                Commit to Domain History &amp; Export CSV
                             </button>
                         </div>
+
+                        <p id="commitStatusMessage" class="text-xs text-slate-400 min-h-[1rem]"></p>
+
+                        <div id="finalUrlsList" class="space-y-2.5 max-h-72 overflow-y-auto pr-1"></div>
                     </section>
                 </div>
 
@@ -326,17 +338,13 @@
                         <div>
                             <h1 class="text-2xl font-bold tracking-tight">Campaign history &amp; LinkRot Sentinel</h1>
                             <p class="text-sm text-slate-400">
-                                Visible only to signed-in users on domain <span id="historyDomainLabel" class="font-mono text-emerald-400">—</span>.
+                                Accessible only to signed-in users on domain <span id="historyDomainLabel" class="font-mono text-emerald-400">—</span>.
                             </p>
                         </div>
                         <div class="flex flex-wrap items-center gap-3">
                             <input id="historySearchInput" type="text" placeholder="Filter by creator, key, or URL..."
                                 oninput="renderHistoryRows()"
                                 class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
-                            <button type="button" onclick="exportHistoryCsv()"
-                                class="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-emerald-400 cursor-pointer">
-                                ↓ Export History CSV
-                            </button>
                             <button type="button" onclick="loadDomainHistory()"
                                 class="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-medium text-slate-200 cursor-pointer">
                                 ↻ Refresh
@@ -348,12 +356,12 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="border-b border-slate-800 text-xs text-slate-400 uppercase tracking-wider">
-                                    <th class="py-3 px-3">Keys</th>
+                                    <th class="py-3 px-3">Keys (k / ck)</th>
                                     <th class="py-3 px-3">Creative / Mode</th>
                                     <th class="py-3 px-3">Final URL</th>
-                                    <th class="py-3 px-3">Example UTM URL</th>
                                     <th class="py-3 px-3">Created By</th>
-                                    <th class="py-3 px-3">LinkRot</th>
+                                    <th class="py-3 px-3">LinkRot Status</th>
+                                    <th class="py-3 px-3">Created At</th>
                                     <th class="py-3 px-3 text-right">Action</th>
                                 </tr>
                             </thead>
@@ -371,86 +379,32 @@
 
     <script>
         // Replace with your base Supabase Project URL (no /rest/v1/) and anon/public key
-        const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+        const SUPABASE_URL = 'https://stouegbesuceggnegeie.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_QUglOE6uDThXZRZ48kEPhA_ifXTfUok';
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const DYNAMIC_MEMORY_CATEGORIES = new Set(['source', 'placement']);
+        // Only these 4 fields start empty and are strictly isolated by user email domain
+        const DOMAIN_SCOPED_FIELDS = new Set(['source', 'product', 'subproduct', 'placement']);
+        const EXHAUSTIVE_PREPOPULATED_FIELDS = ['funnel', 'objective', 'tactic', 'journey', 'medium', 'region', 'state', 'lang'];
         const VOWELS = new Set(['a', 'e', 'i', 'o', 'u']);
-
-        // Exhaustive baseline dictionaries (Source & Placement intentionally start blank)
-        const EXHAUSTIVE_DEFAULTS = {
-            funnel: [
-                { display_name: 'Awareness', abbreviation: 'awr' },
-                { display_name: 'Consideration', abbreviation: 'csr' },
-                { display_name: 'Conversion', abbreviation: 'cvr' },
-                { display_name: 'Retention', abbreviation: 'rtt' }
-            ],
-            objective: [
-                { display_name: 'Brand Recall', abbreviation: 'brl' },
-                { display_name: 'Traffic', abbreviation: 'trf' },
-                { display_name: 'Joins', abbreviation: 'v2j' },
-                { display_name: 'FTD', abbreviation: 'ftd' },
-                { display_name: 'Deposit', abbreviation: 'dps' }
-            ],
-            tactic: [
-                { display_name: 'Prospecting', abbreviation: 'prs' },
-                { display_name: 'Retargeting', abbreviation: 'rtg' },
-                { display_name: 'Audience Targeting', abbreviation: 'aud' },
-                { display_name: 'Customer Audience Targeting', abbreviation: 'cat' },
-                { display_name: 'Reactivation', abbreviation: 'rvn' }
-            ],
-            journey: [
-                { display_name: 'New User', abbreviation: 'nu' },
-                { display_name: 'Exposed to CTV', abbreviation: 'ectv' },
-                { display_name: 'Exposed to Audio', abbreviation: 'eaud' },
-                { display_name: 'Exposed to Prospecting', abbreviation: 'eprs' },
-                { display_name: 'Exposed to DOOH', abbreviation: 'edooh' },
-                { display_name: 'Web Visitor', abbreviation: 'vst' },
-                { display_name: 'Join to Deposit', abbreviation: 'j2d' },
-                { display_name: 'Subsequent Deposit', abbreviation: '2dds' },
-                { display_name: '.NET to Operator', abbreviation: 'nto' },
-                { display_name: '0 to 29 days since last login', abbreviation: '0_29ll' },
-                { display_name: '30 to 59 days since last login', abbreviation: '30_59ll' },
-                { display_name: '60 to 89 days since last login', abbreviation: '60_89ll' },
-                { display_name: '90+ days since last login', abbreviation: '90_ll' },
-                { display_name: '0 to 29 days since last deposit', abbreviation: '0_29ld' },
-                { display_name: '30 to 59 days since last deposit', abbreviation: '30_59ld' },
-                { display_name: '60 to 89 days since last deposit', abbreviation: '60_89ld' },
-                { display_name: '90+ days since last deposit', abbreviation: '90_ld' }
-            ],
-            medium: [
-                { display_name: 'Paid Search', abbreviation: 'cpc' },
-                { display_name: 'Video', abbreviation: 'video' },
-                { display_name: 'Display', abbreviation: 'display' },
-                { display_name: 'Paid Social', abbreviation: 'paid' },
-                { display_name: 'Email', abbreviation: 'email' },
-                { display_name: 'Referral', abbreviation: 'referral' },
-                { display_name: 'Affiliates', abbreviation: 'affiliates' },
-                { display_name: 'QR', abbreviation: 'qr' },
-                { display_name: 'SMS', abbreviation: 'sms' },
-                { display_name: 'Organic Social', abbreviation: 'social' }
-            ]
-        };
 
         let TAXONOMY = {
             source: [],
+            product: [],
+            subproduct: [],
             placement: [],
-            funnel: [...EXHAUSTIVE_DEFAULTS.funnel],
-            objective: [...EXHAUSTIVE_DEFAULTS.objective],
-            tactic: [...EXHAUSTIVE_DEFAULTS.tactic],
-            journey: [...EXHAUSTIVE_DEFAULTS.journey],
-            medium: [...EXHAUSTIVE_DEFAULTS.medium],
+            funnel: [],
+            objective: [],
+            tactic: [],
+            journey: [],
+            medium: [],
             region: [],
             state: [],
             lang: []
         };
 
-        let uploadedCreatives = [
-            { id: 'cr-default-1', name: 'hero_video_v1.mp4', sourceType: 'Preset', selected: true }
-        ];
-
+        let uploadedCreativeAssets = [];
         let activeUser = null;
         let activeDomain = '';
         let historyRecords = [];
@@ -463,25 +417,31 @@
                 .replace(/"/g, '&quot;');
         }
 
-        function stripFileExtension(filename) {
-            return String(filename || '').replace(/\.[^/.]+$/, '');
-        }
-
-        // 4 chars + any digits; drops vowels unless the input starts with a vowel
+        // 4 chars + any digits; strips vowels unless the input starts with a vowel
         function abbreviate4PlusDigits(rawName) {
-            const clean = stripFileExtension(rawName).toLowerCase().trim();
+            const clean = String(rawName || '').toLowerCase().trim();
             if (!clean) return '';
 
             const startsWithVowel = VOWELS.has(clean[0]);
             const digits = (clean.match(/[0-9]/g) || []).join('');
             const lettersOnly = clean.replace(/[^a-z]/g, '');
 
-            const processedLetters = startsWithVowel
-                ? lettersOnly
-                : lettersOnly.split('').filter((ch, idx) => idx === 0 || !VOWELS.has(ch)).join('');
+            let processedLetters = '';
+            if (startsWithVowel) {
+                processedLetters = lettersOnly;
+            } else {
+                processedLetters = lettersOnly
+                    .split('')
+                    .filter((ch, idx) => idx === 0 || !VOWELS.has(ch))
+                    .join('');
+            }
 
             const base4 = processedLetters.slice(0, 4);
             return `${base4}${digits}` || digits || 'item';
+        }
+
+        function stripExtension(filename) {
+            return String(filename || '').replace(/\.[^/.]+$/, '');
         }
 
         async function handleSignIn(event) {
@@ -523,10 +483,11 @@
 
             document.getElementById('headerUserEmail').textContent = user.email;
             document.getElementById('sidebarDomain').textContent = activeDomain;
+            document.getElementById('builderDomainInline').textContent = activeDomain;
             document.getElementById('authGate').classList.add('hidden');
             document.getElementById('appShell').classList.remove('hidden');
 
-            renderCreativeAssetsList();
+            renderCreativeAssetsTable();
             await loadTaxonomyFromSupabase();
             await loadDomainHistory();
         }
@@ -541,41 +502,33 @@
                 .order('display_name', { ascending: true });
 
             if (error) {
-                statusEl.textContent = `Vocab warning: ${error.message}`;
+                statusEl.textContent = `Error: ${error.message}`;
                 return;
             }
 
-            // Reset dynamic categories to empty; keep exhaustive defaults for locked dropdowns and merge DB rows
-            TAXONOMY.source = [];
-            TAXONOMY.placement = [];
-            TAXONOMY.region = [];
-            TAXONOMY.state = [];
-            TAXONOMY.lang = [];
+            Object.keys(TAXONOMY).forEach(k => { TAXONOMY[k] = []; });
 
             for (const row of (data || [])) {
                 if (!TAXONOMY[row.category]) continue;
-                if (DYNAMIC_MEMORY_CATEGORIES.has(row.category)) {
-                    // Only include user/domain-contributed source & placement memory (ignore old starter placement presets if global)
+                if (DOMAIN_SCOPED_FIELDS.has(row.category)) {
+                    // Only show domain-scoped entries belonging to the active user's domain
                     if (row.created_by_domain === activeDomain) {
                         TAXONOMY[row.category].push(row);
                     }
-                    continue;
-                }
-                const exists = TAXONOMY[row.category].some(i => i.abbreviation === row.abbreviation);
-                if (!exists) {
+                } else {
                     TAXONOMY[row.category].push(row);
                 }
             }
 
-            // Populate defaults ONLY for exhaustive lists; leave source and placement completely empty
-            ['funnel', 'objective', 'tactic', 'journey', 'medium', 'region', 'state', 'lang'].forEach(field => {
+            // Pre-populate ONLY the exhaustive locked lists; leave source, product, subproduct, placement blank
+            EXHAUSTIVE_PREPOPULATED_FIELDS.forEach(field => {
                 const first = TAXONOMY[field][0];
                 if (first) {
                     selectComboItem(field, first.display_name, first.abbreviation, false);
                 }
             });
 
-            statusEl.textContent = `Ready • Source (${TAXONOMY.source.length}), Placement (${TAXONOMY.placement.length}), Countries (${TAXONOMY.region.length})`;
+            statusEl.textContent = `Loaded ${(data || []).length} vocab rows • Domain: ${activeDomain}`;
             renderAllOutputs();
         }
 
@@ -608,10 +561,10 @@
             `).join('');
 
             if (!items.length && !rawQuery) {
-                html += `<div class="px-3 py-2 text-xs text-slate-500">Empty — type a unique value to add.</div>`;
+                html += `<div class="px-3 py-2 text-xs text-slate-500">Empty for ${escapeHtml(activeDomain)} — type a value to add.</div>`;
             }
 
-            if (DYNAMIC_MEMORY_CATEGORIES.has(field) && rawQuery) {
+            if (DOMAIN_SCOPED_FIELDS.has(field) && rawQuery) {
                 const exists = (TAXONOMY[field] || []).some(
                     i => i.display_name.trim().toLowerCase() === rawQuery.toLowerCase()
                 );
@@ -619,9 +572,9 @@
                     const abbr = abbreviate4PlusDigits(rawQuery);
                     html += `
                         <button type="button"
-                            onclick="saveDynamicVocab('${field}', '${rawQuery.replace(/'/g, "\\'")}', '${abbr}')"
+                            onclick="saveDomainScopedVocab('${field}', '${rawQuery.replace(/'/g, "\\'")}', '${abbr}')"
                             class="w-full px-3 py-2 text-left text-xs bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border-t border-slate-700 cursor-pointer">
-                            + Save "${escapeHtml(rawQuery)}" → code: <span class="font-mono">${escapeHtml(abbr)}</span>
+                            + Save "${escapeHtml(rawQuery)}" for ${escapeHtml(activeDomain)} → code: <span class="font-mono">${escapeHtml(abbr)}</span>
                         </button>
                     `;
                 }
@@ -630,7 +583,7 @@
             listEl.innerHTML = html;
         }
 
-        async function saveDynamicVocab(field, displayName, abbreviation) {
+        async function saveDomainScopedVocab(field, displayName, abbreviation) {
             const { data, error } = await supabaseClient
                 .from('controlled_vocab')
                 .insert({
@@ -644,7 +597,7 @@
                 .single();
 
             if (error) {
-                alert(`Could not save option: ${error.message}`);
+                alert(`Could not save ${field}: ${error.message}`);
                 return;
             }
 
@@ -660,48 +613,53 @@
             if (shouldRender) renderAllOutputs();
         }
 
-        // Section 2: Creative Assets (Individual Upload, ZIP Extraction, Selection, & Dynamic Creative Toggle)
+        // SECTION 2: CREATIVE ASSETS & ZIP UNPACKING
         function toggleDynamicCreative() {
             const isDco = document.getElementById('f-dynamic-creative').checked;
             document.getElementById('dcoBanner').classList.toggle('hidden', !isDco);
-            document.getElementById('creativeWorkspace').classList.toggle('hidden', isDco);
+            document.getElementById('assetUploadControls').classList.toggle('hidden', isDco);
             renderAllOutputs();
         }
 
-        async function handleCreativeFilesUpload(event) {
+        async function handleAssetFilesUpload(event) {
             const files = Array.from(event.target.files || []);
-            const statusEl = document.getElementById('zipExtractStatus');
             if (!files.length) return;
 
-            statusEl.textContent = 'Processing files...';
+            const statusEl = document.getElementById('assetUploadStatus');
+            statusEl.textContent = 'Processing uploaded files...';
             let addedCount = 0;
 
             for (const file of files) {
                 if (file.name.toLowerCase().endsWith('.zip')) {
                     try {
-                        const zip = await window.JSZip.loadAsync(file);
+                        const zip = await JSZip.loadAsync(file);
                         const entries = Object.values(zip.files);
                         for (const entry of entries) {
                             if (entry.dir) continue;
-                            const cleanPath = entry.name.split('/').pop();
-                            if (!cleanPath || cleanPath.startsWith('.') || entry.name.startsWith('__MACOSX')) continue;
-                            uploadedCreatives.push({
-                                id: `cr-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-                                name: cleanPath,
-                                sourceType: `ZIP (${file.name})`,
+                            const cleanPath = entry.name;
+                            const baseName = cleanPath.split('/').pop() || '';
+                            if (!baseName || baseName.startsWith('.') || cleanPath.includes('__MACOSX')) continue;
+
+                            const stem = stripExtension(baseName);
+                            uploadedCreativeAssets.push({
+                                id: `asset-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                                fileName: baseName,
+                                creativeName: stem,
+                                sourceArchive: file.name,
                                 selected: true
                             });
                             addedCount++;
                         }
                     } catch (err) {
-                        statusEl.textContent = `ZIP error on ${file.name}: ${err.message}`;
-                        return;
+                        alert(`Could not unzip ${file.name}: ${err.message}`);
                     }
                 } else {
-                    uploadedCreatives.push({
-                        id: `cr-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-                        name: file.name,
-                        sourceType: 'File Upload',
+                    const stem = stripExtension(file.name);
+                    uploadedCreativeAssets.push({
+                        id: `asset-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                        fileName: file.name,
+                        creativeName: stem,
+                        sourceArchive: 'Direct file',
                         selected: true
                     });
                     addedCount++;
@@ -709,81 +667,86 @@
             }
 
             event.target.value = '';
-            statusEl.textContent = `Added ${addedCount} asset(s). Tick the assets you want to include in your URLs.`;
-            renderCreativeAssetsList();
+            statusEl.textContent = `Added ${addedCount} asset(s). Check or uncheck assets below to generate URLs.`;
+            renderCreativeAssetsTable();
             renderAllOutputs();
         }
 
-        function addManualCreative() {
+        function addManualCreativeAsset() {
             const input = document.getElementById('manualCreativeInput');
             const name = input.value.trim();
             if (!name) return;
 
-            uploadedCreatives.push({
-                id: `cr-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-                name,
-                sourceType: 'Manual',
+            uploadedCreativeAssets.push({
+                id: `asset-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                fileName: name,
+                creativeName: stripExtension(name),
+                sourceArchive: 'Manual entry',
                 selected: true
             });
             input.value = '';
-            renderCreativeAssetsList();
+            renderCreativeAssetsTable();
             renderAllOutputs();
         }
 
-        function toggleCreativeSelection(id) {
-            const item = uploadedCreatives.find(c => c.id === id);
-            if (!item) return;
-            item.selected = !item.selected;
-            renderAllOutputs();
+        function toggleAssetSelection(id, isChecked) {
+            const item = uploadedCreativeAssets.find(a => a.id === id);
+            if (item) {
+                item.selected = isChecked;
+                renderAllOutputs();
+            }
         }
 
-        function toggleSelectAllCreatives(selectAll) {
-            uploadedCreatives.forEach(c => { c.selected = selectAll; });
-            renderCreativeAssetsList();
+        function setAllAssetsSelected(flag) {
+            uploadedCreativeAssets.forEach(a => { a.selected = flag; });
+            renderCreativeAssetsTable();
             renderAllOutputs();
         }
 
         function removeCreativeAsset(id) {
-            uploadedCreatives = uploadedCreatives.filter(c => c.id !== id);
-            renderCreativeAssetsList();
+            uploadedCreativeAssets = uploadedCreativeAssets.filter(a => a.id !== id);
+            renderCreativeAssetsTable();
             renderAllOutputs();
         }
 
-        function renderCreativeAssetsList() {
-            const listEl = document.getElementById('creativeAssetsList');
-            if (!uploadedCreatives.length) {
-                listEl.innerHTML = `<div class="px-4 py-5 text-xs text-slate-500 text-center">No creative assets uploaded yet. Upload files, a .ZIP archive, or add an asset name above.</div>`;
+        function renderCreativeAssetsTable() {
+            const container = document.getElementById('creativeAssetsTable');
+            if (!uploadedCreativeAssets.length) {
+                container.innerHTML = `<div class="p-4 text-xs text-slate-500 text-center">No creative assets loaded. Upload individual files, a .zip archive, or enter an asset name above.</div>`;
                 return;
             }
 
-            listEl.innerHTML = uploadedCreatives.map(asset => {
-                const ck = abbreviate4PlusDigits(asset.name) || 'crtv';
+            container.innerHTML = uploadedCreativeAssets.map(asset => {
+                const ck = abbreviate4PlusDigits(asset.creativeName) || 'crtv';
                 return `
-                    <div class="px-4 py-2.5 flex items-center justify-between gap-3 hover:bg-slate-900/70">
+                    <div class="flex items-center justify-between gap-3 px-4 py-2.5 hover:bg-slate-900/70">
                         <label class="flex items-center gap-3 min-w-0 flex-1 cursor-pointer">
-                            <input type="checkbox" ${asset.selected ? 'checked' : ''} onchange="toggleCreativeSelection('${asset.id}')"
+                            <input type="checkbox" ${asset.selected ? 'checked' : ''}
+                                onchange="toggleAssetSelection('${asset.id}', this.checked)"
                                 class="w-4 h-4 accent-emerald-500 rounded cursor-pointer">
-                            <span class="text-xs text-slate-200 truncate font-medium">${escapeHtml(asset.name)}</span>
-                            <span class="text-[11px] text-slate-500 shrink-0">${escapeHtml(asset.sourceType)}</span>
+                            <div class="min-w-0">
+                                <p class="text-xs font-medium text-slate-200 truncate">${escapeHtml(asset.fileName)}</p>
+                                <p class="text-[11px] text-slate-500">Origin: ${escapeHtml(asset.sourceArchive)}</p>
+                            </div>
                         </label>
-                        <div class="flex items-center gap-2 shrink-0">
-                            <span class="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">ck=${escapeHtml(ck)}</span>
-                            <button type="button" onclick="removeCreativeAsset('${asset.id}')"
-                                class="text-xs text-slate-500 hover:text-rose-400 px-1 cursor-pointer" title="Remove">✕</button>
-                        </div>
+                        <span class="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded shrink-0">ck=${escapeHtml(ck)}</span>
+                        <button type="button" onclick="removeCreativeAsset('${asset.id}')"
+                            class="text-xs text-slate-400 hover:text-rose-400 px-1.5 cursor-pointer" title="Remove asset">✕</button>
                     </div>
                 `;
             }).join('');
         }
 
-        // Build Payload Variants for Sections 3 & 4
-        function buildCurrentVariants() {
+        // BUILD PAYLOADS FOR SECTIONS 3 & 4
+        function buildGeneratedRecords() {
             const workspace = (document.getElementById('f-workspace').value || '').trim() || 'Default Campaign';
             const rawDest = (document.getElementById('f-dest').value || '').trim() || 'https://example.com';
             const normalizedDest = /^https?:\/\//i.test(rawDest) ? rawDest : `https://${rawDest}`;
             const eventSlug = abbreviate4PlusDigits(document.getElementById('f-event').value || '');
 
             const src = document.getElementById('f-source').value || '';
+            const product = document.getElementById('f-product').value || '';
+            const subproduct = document.getElementById('f-subproduct').value || '';
             const placement = document.getElementById('f-placement').value || '';
             const funnel = document.getElementById('f-funnel').value || '';
             const obj = document.getElementById('f-objective').value || '';
@@ -795,87 +758,73 @@
             const lang = document.getElementById('f-lang').value || '';
             const isDco = document.getElementById('f-dynamic-creative').checked;
 
-            const hashSource = `${activeDomain}|${src}|${medium}|${funnel}|${obj}|${tactic}|${journey}|${region}|${state}|${lang}|${placement}|${eventSlug}`;
+            const hashSource = `${activeDomain}|${src}|${medium}|${product}|${subproduct}|${funnel}|${obj}|${tactic}|${journey}|${region}|${state}|${lang}|${placement}|${eventSlug}`;
             let hash = 0;
             for (let i = 0; i < hashSource.length; i++) {
                 hash = ((hash << 5) - hash) + hashSource.charCodeAt(i);
                 hash |= 0;
             }
             const k = Math.abs(hash).toString(36);
-            const campaignSlug = [funnel, obj, tactic, journey, region, state, eventSlug, lang].filter(Boolean).join('-');
 
+            const campaignSlug = [funnel, obj, tactic, journey, product, subproduct, region, state, eventSlug, lang]
+                .filter(Boolean)
+                .join('-');
+
+            let targets = [];
             if (isDco) {
-                let finalShortenedUrl = `${normalizedDest}?k=${k}`;
-                let fullUtmUrl = normalizedDest;
-                try {
-                    const shortObj = new URL(normalizedDest);
-                    shortObj.searchParams.set('k', k);
-                    finalShortenedUrl = shortObj.toString();
-
-                    const utmObj = new URL(normalizedDest);
-                    if (src) utmObj.searchParams.set('utm_source', src);
-                    if (medium) utmObj.searchParams.set('utm_medium', medium);
-                    if (campaignSlug) utmObj.searchParams.set('utm_campaign', campaignSlug);
-                    if (placement) utmObj.searchParams.set('utm_content', placement);
-                    // Dynamic Creative checked: NO utm_term and NO ck key
-                    fullUtmUrl = utmObj.toString();
-                } catch {}
-
-                return [{
-                    owner_domain: activeDomain,
-                    created_by_email: activeUser ? activeUser.email.toLowerCase() : '',
-                    campaign_workspace: workspace,
-                    url_key: k,
-                    creative_key: 'dco',
-                    destination_url: normalizedDest,
-                    final_shortened_url: finalShortenedUrl,
-                    full_utm_url: fullUtmUrl,
-                    source: src,
-                    funnel,
-                    objective: obj,
-                    tactic,
-                    journey,
-                    medium,
-                    region,
-                    state_province: state,
-                    event_campaign: eventSlug || null,
-                    language: lang,
-                    placement,
-                    creative_name: 'Dynamic Creative (DCO)',
-                    is_dynamic_creative: true
-                }];
+                targets = [{ creativeName: 'Dynamic Creative (DCO)', ck: 'dco', isDynamic: true }];
+            } else {
+                const selected = uploadedCreativeAssets.filter(a => a.selected);
+                targets = selected.map((a, idx) => ({
+                    creativeName: a.creativeName || `asset_${idx + 1}`,
+                    ck: abbreviate4PlusDigits(a.creativeName) || `crtv${idx + 1}`,
+                    isDynamic: false
+                }));
             }
 
-            const selectedAssets = uploadedCreatives.filter(c => c.selected);
-            return selectedAssets.map((asset, idx) => {
-                const ck = abbreviate4PlusDigits(asset.name) || `crtv${idx + 1}`;
-                let finalShortenedUrl = `${normalizedDest}?k=${k}&ck=${ck}`;
-                let fullUtmUrl = normalizedDest;
-                try {
-                    const shortObj = new URL(normalizedDest);
-                    shortObj.searchParams.set('k', k);
-                    shortObj.searchParams.set('ck', ck);
-                    finalShortenedUrl = shortObj.toString();
+            return targets.map(target => {
+                let exampleUtmUrl = normalizedDest;
+                let finalKeyedUrl = normalizedDest;
 
+                try {
                     const utmObj = new URL(normalizedDest);
                     if (src) utmObj.searchParams.set('utm_source', src);
                     if (medium) utmObj.searchParams.set('utm_medium', medium);
                     if (campaignSlug) utmObj.searchParams.set('utm_campaign', campaignSlug);
                     if (placement) utmObj.searchParams.set('utm_content', placement);
-                    utmObj.searchParams.set('utm_term', ck);
-                    fullUtmUrl = utmObj.toString();
-                } catch {}
+                    // Only include utm_term when Dynamic Creative is NOT checked
+                    if (!target.isDynamic) {
+                        utmObj.searchParams.set('utm_term', target.ck);
+                    }
+                    exampleUtmUrl = utmObj.toString();
+
+                    const keyObj = new URL(normalizedDest);
+                    keyObj.searchParams.set('k', k);
+                    // Only include ck key when Dynamic Creative is NOT checked
+                    if (!target.isDynamic) {
+                        keyObj.searchParams.set('ck', target.ck);
+                    }
+                    finalKeyedUrl = keyObj.toString();
+                } catch {
+                    const sep = normalizedDest.includes('?') ? '&' : '?';
+                    finalKeyedUrl = target.isDynamic
+                        ? `${normalizedDest}${sep}k=${k}`
+                        : `${normalizedDest}${sep}k=${k}&ck=${target.ck}`;
+                }
 
                 return {
                     owner_domain: activeDomain,
                     created_by_email: activeUser ? activeUser.email.toLowerCase() : '',
                     campaign_workspace: workspace,
                     url_key: k,
-                    creative_key: ck,
+                    creative_key: target.ck,
                     destination_url: normalizedDest,
-                    final_shortened_url: finalShortenedUrl,
-                    full_utm_url: fullUtmUrl,
+                    final_shortened_url: finalKeyedUrl,
+                    full_utm_url: exampleUtmUrl,
                     source: src,
+                    product,
+                    subproduct,
+                    placement,
                     funnel,
                     objective: obj,
                     tactic,
@@ -885,56 +834,50 @@
                     state_province: state,
                     event_campaign: eventSlug || null,
                     language: lang,
-                    placement,
-                    creative_name: asset.name,
-                    is_dynamic_creative: false
+                    creative_name: target.creativeName,
+                    is_dynamic_creative: target.isDynamic
                 };
             });
         }
 
         function renderAllOutputs() {
-            const variants = buildCurrentVariants();
-            const utmContainer = document.getElementById('exampleUtmUrlsContainer');
-            const finalContainer = document.getElementById('finalKeyUrlsContainer');
-            const keyBadge = document.getElementById('sharedCampaignKeyBadge');
+            const records = buildGeneratedRecords();
+            document.getElementById('exampleCountBadge').textContent = `${records.length} URL${records.length === 1 ? '' : 's'}`;
 
-            if (!variants.length) {
-                keyBadge.textContent = '';
-                const emptyMsg = `<div class="p-4 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-500">Select at least one creative asset in Section 2 (or enable Dynamic Creative) to generate URLs.</div>`;
-                utmContainer.innerHTML = emptyMsg;
-                finalContainer.innerHTML = emptyMsg;
+            const exampleEl = document.getElementById('exampleUrlsList');
+            const finalEl = document.getElementById('finalUrlsList');
+
+            if (!records.length) {
+                exampleEl.innerHTML = `<div class="p-4 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-500">Select at least one creative asset in Section 2 (or check Dynamic Creative) to preview Example URLs.</div>`;
+                finalEl.innerHTML = `<div class="p-4 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-500">Select at least one creative asset in Section 2 (or check Dynamic Creative) to preview Final URLs.</div>`;
                 return;
             }
 
-            keyBadge.textContent = `Campaign Key: k=${variants[0].url_key}`;
-
-            // Section 3: Example Full UTM URLs
-            utmContainer.innerHTML = variants.map(v => `
+            exampleEl.innerHTML = records.map(r => `
                 <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div class="min-w-0 space-y-1">
-                        <span class="text-[11px] font-medium text-slate-400">${escapeHtml(v.creative_name)}</span>
-                        <p class="font-mono text-xs text-sky-400 break-all">${escapeHtml(v.full_utm_url)}</p>
+                        <span class="text-[11px] font-medium text-slate-300">${escapeHtml(r.creative_name)}</span>
+                        <p class="font-mono text-xs text-sky-400 break-all">${escapeHtml(r.full_utm_url)}</p>
                     </div>
-                    <button type="button" onclick="copyText('${v.full_utm_url.replace(/'/g, "\\'")}', this)"
+                    <button type="button" onclick="copyText('${r.full_utm_url.replace(/'/g, "\\'")}', this)"
                         class="shrink-0 px-3 py-1.5 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs text-slate-200 cursor-pointer">
                         Copy UTM
                     </button>
                 </div>
             `).join('');
 
-            // Section 4: Final Tokenized Key URLs
-            finalContainer.innerHTML = variants.map(v => `
+            finalEl.innerHTML = records.map(r => `
                 <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div class="min-w-0 space-y-1">
                         <div class="flex items-center gap-2">
-                            <span class="text-[11px] font-medium text-slate-300">${escapeHtml(v.creative_name)}</span>
+                            <span class="text-[11px] font-medium text-slate-300">${escapeHtml(r.creative_name)}</span>
                             <span class="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
-                                ${v.is_dynamic_creative ? `k=${escapeHtml(v.url_key)} (DCO)` : `k=${escapeHtml(v.url_key)} & ck=${escapeHtml(v.creative_key)}`}
+                                ${r.is_dynamic_creative ? `k=${escapeHtml(r.url_key)} (DCO)` : `k=${escapeHtml(r.url_key)} &amp; ck=${escapeHtml(r.creative_key)}`}
                             </span>
                         </div>
-                        <p class="font-mono text-xs text-emerald-400 break-all">${escapeHtml(v.final_shortened_url)}</p>
+                        <p class="font-mono text-xs text-emerald-400 break-all">${escapeHtml(r.final_shortened_url)}</p>
                     </div>
-                    <button type="button" onclick="copyText('${v.final_shortened_url.replace(/'/g, "\\'")}', this)"
+                    <button type="button" onclick="copyText('${r.final_shortened_url.replace(/'/g, "\\'")}', this)"
                         class="shrink-0 px-3 py-1.5 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs text-slate-200 cursor-pointer">
                         Copy Final URL
                     </button>
@@ -953,124 +896,95 @@
             }
         }
 
-        // Section 4 Action: Generate CSV + Commit to Supabase History
-        function downloadCsvFile(filename, rows) {
-            if (!rows.length) return;
-            const headers = Object.keys(rows[0]);
-            const escapeCsv = (val) => `"${String(val ?? '').replace(/"/g, '""')}"`;
-            const csvLines = [
-                headers.join(','),
-                ...rows.map(row => headers.map(h => escapeCsv(row[h])).join(','))
-            ];
-            const blob = new Blob([csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        async function generateCsvAndCommitHistory() {
+        // SECTION 4: COMMIT TO DOMAIN HISTORY & GENERATE CSV
+        async function commitHistoryAndExportCsv() {
             const statusEl = document.getElementById('commitStatusMessage');
-            const btn = document.getElementById('generateCsvAndCommitBtn');
+            const btn = document.getElementById('commitAndCsvBtn');
 
             if (!activeUser || !activeDomain) {
-                statusEl.textContent = 'Sign in required before committing URLs.';
+                statusEl.textContent = 'You must be signed in to commit URLs.';
                 statusEl.className = 'text-xs text-rose-400';
                 return;
             }
 
-            const variants = buildCurrentVariants();
-            if (!variants.length) {
-                statusEl.textContent = 'Select at least one creative asset (or enable Dynamic Creative) first.';
+            const records = buildGeneratedRecords();
+            if (!records.length) {
+                statusEl.textContent = 'Select at least one creative asset or enable Dynamic Creative first.';
                 statusEl.className = 'text-xs text-amber-400';
                 return;
             }
-            if (!variants[0].source || !variants[0].placement) {
-                statusEl.textContent = 'Please enter and select both Source and Placement in Section 1 before committing.';
+
+            if (!records[0].source) {
+                statusEl.textContent = 'Please select or add a Source in Section 1 before committing.';
                 statusEl.className = 'text-xs text-amber-400';
                 return;
             }
 
             btn.disabled = true;
-            statusEl.textContent = 'Generating CSV and committing to Supabase history...';
+            statusEl.textContent = `Committing ${records.length} URL(s) to domain history (${activeDomain})...`;
             statusEl.className = 'text-xs text-slate-400';
 
-            // 1. Generate & download CSV with campaign parameters, example UTM URLs, and final URLs with keys
-            const csvRows = variants.map(v => ({
-                campaign_workspace: v.campaign_workspace,
-                destination_url: v.destination_url,
-                source: v.source,
-                placement: v.placement,
-                funnel: v.funnel,
-                objective: v.objective,
-                tactic: v.tactic,
-                journey: v.journey,
-                medium: v.medium,
-                region: v.region,
-                state_province: v.state_province,
-                language: v.language,
-                event_campaign: v.event_campaign || '',
-                creative_asset: v.creative_name,
-                dynamic_creative: v.is_dynamic_creative,
-                campaign_key_k: v.url_key,
-                creative_key_ck: v.is_dynamic_creative ? '' : v.creative_key,
-                example_utm_url: v.full_utm_url,
-                final_key_url: v.final_shortened_url
-            }));
-            downloadCsvFile(`adpulse-${variants[0].url_key}.csv`, csvRows);
-
-            // 2. Commit records to Supabase campaign_links
             const { error } = await supabaseClient
                 .from('campaign_links')
-                .upsert(variants, { onConflict: 'owner_domain,url_key,creative_key' });
+                .upsert(records, { onConflict: 'owner_domain,url_key,creative_key' });
 
             btn.disabled = false;
 
             if (error) {
-                statusEl.textContent = `CSV downloaded, but history commit failed: ${error.message}`;
+                statusEl.textContent = `Database commit failed: ${error.message}`;
                 statusEl.className = 'text-xs text-rose-400';
                 return;
             }
 
-            statusEl.textContent = `CSV downloaded and ${variants.length} URL(s) committed to ${activeDomain} history.`;
+            downloadCampaignCsv(records);
+            statusEl.textContent = `Committed ${records.length} URL(s) to ${activeDomain} history and downloaded CSV.`;
             statusEl.className = 'text-xs text-emerald-400';
             await loadDomainHistory();
         }
 
-        function exportHistoryCsv() {
-            if (!historyRecords.length) {
-                alert('No domain history records to export yet.');
-                return;
-            }
-            const rows = historyRecords.map(r => ({
-                created_at: r.created_at,
-                created_by_email: r.created_by_email,
+        function downloadCampaignCsv(records) {
+            const csvRows = records.map(r => ({
                 owner_domain: r.owner_domain,
-                campaign_workspace: r.campaign_workspace,
+                created_by: r.created_by_email,
+                workspace: r.campaign_workspace,
+                destination_url: r.destination_url,
                 source: r.source,
+                medium: r.medium,
+                product: r.product,
+                subproduct: r.subproduct,
                 placement: r.placement,
                 funnel: r.funnel,
                 objective: r.objective,
                 tactic: r.tactic,
                 journey: r.journey,
-                medium: r.medium,
                 region: r.region,
                 state_province: r.state_province,
                 language: r.language,
+                event_campaign: r.event_campaign || '',
                 creative_name: r.creative_name,
-                is_dynamic_creative: r.is_dynamic_creative,
-                url_key: r.url_key,
-                creative_key: r.is_dynamic_creative ? '' : r.creative_key,
+                dynamic_creative: r.is_dynamic_creative,
+                campaign_key_k: r.url_key,
+                creative_key_ck: r.is_dynamic_creative ? '' : r.creative_key,
                 example_utm_url: r.full_utm_url,
-                final_key_url: r.final_shortened_url,
-                link_health_status: r.link_health_status,
-                http_status: r.http_status ?? ''
+                final_keyed_url: r.final_shortened_url
             }));
-            downloadCsvFile(`adpulse-history-${activeDomain || 'domain'}.csv`, rows);
+
+            const headers = Object.keys(csvRows[0]);
+            const escapeCsv = (val) => `"${String(val ?? '').replace(/"/g, '""')}"`;
+            const csvString = [
+                headers.join(','),
+                ...csvRows.map(row => headers.map(h => escapeCsv(row[h])).join(','))
+            ].join('\n');
+
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `adpulse-${activeDomain}-${records[0].url_key}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
 
         async function loadDomainHistory() {
@@ -1101,9 +1015,9 @@
                 ? historyRecords.filter(r =>
                     String(r.created_by_email || '').toLowerCase().includes(q) ||
                     String(r.final_shortened_url || '').toLowerCase().includes(q) ||
-                    String(r.full_utm_url || '').toLowerCase().includes(q) ||
                     String(r.creative_name || '').toLowerCase().includes(q) ||
-                    String(r.url_key || '').toLowerCase().includes(q)
+                    String(r.url_key || '').toLowerCase().includes(q) ||
+                    String(r.creative_key || '').toLowerCase().includes(q)
                 )
                 : historyRecords;
 
@@ -1120,19 +1034,23 @@
                     'text-slate-400 bg-slate-800';
 
                 const keyDisplay = row.is_dynamic_creative
-                    ? `?k=${escapeHtml(row.url_key)} (DCO)`
+                    ? `?k=${escapeHtml(row.url_key)}`
                     : `?k=${escapeHtml(row.url_key)}&amp;ck=${escapeHtml(row.creative_key)}`;
+
+                const modeBadge = row.is_dynamic_creative
+                    ? `<span class="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 font-mono">Dynamic Creative</span>`
+                    : `<span class="text-slate-300">${escapeHtml(row.creative_name || '—')}</span>`;
 
                 return `
                     <tr class="hover:bg-slate-800/30">
-                        <td class="py-3 px-3 font-mono text-emerald-400 whitespace-nowrap">${keyDisplay}</td>
-                        <td class="py-3 px-3 text-slate-200">${escapeHtml(row.creative_name || '—')}</td>
-                        <td class="py-3 px-3 font-mono text-emerald-300 truncate max-w-[220px]" title="${escapeHtml(row.final_shortened_url)}">${escapeHtml(row.final_shortened_url)}</td>
-                        <td class="py-3 px-3 font-mono text-sky-400 truncate max-w-[220px]" title="${escapeHtml(row.full_utm_url)}">${escapeHtml(row.full_utm_url)}</td>
-                        <td class="py-3 px-3 text-slate-300">${escapeHtml(row.created_by_email)}</td>
+                        <td class="py-3 px-3 font-mono text-emerald-400">${keyDisplay}</td>
+                        <td class="py-3 px-3">${modeBadge}</td>
+                        <td class="py-3 px-3 font-mono text-slate-300 truncate max-w-xs" title="${escapeHtml(row.final_shortened_url)}">${escapeHtml(row.final_shortened_url)}</td>
+                        <td class="py-3 px-3 text-slate-200">${escapeHtml(row.created_by_email)}</td>
                         <td class="py-3 px-3">
                             <span class="px-2 py-0.5 rounded font-mono ${badgeColor}">${escapeHtml(row.link_health_status || 'pending')}${row.http_status ? ` (${row.http_status})` : ''}</span>
                         </td>
+                        <td class="py-3 px-3 text-slate-400">${escapeHtml(new Date(row.created_at).toLocaleString())}</td>
                         <td class="py-3 px-3 text-right">
                             <button type="button" onclick="runLinkRotCheck('${row.id}')"
                                 class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 cursor-pointer">
