@@ -54,11 +54,11 @@
                     </div>
                 </div>
                 <nav class="space-y-1 text-sm font-medium">
-                    <button onclick="switchView('builder')" id="nav-builder" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-emerald-500/10 text-emerald-400 text-left cursor-pointer">
+                    <button type="button" onclick="switchView('builder')" id="nav-builder" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-emerald-500/10 text-emerald-400 text-left cursor-pointer">
                         Campaign builder
                     </button>
-                    <button onclick="switchView('history')" id="nav-history" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-200 text-left cursor-pointer">
-                        Campaign history & LinkRot
+                    <button type="button" onclick="switchView('history')" id="nav-history" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-200 text-left cursor-pointer">
+                        Campaign history &amp; LinkRot
                     </button>
                 </nav>
             </div>
@@ -67,7 +67,7 @@
                     <p class="font-medium text-slate-300">Active Domain</p>
                     <p id="sidebarDomain" class="text-emerald-400 font-mono truncate">—</p>
                 </div>
-                <button onclick="handleSignOut()" class="w-full py-1.5 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-xs cursor-pointer">
+                <button type="button" onclick="handleSignOut()" class="w-full py-1.5 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-xs cursor-pointer">
                     Sign out
                 </button>
             </div>
@@ -75,8 +75,12 @@
 
         <main class="flex-1 flex flex-col min-w-0">
             <header class="h-16 border-b border-slate-800 bg-slate-900/50 backdrop-blur px-6 flex items-center justify-between">
-                <div class="text-sm text-slate-400">
-                    Workspace / <span id="breadcrumb-current" class="text-slate-100 font-medium">Campaign builder</span>
+                <div class="text-sm text-slate-400 flex items-center gap-4">
+                    <div>Workspace / <span id="breadcrumb-current" class="text-slate-100 font-medium">Campaign builder</span></div>
+                    <div class="flex lg:hidden gap-2">
+                        <button type="button" onclick="switchView('builder')" class="px-2.5 py-1 rounded bg-slate-800 text-xs text-slate-200">Builder</button>
+                        <button type="button" onclick="switchView('history')" class="px-2.5 py-1 rounded bg-slate-800 text-xs text-slate-200">History</button>
+                    </div>
                 </div>
                 <div class="text-right">
                     <p id="headerUserEmail" class="text-xs font-mono text-emerald-400"></p>
@@ -85,6 +89,7 @@
             </header>
 
             <div class="p-8 max-w-7xl w-full mx-auto space-y-6">
+                <!-- VIEW 1: CAMPAIGN BUILDER -->
                 <div id="view-builder" class="space-y-6">
                     <div>
                         <h1 class="text-2xl font-bold tracking-tight">Campaign builder</h1>
@@ -204,23 +209,66 @@
                             </div>
                         </div>
 
-                        <div class="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2">
+                        <div class="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-3">
                             <p class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Final Tokenized URL Preview</p>
                             <p id="finalTokenizedPreview" class="font-mono text-xs text-emerald-400 break-all"></p>
+                            <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800/80">
+                                <span id="saveLinkStatus" class="text-xs text-slate-400"></span>
+                                <button type="button" id="saveCampaignLinkBtn" onclick="saveGeneratedLinkToHistory()"
+                                    class="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-semibold text-sm transition-colors cursor-pointer">
+                                    Save link to domain history
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div id="view-history" class="space-y-4 hidden">
-                    <h1 class="text-2xl font-bold tracking-tight">Campaign history & LinkRot Sentinel</h1>
-                    <p class="text-sm text-slate-400">Domain-isolated logs will be wired in Micro-Step 5.</p>
+                <!-- VIEW 2: CAMPAIGN HISTORY & LINKROT SENTINEL -->
+                <div id="view-history" class="space-y-6 hidden">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h1 class="text-2xl font-bold tracking-tight">Campaign history &amp; LinkRot Sentinel</h1>
+                            <p class="text-sm text-slate-400">
+                                Visible only to signed-in users on domain <span id="historyDomainLabel" class="font-mono text-emerald-400">—</span>.
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <input id="historySearchInput" type="text" placeholder="Filter by creator, key, or URL..."
+                                oninput="renderHistoryRows()"
+                                class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+                            <button type="button" onclick="loadDomainHistory()"
+                                class="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-medium text-slate-200 cursor-pointer">
+                                ↻ Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-xs text-slate-400 uppercase tracking-wider">
+                                    <th class="py-3 px-3">Keys (k / ck)</th>
+                                    <th class="py-3 px-3">Tokenized URL</th>
+                                    <th class="py-3 px-3">Created By</th>
+                                    <th class="py-3 px-3">LinkRot Status</th>
+                                    <th class="py-3 px-3">Created At</th>
+                                    <th class="py-3 px-3 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody" class="divide-y divide-slate-800/60 text-xs">
+                                <tr>
+                                    <td colspan="6" class="py-6 text-center text-slate-500">No history loaded yet.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </main>
     </div>
 
     <script>
-        // Replace these two placeholders with your Supabase Project URL and anon/public key
+        // Replace these two placeholders with your base Supabase Project URL (no /rest/v1/) and anon/public key
         const SUPABASE_URL = 'https://stouegbesuceggnegeie.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_QUglOE6uDThXZRZ48kEPhA_ifXTfUok';
 
@@ -244,6 +292,15 @@
 
         let activeUser = null;
         let activeDomain = '';
+        let historyRecords = [];
+
+        function escapeHtml(str) {
+            return String(str ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
 
         // 4 chars + any digits; drops vowels unless the input starts with a vowel
         function abbreviate4PlusDigits(rawName) {
@@ -295,6 +352,7 @@
             await supabaseClient.auth.signOut();
             activeUser = null;
             activeDomain = '';
+            historyRecords = [];
             document.getElementById('appShell').classList.add('hidden');
             document.getElementById('authGate').classList.remove('hidden');
         }
@@ -310,6 +368,7 @@
             document.getElementById('appShell').classList.remove('hidden');
 
             await loadTaxonomyFromSupabase();
+            await loadDomainHistory();
         }
 
         async function loadTaxonomyFromSupabase() {
@@ -326,19 +385,18 @@
                 return;
             }
 
-            // Reset arrays; 'source' intentionally remains empty until users add unique sources
+            // Reset arrays; 'source' intentionally starts empty until users add unique sources
             Object.keys(TAXONOMY).forEach(k => { TAXONOMY[k] = []; });
 
             for (const row of (data || [])) {
                 if (!TAXONOMY[row.category]) continue;
-                // Keep source & placement scoped to global or user's own domain
                 if (DYNAMIC_MEMORY_CATEGORIES.has(row.category) && row.created_by_domain && row.created_by_domain !== activeDomain) {
                     continue;
                 }
                 TAXONOMY[row.category].push(row);
             }
 
-            // Set initial defaults for locked dropdowns (leaving source blank)
+            // Set initial defaults for curated dropdowns (leaving source blank)
             ['funnel', 'objective', 'tactic', 'journey', 'medium', 'region', 'state', 'lang', 'placement'].forEach(field => {
                 const first = TAXONOMY[field][0];
                 if (first) {
@@ -346,7 +404,7 @@
                 }
             });
 
-            statusEl.textContent = `Loaded ${data.length} vocab rows • Source options: ${TAXONOMY.source.length}`;
+            statusEl.textContent = `Loaded ${(data || []).length} vocab rows • Source options: ${TAXONOMY.source.length}`;
             renderPreview();
         }
 
@@ -373,8 +431,8 @@
                 <button type="button"
                     onclick="selectComboItem('${field}', '${item.display_name.replace(/'/g, "\\'")}', '${item.abbreviation.replace(/'/g, "\\'")}', true)"
                     class="w-full px-3 py-2 text-left text-xs hover:bg-slate-800 flex items-center justify-between cursor-pointer">
-                    <span class="text-slate-200 truncate">${item.display_name}</span>
-                    <span class="text-emerald-400 font-mono ml-2">${item.abbreviation}</span>
+                    <span class="text-slate-200 truncate">${escapeHtml(item.display_name)}</span>
+                    <span class="text-emerald-400 font-mono ml-2">${escapeHtml(item.abbreviation)}</span>
                 </button>
             `).join('');
 
@@ -392,7 +450,7 @@
                         <button type="button"
                             onclick="saveDynamicVocab('${field}', '${rawQuery.replace(/'/g, "\\'")}', '${abbr}')"
                             class="w-full px-3 py-2 text-left text-xs bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border-t border-slate-700 cursor-pointer">
-                            + Save "${rawQuery}" → code: <span class="font-mono">${abbr}</span>
+                            + Save "${escapeHtml(rawQuery)}" → code: <span class="font-mono">${escapeHtml(abbr)}</span>
                         </button>
                     `;
                 }
@@ -432,44 +490,237 @@
             if (shouldRender) renderPreview();
         }
 
-        function renderPreview() {
-            const dest = document.getElementById('f-dest').value.trim() || 'https://example.com';
-            const src = document.getElementById('f-source').value || 'none';
-            const funnel = document.getElementById('f-funnel').value || 'none';
-            const obj = document.getElementById('f-objective').value || 'none';
-            const tactic = document.getElementById('f-tactic').value || 'none';
-            const journey = document.getElementById('f-journey').value || 'none';
-            const medium = document.getElementById('f-medium').value || 'none';
-            const region = document.getElementById('f-region').value || 'none';
-            const state = document.getElementById('f-state').value || 'none';
-            const lang = document.getElementById('f-lang').value || 'none';
-            const placement = document.getElementById('f-placement').value || 'none';
-            const creativeRaw = document.getElementById('f-creative').value;
-            const ck = abbreviate4PlusDigits(creativeRaw) || 'crtv';
+        function buildCurrentLinkPayload() {
+            const rawDest = (document.getElementById('f-dest').value || '').trim() || 'https://example.com';
+            const normalizedDest = /^https?:\/\//i.test(rawDest) ? rawDest : `https://${rawDest}`;
+            const src = document.getElementById('f-source').value || '';
+            const funnel = document.getElementById('f-funnel').value || '';
+            const obj = document.getElementById('f-objective').value || '';
+            const tactic = document.getElementById('f-tactic').value || '';
+            const journey = document.getElementById('f-journey').value || '';
+            const medium = document.getElementById('f-medium').value || '';
+            const region = document.getElementById('f-region').value || '';
+            const state = document.getElementById('f-state').value || '';
+            const lang = document.getElementById('f-lang').value || '';
+            const placement = document.getElementById('f-placement').value || '';
+            const creativeName = (document.getElementById('f-creative').value || '').trim();
+            const ck = abbreviate4PlusDigits(creativeName) || 'crtv';
 
-            const payloadString = `${src}|${medium}|${funnel}|${obj}|${tactic}|${journey}|${region}|${state}|${lang}|${placement}`;
+            const hashSource = `${activeDomain}|${src}|${medium}|${funnel}|${obj}|${tactic}|${journey}|${region}|${state}|${lang}|${placement}`;
             let hash = 0;
-            for (let i = 0; i < payloadString.length; i++) {
-                hash = ((hash << 5) - hash) + payloadString.charCodeAt(i);
+            for (let i = 0; i < hashSource.length; i++) {
+                hash = ((hash << 5) - hash) + hashSource.charCodeAt(i);
                 hash |= 0;
             }
             const k = Math.abs(hash).toString(36);
-            document.getElementById('preview-creative').textContent = `ck: ${ck}`;
 
-            const sep = dest.includes('?') ? '&' : '?';
-            document.getElementById('finalTokenizedPreview').textContent = `${dest}${sep}k=${k}&ck=${ck}`;
+            let finalShortenedUrl = `${normalizedDest}?k=${k}&ck=${ck}`;
+            let fullUtmUrl = normalizedDest;
+            try {
+                const shortObj = new URL(normalizedDest);
+                shortObj.searchParams.set('k', k);
+                shortObj.searchParams.set('ck', ck);
+                finalShortenedUrl = shortObj.toString();
+
+                const utmObj = new URL(normalizedDest);
+                utmObj.searchParams.set('utm_source', src);
+                utmObj.searchParams.set('utm_medium', medium);
+                utmObj.searchParams.set('utm_campaign', `${funnel}-${obj}-${tactic}-${journey}-${region}-${state}-${lang}`);
+                utmObj.searchParams.set('utm_content', placement);
+                utmObj.searchParams.set('utm_term', ck);
+                fullUtmUrl = utmObj.toString();
+            } catch {
+                // Fallback already constructed above
+            }
+
+            return {
+                owner_domain: activeDomain,
+                created_by_email: activeUser ? activeUser.email.toLowerCase() : '',
+                url_key: k,
+                creative_key: ck,
+                destination_url: normalizedDest,
+                final_shortened_url: finalShortenedUrl,
+                full_utm_url: fullUtmUrl,
+                source: src,
+                funnel,
+                objective: obj,
+                tactic,
+                journey,
+                medium,
+                region,
+                state_province: state,
+                language: lang,
+                placement,
+                creative_name: creativeName
+            };
+        }
+
+        function renderPreview() {
+            const payload = buildCurrentLinkPayload();
+            document.getElementById('preview-creative').textContent = `ck: ${payload.creative_key}`;
+            document.getElementById('finalTokenizedPreview').textContent = payload.final_shortened_url;
+        }
+
+        async function saveGeneratedLinkToHistory() {
+            const statusEl = document.getElementById('saveLinkStatus');
+            const btn = document.getElementById('saveCampaignLinkBtn');
+            if (!activeUser || !activeDomain) {
+                statusEl.textContent = 'You must be signed in to save links.';
+                statusEl.className = 'text-xs text-rose-400';
+                return;
+            }
+
+            const payload = buildCurrentLinkPayload();
+            if (!payload.source) {
+                statusEl.textContent = 'Please select or enter a Source before saving.';
+                statusEl.className = 'text-xs text-amber-400';
+                return;
+            }
+
+            btn.disabled = true;
+            statusEl.textContent = 'Saving to campaign_links...';
+            statusEl.className = 'text-xs text-slate-400';
+
+            const { error } = await supabaseClient
+                .from('campaign_links')
+                .upsert(payload, { onConflict: 'owner_domain,url_key,creative_key' });
+
+            btn.disabled = false;
+
+            if (error) {
+                statusEl.textContent = `Save failed: ${error.message}`;
+                statusEl.className = 'text-xs text-rose-400';
+                return;
+            }
+
+            statusEl.textContent = `Saved ?k=${payload.url_key}&ck=${payload.creative_key} for ${activeDomain}.`;
+            statusEl.className = 'text-xs text-emerald-400';
+            await loadDomainHistory();
+        }
+
+        async function loadDomainHistory() {
+            document.getElementById('historyDomainLabel').textContent = activeDomain || '—';
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-500">Loading domain history...</td></tr>`;
+
+            const { data, error } = await supabaseClient
+                .from('campaign_links')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(100);
+
+            if (error) {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-rose-400">${escapeHtml(error.message)}</td></tr>`;
+                return;
+            }
+
+            historyRecords = data || [];
+            renderHistoryRows();
+        }
+
+        function renderHistoryRows() {
+            const tbody = document.getElementById('historyTableBody');
+            const q = (document.getElementById('historySearchInput')?.value || '').trim().toLowerCase();
+
+            const filtered = q
+                ? historyRecords.filter(r =>
+                    String(r.created_by_email || '').toLowerCase().includes(q) ||
+                    String(r.final_shortened_url || '').toLowerCase().includes(q) ||
+                    String(r.url_key || '').toLowerCase().includes(q) ||
+                    String(r.creative_key || '').toLowerCase().includes(q)
+                )
+                : historyRecords;
+
+            if (!filtered.length) {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-500">No links recorded yet for ${escapeHtml(activeDomain || 'your domain')}.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(row => {
+                const badgeColor =
+                    row.link_health_status === 'healthy' ? 'text-emerald-400 bg-emerald-500/10' :
+                    row.link_health_status === 'broken' || row.link_health_status === 'param_stripped' ? 'text-rose-400 bg-rose-500/10' :
+                    row.link_health_status === 'cors_restricted' ? 'text-amber-400 bg-amber-500/10' :
+                    'text-slate-400 bg-slate-800';
+
+                return `
+                    <tr class="hover:bg-slate-800/30">
+                        <td class="py-3 px-3 font-mono text-emerald-400">?k=${escapeHtml(row.url_key)}&amp;ck=${escapeHtml(row.creative_key)}</td>
+                        <td class="py-3 px-3 font-mono text-slate-300 truncate max-w-xs" title="${escapeHtml(row.final_shortened_url)}">${escapeHtml(row.final_shortened_url)}</td>
+                        <td class="py-3 px-3 text-slate-200">${escapeHtml(row.created_by_email)}</td>
+                        <td class="py-3 px-3">
+                            <span class="px-2 py-0.5 rounded font-mono ${badgeColor}">${escapeHtml(row.link_health_status || 'pending')}${row.http_status ? ` (${row.http_status})` : ''}</span>
+                        </td>
+                        <td class="py-3 px-3 text-slate-400">${escapeHtml(new Date(row.created_at).toLocaleString())}</td>
+                        <td class="py-3 px-3 text-right">
+                            <button type="button" onclick="runLinkRotCheck('${row.id}')"
+                                class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 cursor-pointer">
+                                Check link
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function runLinkRotCheck(rowId) {
+            const row = historyRecords.find(r => r.id === rowId);
+            if (!row) return;
+
+            let httpStatus = null;
+            let paramsPreserved = null;
+            let healthStatus = 'pending';
+
+            try {
+                const resp = await fetch(row.final_shortened_url, { method: 'GET', redirect: 'follow' });
+                httpStatus = resp.status;
+                const resolvedUrl = resp.url || '';
+                const hasK = resolvedUrl.includes(`k=${row.url_key}`);
+                const hasCk = resolvedUrl.includes(`ck=${row.creative_key}`);
+                paramsPreserved = hasK && hasCk;
+
+                if (!resp.ok || resp.status >= 400) {
+                    healthStatus = 'broken';
+                } else if (!paramsPreserved) {
+                    healthStatus = 'param_stripped';
+                } else {
+                    healthStatus = 'healthy';
+                }
+            } catch {
+                healthStatus = 'cors_restricted';
+            }
+
+            const { error } = await supabaseClient
+                .from('campaign_links')
+                .update({
+                    http_status: httpStatus,
+                    params_preserved: paramsPreserved,
+                    last_checked_at: new Date().toISOString(),
+                    link_health_status: healthStatus
+                })
+                .eq('id', rowId);
+
+            if (!error) {
+                await loadDomainHistory();
+            }
         }
 
         function switchView(viewName) {
             ['builder', 'history'].forEach(v => {
                 document.getElementById(`view-${v}`).classList.toggle('hidden', v !== viewName);
                 const nav = document.getElementById(`nav-${v}`);
-                nav.className = v === viewName
-                    ? 'w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-emerald-500/10 text-emerald-400 text-left cursor-pointer'
-                    : 'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-200 text-left cursor-pointer';
+                if (nav) {
+                    nav.className = v === viewName
+                        ? 'w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-emerald-500/10 text-emerald-400 text-left cursor-pointer'
+                        : 'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-200 text-left cursor-pointer';
+                }
             });
             document.getElementById('breadcrumb-current').textContent =
                 viewName === 'builder' ? 'Campaign builder' : 'Campaign history & LinkRot';
+
+            if (viewName === 'history') {
+                loadDomainHistory();
+            }
         }
 
         document.addEventListener('click', (e) => {
