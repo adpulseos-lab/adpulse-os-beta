@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -97,14 +97,14 @@
                         <div class="border-b border-slate-800 pb-4">
                             <h1 class="text-xl font-bold tracking-tight">Campaign Builder</h1>
                             <p class="text-xs text-slate-400">
-                                Curated ISO and taxonomy lists load automatically. <span class="text-slate-200 font-medium">Source, Product, Sub-Product, and Placement</span> start empty and are scoped strictly to your email domain (<span id="builderDomainInline" class="font-mono text-emerald-400">—</span>).
+                                Curated ISO and taxonomy lists load automatically. <span class="text-slate-200 font-medium">Source, Product, Sub-Product, Placement, Objective, and Journey</span> start blank and are scoped strictly to your email domain (<span id="builderDomainInline" class="font-mono text-emerald-400">—</span>).
                             </p>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs text-slate-400 mb-1">Campaign Workspace / Label</label>
-                                <input id="f-workspace" type="text" value="Default Campaign" oninput="renderAllOutputs()"
+                                <label class="block text-xs text-slate-400 mb-1">Campaign Workspace / Label <span class="text-rose-400">*</span></label>
+                                <input id="f-workspace" type="text" required placeholder="Required campaign workspace or label" oninput="renderAllOutputs()"
                                     class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
                             </div>
                             <div>
@@ -112,19 +112,14 @@
                                 <input id="f-dest" type="text" value="https://example.com/landing" oninput="renderAllOutputs()"
                                     class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
                             </div>
-                            <div>
-                                <label class="block text-xs text-slate-400 mb-1">Event / Promo Slug (Optional)</label>
-                                <input id="f-event" type="text" placeholder="e.g. summer_promo_26" oninput="renderAllOutputs()"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
-                            </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            <!-- DOMAIN-SCOPED BLANK FIELDS -->
+                            <!-- DOMAIN-SCOPED USER-POPULATED FIELDS -->
                             <div class="relative combo-wrapper" data-field="source">
                                 <label class="block text-xs text-slate-400 mb-1">Source <span class="text-emerald-400/80">(Domain-only • Blank)</span></label>
                                 <input id="search-source" type="text" placeholder="Type to search or add..." autocomplete="off"
-                                    onfocus="openCombo('source')" oninput="filterCombo('source')"
+                                    onfocus="openCombo('source')" oninput="handleDynamicInput('source')"
                                     class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
                                 <input type="hidden" id="f-source" value="">
                                 <div id="list-source" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
@@ -134,7 +129,7 @@
                             <div class="relative combo-wrapper" data-field="product">
                                 <label class="block text-xs text-slate-400 mb-1">Product <span class="text-emerald-400/80">(Domain-only • Blank)</span></label>
                                 <input id="search-product" type="text" placeholder="Type to search or add..." autocomplete="off"
-                                    onfocus="openCombo('product')" oninput="filterCombo('product')"
+                                    onfocus="openCombo('product')" oninput="handleDynamicInput('product')"
                                     class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
                                 <input type="hidden" id="f-product" value="">
                                 <div id="list-product" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
@@ -144,7 +139,7 @@
                             <div class="relative combo-wrapper" data-field="subproduct">
                                 <label class="block text-xs text-slate-400 mb-1">Sub-Product <span class="text-emerald-400/80">(Domain-only • Blank)</span></label>
                                 <input id="search-subproduct" type="text" placeholder="Type to search or add..." autocomplete="off"
-                                    onfocus="openCombo('subproduct')" oninput="filterCombo('subproduct')"
+                                    onfocus="openCombo('subproduct')" oninput="handleDynamicInput('subproduct')"
                                     class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
                                 <input type="hidden" id="f-subproduct" value="">
                                 <div id="list-subproduct" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
@@ -154,11 +149,31 @@
                             <div class="relative combo-wrapper" data-field="placement">
                                 <label class="block text-xs text-slate-400 mb-1">Placement <span class="text-emerald-400/80">(Domain-only • Blank)</span></label>
                                 <input id="search-placement" type="text" placeholder="Type to search or add..." autocomplete="off"
-                                    onfocus="openCombo('placement')" oninput="filterCombo('placement')"
+                                    onfocus="openCombo('placement')" oninput="handleDynamicInput('placement')"
                                     class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
                                 <input type="hidden" id="f-placement" value="">
                                 <div id="list-placement" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
                                 <span id="preview-placement" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                            </div>
+
+                            <div class="relative combo-wrapper" data-field="objective">
+                                <label class="block text-xs text-slate-400 mb-1">Objective <span class="text-emerald-400/80">(Domain-only • Blank)</span></label>
+                                <input id="search-objective" type="text" placeholder="Type to search or add..." autocomplete="off"
+                                    onfocus="openCombo('objective')" oninput="handleDynamicInput('objective')"
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                                <input type="hidden" id="f-objective" value="">
+                                <div id="list-objective" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
+                                <span id="preview-objective" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                            </div>
+
+                            <div class="relative combo-wrapper" data-field="journey">
+                                <label class="block text-xs text-slate-400 mb-1">Journey <span class="text-emerald-400/80">(Domain-only • Blank)</span></label>
+                                <input id="search-journey" type="text" placeholder="Type to search or add..." autocomplete="off"
+                                    onfocus="openCombo('journey')" oninput="handleDynamicInput('journey')"
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                                <input type="hidden" id="f-journey" value="">
+                                <div id="list-journey" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
+                                <span id="preview-journey" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
                             <!-- EXHAUSTIVE PRE-POPULATED LISTS -->
@@ -171,15 +186,6 @@
                                 <span id="preview-funnel" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
-                            <div class="relative combo-wrapper" data-field="objective">
-                                <label class="block text-xs text-slate-400 mb-1">Objective</label>
-                                <input id="search-objective" type="text" readonly onfocus="openCombo('objective')"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 cursor-pointer">
-                                <input type="hidden" id="f-objective" value="">
-                                <div id="list-objective" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
-                                <span id="preview-objective" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
-                            </div>
-
                             <div class="relative combo-wrapper" data-field="tactic">
                                 <label class="block text-xs text-slate-400 mb-1">Tactic</label>
                                 <input id="search-tactic" type="text" readonly onfocus="openCombo('tactic')"
@@ -187,15 +193,6 @@
                                 <input type="hidden" id="f-tactic" value="">
                                 <div id="list-tactic" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
                                 <span id="preview-tactic" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
-                            </div>
-
-                            <div class="relative combo-wrapper" data-field="journey">
-                                <label class="block text-xs text-slate-400 mb-1">Journey</label>
-                                <input id="search-journey" type="text" readonly onfocus="openCombo('journey')"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 cursor-pointer">
-                                <input type="hidden" id="f-journey" value="">
-                                <div id="list-journey" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
-                                <span id="preview-journey" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
                             <div class="relative combo-wrapper" data-field="medium">
@@ -297,7 +294,7 @@
                         <div class="flex items-center justify-between border-b border-slate-800 pb-4">
                             <div>
                                 <h2 class="text-xl font-bold tracking-tight">Example URLs</h2>
-                                <p class="text-xs text-slate-400">Full expanded UTM query string preview.</p>
+                                <p class="text-xs text-slate-400">Full expanded UTM query string preview (<code class="text-emerald-400">utm_term</code> included unless Dynamic Creative is checked).</p>
                             </div>
                             <span id="exampleCountBadge" class="text-xs font-mono text-slate-400">0 URLs</span>
                         </div>
@@ -310,7 +307,7 @@
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
                             <div>
                                 <h2 class="text-xl font-bold tracking-tight">Final URLs</h2>
-                                <p class="text-xs text-slate-400">Tokenized production URLs with campaign key (<code class="text-emerald-400">k</code>) and creative key (<code class="text-emerald-400">ck</code>).</p>
+                                <p class="text-xs text-slate-400">Tokenized production URLs with campaign key (<code class="text-emerald-400">k</code>) and creative key (<code class="text-emerald-400">ck</code> when not Dynamic Creative).</p>
                             </div>
                             <button type="button" id="commitAndCsvBtn" onclick="commitHistoryAndExportCsv()"
                                 class="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-semibold text-xs sm:text-sm transition-colors cursor-pointer">
@@ -375,8 +372,8 @@
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const DOMAIN_SCOPED_FIELDS = new Set(['source', 'product', 'subproduct', 'placement']);
-        const EXHAUSTIVE_PREPOPULATED_FIELDS = ['funnel', 'objective', 'tactic', 'journey', 'medium', 'region', 'state', 'lang'];
+        const DOMAIN_SCOPED_FIELDS = new Set(['source', 'product', 'subproduct', 'placement', 'objective', 'journey']);
+        const EXHAUSTIVE_PREPOPULATED_FIELDS = ['funnel', 'tactic', 'medium', 'region', 'state', 'lang'];
         const VOWELS = new Set(['a', 'e', 'i', 'o', 'u']);
 
         let TAXONOMY = {
@@ -384,10 +381,10 @@
             product: [],
             subproduct: [],
             placement: [],
-            funnel: [],
             objective: [],
-            tactic: [],
             journey: [],
+            funnel: [],
+            tactic: [],
             medium: [],
             region: [],
             state: [],
@@ -431,6 +428,45 @@
 
         function stripExtension(filename) {
             return String(filename || '').replace(/\.[^/.]+$/, '');
+        }
+
+        function getFieldCode(field) {
+            const hiddenVal = (document.getElementById(`f-${field}`)?.value || '').trim();
+            if (hiddenVal) return hiddenVal;
+            if (DOMAIN_SCOPED_FIELDS.has(field)) {
+                const typedVal = (document.getElementById(`search-${field}`)?.value || '').trim();
+                if (typedVal) return abbreviate4PlusDigits(typedVal);
+            }
+            return '';
+        }
+
+        function handleDynamicInput(field) {
+            const rawVal = document.getElementById(`search-${field}`).value;
+            const trimmed = rawVal.trim();
+            const q = trimmed.toLowerCase();
+
+            const exactMatch = (TAXONOMY[field] || []).find(
+                item => item.display_name.trim().toLowerCase() === q
+            );
+
+            if (exactMatch) {
+                document.getElementById(`f-${field}`).value = exactMatch.abbreviation;
+                document.getElementById(`preview-${field}`).textContent = `URL code: ${exactMatch.abbreviation}`;
+            } else if (trimmed) {
+                const liveCode = abbreviate4PlusDigits(trimmed);
+                document.getElementById(`f-${field}`).value = '';
+                document.getElementById(`preview-${field}`).textContent = `URL code: ${liveCode} (unsaved)`;
+            } else {
+                document.getElementById(`f-${field}`).value = '';
+                document.getElementById(`preview-${field}`).textContent = 'URL code: —';
+            }
+
+            const matches = (TAXONOMY[field] || []).filter(item =>
+                item.display_name.toLowerCase().includes(q) || item.abbreviation.toLowerCase().includes(q)
+            );
+            renderComboList(field, matches, trimmed);
+            document.getElementById(`list-${field}`).classList.remove('hidden');
+            renderAllOutputs();
         }
 
         async function handleSignIn(event) {
@@ -522,18 +558,12 @@
         function openCombo(field) {
             document.querySelectorAll('.combo-list').forEach(el => el.classList.add('hidden'));
             const rawVal = document.getElementById(`search-${field}`).value;
-            renderComboList(field, TAXONOMY[field] || [], rawVal);
+            renderComboList(field, TAXONOMY[field] || [], rawVal.trim());
             document.getElementById(`list-${field}`).classList.remove('hidden');
         }
 
         function filterCombo(field) {
-            const rawVal = document.getElementById(`search-${field}`).value;
-            const q = rawVal.toLowerCase().trim();
-            const matches = (TAXONOMY[field] || []).filter(item =>
-                item.display_name.toLowerCase().includes(q) || item.abbreviation.toLowerCase().includes(q)
-            );
-            renderComboList(field, matches, rawVal.trim());
-            document.getElementById(`list-${field}`).classList.remove('hidden');
+            handleDynamicInput(field);
         }
 
         function renderComboList(field, items, rawQuery) {
@@ -724,26 +754,25 @@
         }
 
         function buildGeneratedRecords() {
-            const workspace = (document.getElementById('f-workspace').value || '').trim() || 'Default Campaign';
+            const workspace = (document.getElementById('f-workspace').value || '').trim();
             const rawDest = (document.getElementById('f-dest').value || '').trim() || 'https://example.com';
             const normalizedDest = /^https?:\/\//i.test(rawDest) ? rawDest : `https://${rawDest}`;
-            const eventSlug = abbreviate4PlusDigits(document.getElementById('f-event').value || '');
 
-            const src = document.getElementById('f-source').value || '';
-            const product = document.getElementById('f-product').value || '';
-            const subproduct = document.getElementById('f-subproduct').value || '';
-            const placement = document.getElementById('f-placement').value || '';
-            const funnel = document.getElementById('f-funnel').value || '';
-            const obj = document.getElementById('f-objective').value || '';
-            const tactic = document.getElementById('f-tactic').value || '';
-            const journey = document.getElementById('f-journey').value || '';
-            const medium = document.getElementById('f-medium').value || '';
-            const region = document.getElementById('f-region').value || '';
-            const state = document.getElementById('f-state').value || '';
-            const lang = document.getElementById('f-lang').value || '';
+            const src = getFieldCode('source');
+            const product = getFieldCode('product');
+            const subproduct = getFieldCode('subproduct');
+            const placement = getFieldCode('placement');
+            const obj = getFieldCode('objective');
+            const journey = getFieldCode('journey');
+            const funnel = getFieldCode('funnel');
+            const tactic = getFieldCode('tactic');
+            const medium = getFieldCode('medium');
+            const region = getFieldCode('region');
+            const state = getFieldCode('state');
+            const lang = getFieldCode('lang');
             const isDco = document.getElementById('f-dynamic-creative').checked;
 
-            const hashSource = `${activeDomain}|${src}|${medium}|${product}|${subproduct}|${funnel}|${obj}|${tactic}|${journey}|${region}|${state}|${lang}|${placement}|${eventSlug}`;
+            const hashSource = `${activeDomain}|${workspace}|${src}|${medium}|${product}|${subproduct}|${funnel}|${obj}|${tactic}|${journey}|${region}|${state}|${lang}|${placement}`;
             let hash = 0;
             for (let i = 0; i < hashSource.length; i++) {
                 hash = ((hash << 5) - hash) + hashSource.charCodeAt(i);
@@ -751,20 +780,26 @@
             }
             const k = Math.abs(hash).toString(36);
 
-            const campaignSlug = [funnel, obj, tactic, journey, product, subproduct, region, state, eventSlug, lang]
+            const campaignSlug = [funnel, obj, tactic, journey, product, subproduct, region, state, lang]
                 .filter(Boolean)
                 .join('-');
 
             let targets = [];
             if (isDco) {
-                targets = [{ creativeName: 'Dynamic Creative (DCO)', ck: 'dco', isDynamic: true }];
+                targets = [{ creativeName: 'Dynamic Creative (DCO)', ck: 'dco', isDynamic: true, isPreviewOnly: false }];
             } else {
                 const selected = uploadedCreativeAssets.filter(a => a.selected);
-                targets = selected.map((a, idx) => ({
-                    creativeName: a.creativeName || `asset_${idx + 1}`,
-                    ck: abbreviate4PlusDigits(a.creativeName) || `crtv${idx + 1}`,
-                    isDynamic: false
-                }));
+                if (selected.length) {
+                    targets = selected.map((a, idx) => ({
+                        creativeName: a.creativeName || `asset_${idx + 1}`,
+                        ck: abbreviate4PlusDigits(a.creativeName) || `crtv${idx + 1}`,
+                        isDynamic: false,
+                        isPreviewOnly: false
+                    }));
+                } else {
+                    // Populate live preview from completed Campaign Builder fields even before assets are added
+                    targets = [{ creativeName: 'Campaign Preview (No asset selected)', ck: 'prvw', isDynamic: false, isPreviewOnly: true }];
+                }
             }
 
             return targets.map(target => {
@@ -815,10 +850,10 @@
                     medium,
                     region,
                     state_province: state,
-                    event_campaign: eventSlug || null,
                     language: lang,
                     creative_name: target.creativeName,
-                    is_dynamic_creative: target.isDynamic
+                    is_dynamic_creative: target.isDynamic,
+                    _isPreviewOnly: target.isPreviewOnly
                 };
             });
         }
@@ -830,16 +865,10 @@
             const exampleEl = document.getElementById('exampleUrlsList');
             const finalEl = document.getElementById('finalUrlsList');
 
-            if (!records.length) {
-                exampleEl.innerHTML = `<div class="p-4 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-500">Select at least one creative asset above (or check Dynamic Creative) to preview Example URLs.</div>`;
-                finalEl.innerHTML = `<div class="p-4 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-500">Select at least one creative asset above (or check Dynamic Creative) to preview Final URLs.</div>`;
-                return;
-            }
-
             exampleEl.innerHTML = records.map(r => `
                 <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div class="min-w-0 space-y-1">
-                        <span class="text-[11px] font-medium text-slate-300">${escapeHtml(r.creative_name)}</span>
+                        <span class="text-[11px] font-medium ${r._isPreviewOnly ? 'text-amber-400' : 'text-slate-300'}">${escapeHtml(r.creative_name)}</span>
                         <p class="font-mono text-xs text-sky-400 break-all">${escapeHtml(r.full_utm_url)}</p>
                     </div>
                     <button type="button" onclick="copyText('${r.full_utm_url.replace(/'/g, "\\'")}', this)"
@@ -853,7 +882,7 @@
                 <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div class="min-w-0 space-y-1">
                         <div class="flex items-center gap-2">
-                            <span class="text-[11px] font-medium text-slate-300">${escapeHtml(r.creative_name)}</span>
+                            <span class="text-[11px] font-medium ${r._isPreviewOnly ? 'text-amber-400' : 'text-slate-300'}">${escapeHtml(r.creative_name)}</span>
                             <span class="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
                                 ${r.is_dynamic_creative ? `k=${escapeHtml(r.url_key)} (DCO)` : `k=${escapeHtml(r.url_key)} &amp; ck=${escapeHtml(r.creative_key)}`}
                             </span>
@@ -889,15 +918,25 @@
                 return;
             }
 
-            const records = buildGeneratedRecords();
-            if (!records.length) {
-                statusEl.textContent = 'Select at least one creative asset or enable Dynamic Creative first.';
+            const workspaceVal = (document.getElementById('f-workspace').value || '').trim();
+            if (!workspaceVal) {
+                statusEl.textContent = 'Campaign Workspace / Label is required before committing or exporting.';
+                statusEl.className = 'text-xs text-rose-400';
+                document.getElementById('f-workspace').focus();
+                return;
+            }
+
+            const isDco = document.getElementById('f-dynamic-creative').checked;
+            const selectedAssets = uploadedCreativeAssets.filter(a => a.selected);
+            if (!isDco && !selectedAssets.length) {
+                statusEl.textContent = 'Upload or select at least one creative asset—or check Dynamic Creative—before committing.';
                 statusEl.className = 'text-xs text-amber-400';
                 return;
             }
 
+            const records = buildGeneratedRecords().map(({ _isPreviewOnly, ...dbRow }) => dbRow);
             if (!records[0].source) {
-                statusEl.textContent = 'Please select or add a Source before committing.';
+                statusEl.textContent = 'Please enter a Source before committing.';
                 statusEl.className = 'text-xs text-amber-400';
                 return;
             }
@@ -942,7 +981,6 @@
                 region: r.region,
                 state_province: r.state_province,
                 language: r.language,
-                event_campaign: r.event_campaign || '',
                 creative_name: r.creative_name,
                 dynamic_creative: r.is_dynamic_creative,
                 campaign_key_k: r.url_key,
