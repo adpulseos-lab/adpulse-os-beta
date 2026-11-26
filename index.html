@@ -3,346 +3,359 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AdPulse OS - Campaign Builder &amp; LinkRot Sentinel</title>
+    <title>AdPulse OS - Campaign Builder, History &amp; LinkRot Sentinel</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        };
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <style>
         .combo-list::-webkit-scrollbar { width: 6px; }
-        .combo-list::-webkit-scrollbar-track { background: #020617; }
-        .combo-list::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+        .combo-list::-webkit-scrollbar-track { background: transparent; }
+        .combo-list::-webkit-scrollbar-thumb { background: #64748b; border-radius: 3px; }
         .combo-list::-webkit-scrollbar-thumb:hover { background: #10b981; }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-emerald-500 selection:text-slate-950">
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen font-sans antialiased selection:bg-emerald-500 selection:text-slate-950 transition-colors">
     <!-- Beta Login Overlay -->
-    <div id="authGate" class="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur flex items-center justify-center p-4">
-        <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5 shadow-2xl">
+    <div id="authGate" class="fixed inset-0 z-50 bg-slate-100/95 dark:bg-slate-950/95 backdrop-blur flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-5 shadow-2xl">
             <div class="space-y-1">
-                <span class="text-xs font-mono uppercase tracking-wider text-emerald-400">AdPulse OS • Private Beta</span>
-                <h1 class="text-xl font-bold text-slate-100">Sign in to workspace</h1>
-                <p class="text-xs text-slate-400">Access is restricted to approved beta emails. Users on the same email domain share custom taxonomies and campaign history.</p>
+                <span class="text-xs font-mono uppercase tracking-wider text-emerald-600 dark:text-emerald-400">AdPulse OS • Private Beta</span>
+                <h1 class="text-xl font-bold text-slate-900 dark:text-slate-100">Sign in to workspace</h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Access is restricted to approved beta emails. Users on the same email domain share custom taxonomies and campaign history.</p>
             </div>
             <form id="loginForm" onsubmit="handleSignIn(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">Work / Beta Email</label>
+                    <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Work / Beta Email</label>
                     <input id="loginEmail" type="email" required placeholder="name@company.com"
-                        class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                        class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500">
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">Password</label>
+                    <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Password</label>
                     <input id="loginPassword" type="password" required placeholder="••••••••"
-                        class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                        class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500">
                 </div>
                 <button type="submit" id="loginSubmitBtn"
-                    class="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-semibold text-sm transition-colors cursor-pointer">
+                    class="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white dark:text-slate-950 font-semibold text-sm transition-colors cursor-pointer">
                     Sign in
                 </button>
-                <p id="loginError" class="text-xs text-rose-400 min-h-[1rem]"></p>
+                <p id="loginError" class="text-xs text-rose-500 dark:text-rose-400 min-h-[1rem]"></p>
             </form>
         </div>
     </div>
 
     <!-- Main App Shell -->
     <div id="appShell" class="min-h-screen flex hidden">
-        <aside class="w-64 bg-slate-900 border-r border-slate-800 p-4 flex flex-col justify-between hidden lg:flex select-none">
+        <aside class="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-between hidden lg:flex select-none">
             <div>
                 <div class="flex items-center gap-3 px-2 mb-8">
-                    <div class="w-9 h-9 rounded-xl bg-emerald-400 flex items-center justify-center text-slate-950 font-bold">AP</div>
+                    <div class="w-9 h-9 rounded-xl bg-emerald-500 dark:bg-emerald-400 flex items-center justify-center text-white dark:text-slate-950 font-bold">AP</div>
                     <div class="flex items-baseline font-bold tracking-tight text-lg">
                         <span>AdPulse</span>
-                        <span class="text-emerald-400 text-xs ml-1 font-semibold uppercase tracking-wider">OS</span>
+                        <span class="text-emerald-600 dark:text-emerald-400 text-xs ml-1 font-semibold uppercase tracking-wider">OS</span>
                     </div>
                 </div>
                 <nav class="space-y-1 text-sm font-medium">
-                    <button type="button" onclick="switchView('builder')" id="nav-builder" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-emerald-500/10 text-emerald-400 text-left cursor-pointer">
+                    <button type="button" onclick="switchView('builder')" id="nav-builder" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-left cursor-pointer">
                         Campaign builder
                     </button>
-                    <button type="button" onclick="switchView('history')" id="nav-history" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-200 text-left cursor-pointer">
-                        Campaign history &amp; LinkRot
+                    <button type="button" onclick="switchView('history')" id="nav-history" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200 text-left cursor-pointer">
+                        Campaign History
+                    </button>
+                    <button type="button" onclick="switchView('linkrot')" id="nav-linkrot" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200 text-left cursor-pointer">
+                        LinkRot Sentinel
                     </button>
                 </nav>
             </div>
-            <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs text-slate-400 space-y-2">
-                <div>
-                    <p class="font-medium text-slate-300">Active Domain Scope</p>
-                    <p id="sidebarDomain" class="text-emerald-400 font-mono truncate">—</p>
-                </div>
-                <button type="button" onclick="handleSignOut()" class="w-full py-1.5 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-xs cursor-pointer">
-                    Sign out
-                </button>
+            <div class="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
+                <p class="font-medium text-slate-700 dark:text-slate-300">Active Domain Space</p>
+                <p id="sidebarDomain" class="text-emerald-600 dark:text-emerald-400 font-mono truncate mt-0.5">—</p>
             </div>
         </aside>
 
         <main class="flex-1 flex flex-col min-w-0">
-            <header class="h-16 border-b border-slate-800 bg-slate-900/50 backdrop-blur px-6 flex items-center justify-between">
-                <div class="text-sm text-slate-400 flex items-center gap-4">
-                    <div>Workspace / <span id="breadcrumb-current" class="text-slate-100 font-medium">Campaign builder</span></div>
+            <header class="min-h-16 py-2.5 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/50 backdrop-blur px-6 flex items-center justify-between gap-4">
+                <div class="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-4">
+                    <div>Workspace / <span id="breadcrumb-current" class="text-slate-900 dark:text-slate-100 font-medium">Campaign builder</span></div>
                     <div class="flex lg:hidden gap-2">
-                        <button type="button" onclick="switchView('builder')" class="px-2.5 py-1 rounded bg-slate-800 text-xs text-slate-200">Builder</button>
-                        <button type="button" onclick="switchView('history')" class="px-2.5 py-1 rounded bg-slate-800 text-xs text-slate-200">History</button>
+                        <button type="button" onclick="switchView('builder')" class="px-2.5 py-1 rounded bg-slate-200 dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-200">Builder</button>
+                        <button type="button" onclick="switchView('history')" class="px-2.5 py-1 rounded bg-slate-200 dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-200">History</button>
+                        <button type="button" onclick="switchView('linkrot')" class="px-2.5 py-1 rounded bg-slate-200 dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-200">LinkRot</button>
                     </div>
                 </div>
-                <div class="text-right">
-                    <p id="headerUserEmail" class="text-xs font-mono text-emerald-400"></p>
-                    <p id="vocabLoadStatus" class="text-[11px] text-slate-400">Connecting to Supabase...</p>
+                <div class="flex items-center gap-4">
+                    <button type="button" id="themeToggleBtn" onclick="toggleTheme()"
+                        class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 cursor-pointer">
+                        ☀️ Light Mode
+                    </button>
+                    <div class="text-right flex flex-col items-end">
+                        <p id="headerUserEmail" class="text-xs font-mono text-emerald-600 dark:text-emerald-400"></p>
+                        <button type="button" onclick="handleSignOut()" class="mt-0.5 text-[11px] font-medium text-rose-600 dark:text-rose-400 hover:underline cursor-pointer">
+                            Sign Out
+                        </button>
+                        <p id="vocabLoadStatus" class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Connecting to Supabase...</p>
+                    </div>
                 </div>
             </header>
 
             <div class="p-8 max-w-7xl w-full mx-auto space-y-6">
                 <!-- BUILDER VIEW -->
                 <div id="view-builder" class="space-y-6">
-                    <section class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-6 shadow-xl">
-                        <div class="border-b border-slate-800 pb-4">
+                    <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 space-y-6 shadow-sm dark:shadow-xl">
+                        <div class="border-b border-slate-200 dark:border-slate-800 pb-4">
                             <h1 class="text-xl font-bold tracking-tight">Campaign Builder</h1>
-                            <p class="text-xs text-slate-400">
-                                All fields are mandatory. <span class="text-slate-200 font-medium">Brand, Product, Sub-Product, Placement, Objective, and Journey</span> are scoped to your email domain (<span id="builderDomainInline" class="font-mono text-emerald-400">—</span>).
+                            <p class="text-xs text-slate-500 dark:text-slate-400">
+                                All fields are mandatory. <span class="text-slate-800 dark:text-slate-200 font-medium">Brand, Product, Sub-Product, Placement, Objective, and Journey</span> are scoped to your email domain (<span id="builderDomainInline" class="font-mono text-emerald-600 dark:text-emerald-400">—</span>).
                             </p>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs text-slate-400 mb-1">Campaign Workspace / Label <span class="text-rose-400">*</span></label>
+                                <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Campaign Workspace / Label <span class="text-rose-500">*</span></label>
                                 <input id="f-workspace" type="text" required placeholder="Required campaign workspace or label" oninput="updateWorkspacePreview(); renderAllOutputs();"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
-                                <span id="preview-workspace" class="text-[11px] text-emerald-400 mt-1 block font-mono">utm_content code: —</span>
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500">
+                                <span id="preview-workspace" class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 block font-mono">utm_content code: —</span>
                             </div>
                             <div>
-                                <label class="block text-xs text-slate-400 mb-1">Destination URL <span class="text-rose-400">*</span></label>
+                                <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Destination URL <span class="text-rose-500">*</span></label>
                                 <input id="f-dest" type="text" required value="https://example.com/landing" oninput="renderAllOutputs()"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500">
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             <!-- DOMAIN-SCOPED FIELDS -->
                             <div class="relative combo-wrapper" data-field="brand">
-                                <label class="block text-xs text-slate-400 mb-1">Brand <span class="text-rose-400">*</span> <span class="text-emerald-400/80">(Domain-only)</span></label>
+                                <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Brand <span class="text-rose-500">*</span> <span class="text-emerald-600 dark:text-emerald-400/80">(Domain-only)</span></label>
                                 <input id="search-brand" type="text" required placeholder="Type to search or add..." autocomplete="off"
                                     onfocus="openCombo('brand')" oninput="handleDynamicInput('brand')"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500">
                                 <input type="hidden" id="f-brand" value="">
-                                <div id="list-brand" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
-                                <span id="preview-brand" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                                <div id="list-brand" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-200 dark:divide-slate-800/50"></div>
+                                <span id="preview-brand" class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
                             <div class="relative combo-wrapper" data-field="source">
-                                <label class="block text-xs text-slate-400 mb-1">Source <span class="text-rose-400">*</span></label>
+                                <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Source <span class="text-rose-500">*</span></label>
                                 <input id="search-source" type="text" required placeholder="Search or add source..." autocomplete="off"
                                     onfocus="openCombo('source')" oninput="handleDynamicInput('source')"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500">
                                 <input type="hidden" id="f-source" value="">
-                                <div id="list-source" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
-                                <span id="preview-source" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                                <div id="list-source" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-200 dark:divide-slate-800/50"></div>
+                                <span id="preview-source" class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
                             <div class="relative combo-wrapper" data-field="product">
-                                <label class="block text-xs text-slate-400 mb-1">Product <span class="text-rose-400">*</span> <span class="text-emerald-400/80">(Domain-only)</span></label>
+                                <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Product <span class="text-rose-500">*</span> <span class="text-emerald-600 dark:text-emerald-400/80">(Domain-only)</span></label>
                                 <input id="search-product" type="text" required placeholder="Type to search or add..." autocomplete="off"
                                     onfocus="openCombo('product')" oninput="handleDynamicInput('product')"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500">
                                 <input type="hidden" id="f-product" value="">
-                                <div id="list-product" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
-                                <span id="preview-product" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                                <div id="list-product" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-200 dark:divide-slate-800/50"></div>
+                                <span id="preview-product" class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
                             <div class="relative combo-wrapper" data-field="subproduct">
-                                <label class="block text-xs text-slate-400 mb-1">Sub-Product <span class="text-rose-400">*</span> <span class="text-emerald-400/80">(Domain-only)</span></label>
+                                <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Sub-Product <span class="text-rose-500">*</span> <span class="text-emerald-600 dark:text-emerald-400/80">(Domain-only)</span></label>
                                 <input id="search-subproduct" type="text" required placeholder="Type to search or add..." autocomplete="off"
                                     onfocus="openCombo('subproduct')" oninput="handleDynamicInput('subproduct')"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500">
                                 <input type="hidden" id="f-subproduct" value="">
-                                <div id="list-subproduct" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
-                                <span id="preview-subproduct" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                                <div id="list-subproduct" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-200 dark:divide-slate-800/50"></div>
+                                <span id="preview-subproduct" class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
                             <div class="relative combo-wrapper" data-field="placement">
-                                <label class="block text-xs text-slate-400 mb-1">Placement <span class="text-rose-400">*</span> <span class="text-emerald-400/80">(Domain-only)</span></label>
+                                <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Placement <span class="text-rose-500">*</span> <span class="text-emerald-600 dark:text-emerald-400/80">(Domain-only)</span></label>
                                 <input id="search-placement" type="text" required placeholder="Type to search or add..." autocomplete="off"
                                     onfocus="openCombo('placement')" oninput="handleDynamicInput('placement')"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500">
                                 <input type="hidden" id="f-placement" value="">
-                                <div id="list-placement" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
-                                <span id="preview-placement" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                                <div id="list-placement" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-200 dark:divide-slate-800/50"></div>
+                                <span id="preview-placement" class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
                             <div class="relative combo-wrapper" data-field="objective">
-                                <label class="block text-xs text-slate-400 mb-1">Objective <span class="text-rose-400">*</span> <span class="text-emerald-400/80">(Domain-only)</span></label>
+                                <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Objective <span class="text-rose-500">*</span> <span class="text-emerald-600 dark:text-emerald-400/80">(Domain-only)</span></label>
                                 <input id="search-objective" type="text" required placeholder="Type to search or add..." autocomplete="off"
                                     onfocus="openCombo('objective')" oninput="handleDynamicInput('objective')"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500">
                                 <input type="hidden" id="f-objective" value="">
-                                <div id="list-objective" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
-                                <span id="preview-objective" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                                <div id="list-objective" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-200 dark:divide-slate-800/50"></div>
+                                <span id="preview-objective" class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
                             <div class="relative combo-wrapper" data-field="journey">
-                                <label class="block text-xs text-slate-400 mb-1">Journey <span class="text-rose-400">*</span> <span class="text-emerald-400/80">(Domain-only)</span></label>
+                                <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Journey <span class="text-rose-500">*</span> <span class="text-emerald-600 dark:text-emerald-400/80">(Domain-only)</span></label>
                                 <input id="search-journey" type="text" required placeholder="Type to search or add..." autocomplete="off"
                                     onfocus="openCombo('journey')" oninput="handleDynamicInput('journey')"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500">
                                 <input type="hidden" id="f-journey" value="">
-                                <div id="list-journey" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
-                                <span id="preview-journey" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                                <div id="list-journey" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-200 dark:divide-slate-800/50"></div>
+                                <span id="preview-journey" class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
                             <!-- LOCKED TAXONOMIES & FILTERED GEO/LANGUAGE -->
                             <div class="relative combo-wrapper" data-field="funnel">
-                                <label class="block text-xs text-slate-400 mb-1">Funnel <span class="text-rose-400">*</span></label>
+                                <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Funnel <span class="text-rose-500">*</span></label>
                                 <input id="search-funnel" type="text" required readonly onfocus="openCombo('funnel')"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 cursor-pointer">
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-200 cursor-pointer">
                                 <input type="hidden" id="f-funnel" value="">
-                                <div id="list-funnel" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
-                                <span id="preview-funnel" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                                <div id="list-funnel" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-200 dark:divide-slate-800/50"></div>
+                                <span id="preview-funnel" class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
                             <div class="relative combo-wrapper" data-field="tactic">
-                                <label class="block text-xs text-slate-400 mb-1">Tactic <span class="text-rose-400">*</span></label>
+                                <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Tactic <span class="text-rose-500">*</span></label>
                                 <input id="search-tactic" type="text" required readonly onfocus="openCombo('tactic')"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 cursor-pointer">
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-200 cursor-pointer">
                                 <input type="hidden" id="f-tactic" value="">
-                                <div id="list-tactic" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
-                                <span id="preview-tactic" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                                <div id="list-tactic" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-200 dark:divide-slate-800/50"></div>
+                                <span id="preview-tactic" class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
                             <div class="relative combo-wrapper" data-field="medium">
-                                <label class="block text-xs text-slate-400 mb-1">Medium <span class="text-rose-400">*</span></label>
+                                <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Medium <span class="text-rose-500">*</span></label>
                                 <input id="search-medium" type="text" required readonly onfocus="openCombo('medium')"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 cursor-pointer">
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-200 cursor-pointer">
                                 <input type="hidden" id="f-medium" value="">
-                                <div id="list-medium" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
-                                <span id="preview-medium" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                                <div id="list-medium" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-200 dark:divide-slate-800/50"></div>
+                                <span id="preview-medium" class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
                             <div class="relative combo-wrapper" data-field="region">
-                                <label class="block text-xs text-slate-400 mb-1">Country <span class="text-rose-400">*</span></label>
+                                <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Country <span class="text-rose-500">*</span></label>
                                 <input id="search-region" type="text" required placeholder="Search country..." autocomplete="off"
                                     onfocus="openCombo('region')" oninput="filterCombo('region')"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500">
                                 <input type="hidden" id="f-region" value="">
-                                <div id="list-region" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
-                                <span id="preview-region" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                                <div id="list-region" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-200 dark:divide-slate-800/50"></div>
+                                <span id="preview-region" class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
                             <div class="relative combo-wrapper" data-field="state">
-                                <label class="block text-xs text-slate-400 mb-1">State / Province <span class="text-rose-400">*</span></label>
+                                <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">State / Province <span class="text-rose-500">*</span></label>
                                 <input id="search-state" type="text" required placeholder="Select country first..." autocomplete="off"
                                     onfocus="openCombo('state')" oninput="filterCombo('state')"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500">
                                 <input type="hidden" id="f-state" value="">
-                                <div id="list-state" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
-                                <span id="preview-state" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                                <div id="list-state" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-200 dark:divide-slate-800/50"></div>
+                                <span id="preview-state" class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
 
                             <div class="relative combo-wrapper" data-field="lang">
-                                <label class="block text-xs text-slate-400 mb-1">Language <span class="text-rose-400">*</span></label>
+                                <label class="block text-xs text-slate-600 dark:text-slate-400 mb-1">Language <span class="text-rose-500">*</span></label>
                                 <input id="search-lang" type="text" required placeholder="Search language..." autocomplete="off"
                                     onfocus="openCombo('lang')" oninput="filterCombo('lang')"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                                    class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500">
                                 <input type="hidden" id="f-lang" value="">
-                                <div id="list-lang" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-800/50"></div>
-                                <span id="preview-lang" class="text-[11px] text-emerald-400 mt-1 block font-mono">URL code: —</span>
+                                <div id="list-lang" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg shadow-2xl divide-y divide-slate-200 dark:divide-slate-800/50"></div>
+                                <span id="preview-lang" class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 block font-mono">URL code: —</span>
                             </div>
                         </div>
                     </section>
 
                     <!-- CREATIVE ASSETS -->
-                    <section class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-5 shadow-xl">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                    <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 space-y-5 shadow-sm dark:shadow-xl">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
                             <div>
-                                <h2 class="text-xl font-bold tracking-tight">Creative Assets <span class="text-rose-400">*</span></h2>
-                                <p class="text-xs text-slate-400">Either check <span class="text-slate-200 font-medium">Dynamic Creative</span> or upload/select at least one creative asset.</p>
+                                <h2 class="text-xl font-bold tracking-tight">Creative Assets <span class="text-rose-500">*</span></h2>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Either check <span class="text-slate-800 dark:text-slate-200 font-medium">Dynamic Creative</span> or upload/select at least one creative asset.</p>
                             </div>
-                            <label class="inline-flex items-center gap-2.5 cursor-pointer select-none bg-slate-950 border border-slate-800 px-3.5 py-2.5 rounded-lg">
+                            <label class="inline-flex items-center gap-2.5 cursor-pointer select-none bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 px-3.5 py-2.5 rounded-lg">
                                 <input id="f-dynamic-creative" type="checkbox" onchange="toggleDynamicCreative()"
                                     class="w-4 h-4 accent-emerald-500 rounded cursor-pointer">
-                                <span class="text-xs font-semibold text-slate-200">Dynamic Creative (No <code class="text-emerald-400">utm_term</code> or <code class="text-emerald-400">ck</code>)</span>
+                                <span class="text-xs font-semibold text-slate-800 dark:text-slate-200">Dynamic Creative (No <code class="text-emerald-600 dark:text-emerald-400">utm_term</code> or <code class="text-emerald-600 dark:text-emerald-400">ck</code>)</span>
                             </label>
                         </div>
 
-                        <div id="dcoBanner" class="hidden p-3.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-300">
+                        <div id="dcoBanner" class="hidden p-3.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-700 dark:text-emerald-300">
                             <strong>Dynamic Creative Enabled:</strong> Asset-level <code class="font-mono">utm_term</code> and <code class="font-mono">ck</code> keys are omitted from both Example URLs and Final URLs.
                         </div>
 
                         <div id="assetUploadControls" class="space-y-4">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <label class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-700 hover:border-emerald-500 rounded-xl bg-slate-950/60 cursor-pointer transition-colors">
-                                    <span class="text-xs font-semibold text-slate-200">Upload Individual Files or .ZIP Archive</span>
-                                    <span class="text-[11px] text-slate-400 mt-1">Select images, videos, HTML5 banners, or .zip packages</span>
+                                <label class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-emerald-500 rounded-xl bg-slate-50/70 dark:bg-slate-950/60 cursor-pointer transition-colors">
+                                    <span class="text-xs font-semibold text-slate-800 dark:text-slate-200">Upload Individual Files or .ZIP Archive</span>
+                                    <span class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Select images, videos, HTML5 banners, or .zip packages</span>
                                     <input id="creativeFileInput" type="file" multiple accept=".zip,image/*,video/*,.html,.pdf"
                                         onchange="handleAssetFilesUpload(event)" class="hidden">
                                 </label>
 
-                                <div class="flex flex-col justify-center p-4 border border-slate-800 rounded-xl bg-slate-950/60 space-y-2">
-                                    <label class="text-xs text-slate-400">Or enter a creative asset name manually:</label>
+                                <div class="flex flex-col justify-center p-4 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/70 dark:bg-slate-950/60 space-y-2">
+                                    <label class="text-xs text-slate-600 dark:text-slate-400">Or enter a creative asset name manually:</label>
                                     <div class="flex gap-2">
                                         <input id="manualCreativeInput" type="text" placeholder="e.g. hero_banner_300x250_v1"
                                             onkeydown="if(event.key==='Enter'){event.preventDefault();addManualCreativeAsset();}"
-                                            class="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+                                            class="flex-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500">
                                         <button type="button" onclick="addManualCreativeAsset()"
-                                            class="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-emerald-400 cursor-pointer">
+                                            class="px-3.5 py-2 rounded-lg bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-xs font-semibold text-emerald-700 dark:text-emerald-400 cursor-pointer">
                                             + Add
                                         </button>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="flex items-center justify-between text-xs text-slate-400">
+                            <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
                                 <span id="assetUploadStatus">No files uploaded yet. Select assets below or check Dynamic Creative.</span>
                                 <div class="flex gap-3">
-                                    <button type="button" onclick="setAllAssetsSelected(true)" class="text-emerald-400 hover:underline cursor-pointer">Select all</button>
-                                    <button type="button" onclick="setAllAssetsSelected(false)" class="text-slate-400 hover:underline cursor-pointer">Deselect all</button>
+                                    <button type="button" onclick="setAllAssetsSelected(true)" class="text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer">Select all</button>
+                                    <button type="button" onclick="setAllAssetsSelected(false)" class="text-slate-500 dark:text-slate-400 hover:underline cursor-pointer">Deselect all</button>
                                 </div>
                             </div>
 
-                            <div id="creativeAssetsTable" class="divide-y divide-slate-800 border border-slate-800 rounded-xl bg-slate-950 overflow-hidden"></div>
+                            <div id="creativeAssetsTable" class="divide-y divide-slate-200 dark:divide-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 overflow-hidden"></div>
                         </div>
                     </section>
 
                     <!-- EXAMPLE URLS -->
-                    <section class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4 shadow-xl">
-                        <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                    <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 space-y-4 shadow-sm dark:shadow-xl">
+                        <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
                             <div>
                                 <h2 class="text-xl font-bold tracking-tight">Example URLs</h2>
-                                <p class="text-xs text-slate-400">Lowercase expanded UTM query string preview (<code class="text-emerald-400">utm_content</code> uses abbreviated workspace; <code class="text-emerald-400">utm_term</code> included unless Dynamic Creative is checked).</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Lowercase expanded UTM query string preview (<code class="text-emerald-600 dark:text-emerald-400">utm_content</code> uses abbreviated workspace; <code class="text-emerald-600 dark:text-emerald-400">utm_term</code> included unless Dynamic Creative is checked).</p>
                             </div>
-                            <span id="exampleCountBadge" class="text-xs font-mono text-slate-400">0 URLs</span>
+                            <span id="exampleCountBadge" class="text-xs font-mono text-slate-500 dark:text-slate-400">0 URLs</span>
                         </div>
 
                         <div id="exampleUrlsList" class="space-y-2.5 max-h-72 overflow-y-auto pr-1"></div>
                     </section>
 
                     <!-- FINAL URLS + COMMIT & EXPORT BUTTON UNDER FINAL URLS BLOCK -->
-                    <section class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4 shadow-xl">
-                        <div class="border-b border-slate-800 pb-4">
+                    <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 space-y-4 shadow-sm dark:shadow-xl">
+                        <div class="border-b border-slate-200 dark:border-slate-800 pb-4">
                             <h2 class="text-xl font-bold tracking-tight">Final URLs</h2>
-                            <p class="text-xs text-slate-400">Lowercase tokenized production URLs with campaign key (<code class="text-emerald-400">k</code>) and creative key (<code class="text-emerald-400">ck</code> when not Dynamic Creative).</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Lowercase tokenized production URLs with campaign key (<code class="text-emerald-600 dark:text-emerald-400">k</code>) and creative key (<code class="text-emerald-600 dark:text-emerald-400">ck</code> when not Dynamic Creative).</p>
                         </div>
 
                         <div id="finalUrlsList" class="space-y-2.5 max-h-72 overflow-y-auto pr-1"></div>
 
-                        <div class="pt-3 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                            <p id="commitStatusMessage" class="text-xs text-slate-400 min-h-[1rem]"></p>
+                        <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <p id="commitStatusMessage" class="text-xs text-slate-500 dark:text-slate-400 min-h-[1rem]"></p>
                             <button type="button" id="commitAndCsvBtn" onclick="commitHistoryAndExportCsv()"
-                                class="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-semibold text-xs sm:text-sm transition-colors cursor-pointer shrink-0">
+                                class="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white dark:text-slate-950 font-semibold text-xs sm:text-sm transition-colors cursor-pointer shrink-0">
                                 Commit to Domain History &amp; Export CSV
                             </button>
                         </div>
                     </section>
                 </div>
 
-                <!-- HISTORY & LINKROT SENTINEL VIEW -->
+                <!-- CAMPAIGN HISTORY VIEW (ALL URLS) -->
                 <div id="view-history" class="space-y-6 hidden">
                     <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                         <div>
-                            <h1 class="text-2xl font-bold tracking-tight">Campaign history &amp; LinkRot Sentinel</h1>
-                            <p class="text-sm text-slate-400">
-                                Server-side redirect &amp; parameter integrity monitor for <span id="historyDomainLabel" class="font-mono text-emerald-400">—</span>.
+                            <h1 class="text-2xl font-bold tracking-tight">Campaign History</h1>
+                            <p class="text-sm text-slate-500 dark:text-slate-400">
+                                Complete committed URL catalog across <span id="historyDomainLabel" class="font-mono text-emerald-600 dark:text-emerald-400">—</span>.
                             </p>
                         </div>
                         <div class="flex flex-wrap items-center gap-2.5">
                             <select id="historyHealthFilter" onchange="renderHistoryRows()"
-                                class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+                                class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-emerald-500">
                                 <option value="all">All statuses</option>
                                 <option value="healthy">Healthy</option>
                                 <option value="param_stripped">Param Stripped</option>
@@ -352,48 +365,22 @@
                             </select>
                             <input id="historySearchInput" type="text" placeholder="Filter by brand, creator, key, or URL..."
                                 oninput="renderHistoryRows()"
-                                class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
-                            <button type="button" id="checkAllDomainBtn" onclick="runDomainLinkRotSweep()"
-                                class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-semibold text-xs cursor-pointer">
-                                ⚡ Check All Domain Links
+                                class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-emerald-500">
+                            <button type="button" onclick="exportAllHistoryCsv()"
+                                class="px-3.5 py-2 rounded-lg bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-slate-200 cursor-pointer">
+                                ↓ Export Filtered CSV
                             </button>
                             <button type="button" onclick="loadDomainHistory()"
-                                class="px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-medium text-slate-200 cursor-pointer">
+                                class="px-3.5 py-2 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-slate-200 cursor-pointer">
                                 ↻ Refresh
                             </button>
                         </div>
                     </div>
 
-                    <!-- LinkRot KPI Summary Strip -->
-                    <div id="linkrotSummaryStrip" class="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3.5">
-                            <p class="text-[11px] text-slate-400 uppercase">Total Links</p>
-                            <p id="stat-total" class="text-xl font-bold text-slate-100 mt-1">0</p>
-                        </div>
-                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3.5">
-                            <p class="text-[11px] text-emerald-400 uppercase">Healthy</p>
-                            <p id="stat-healthy" class="text-xl font-bold text-emerald-400 mt-1">0</p>
-                        </div>
-                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3.5">
-                            <p class="text-[11px] text-amber-400 uppercase">Param Stripped</p>
-                            <p id="stat-stripped" class="text-xl font-bold text-amber-400 mt-1">0</p>
-                        </div>
-                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3.5">
-                            <p class="text-[11px] text-rose-400 uppercase">Broken</p>
-                            <p id="stat-broken" class="text-xl font-bold text-rose-400 mt-1">0</p>
-                        </div>
-                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3.5">
-                            <p class="text-[11px] text-slate-400 uppercase">Unchecked</p>
-                            <p id="stat-pending" class="text-xl font-bold text-slate-300 mt-1">0</p>
-                        </div>
-                    </div>
-
-                    <p id="linkrotSweepStatus" class="text-xs text-slate-400 min-h-[1rem]"></p>
-
-                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl overflow-x-auto">
+                    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm dark:shadow-xl overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="border-b border-slate-800 text-xs text-slate-400 uppercase tracking-wider">
+                                <tr class="border-b border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                                     <th class="py-3 px-3">Brand &amp; Keys</th>
                                     <th class="py-3 px-3">Creative / Mode</th>
                                     <th class="py-3 px-3">Final URL &amp; Resolved Landing</th>
@@ -402,9 +389,89 @@
                                     <th class="py-3 px-3 text-right">Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="historyTableBody" class="divide-y divide-slate-800/60 text-xs">
+                            <tbody id="historyTableBody" class="divide-y divide-slate-200 dark:divide-slate-800/60 text-xs">
                                 <tr>
                                     <td colspan="6" class="py-6 text-center text-slate-500">No history loaded yet.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- LINKROT SENTINEL VIEW -->
+                <div id="view-linkrot" class="space-y-6 hidden">
+                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                        <div>
+                            <h1 class="text-2xl font-bold tracking-tight">LinkRot Sentinel</h1>
+                            <p class="text-sm text-slate-500 dark:text-slate-400">
+                                Server-side redirect &amp; parameter integrity monitor for <span id="linkrotDomainLabel" class="font-mono text-emerald-600 dark:text-emerald-400">—</span>.
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2.5">
+                            <select id="linkrotHealthFilter" onchange="renderLinkRotRows()"
+                                class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-emerald-500">
+                                <option value="all">All statuses</option>
+                                <option value="healthy">Healthy</option>
+                                <option value="param_stripped">Param Stripped</option>
+                                <option value="broken">Broken (4xx/5xx/Loop)</option>
+                                <option value="timeout">Timeout / Unreachable</option>
+                                <option value="pending">Pending</option>
+                            </select>
+                            <input id="linkrotSearchInput" type="text" placeholder="Filter by brand, creator, key, or URL..."
+                                oninput="renderLinkRotRows()"
+                                class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-emerald-500">
+                            <button type="button" id="checkAllDomainBtn" onclick="runDomainLinkRotSweep()"
+                                class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white dark:text-slate-950 font-semibold text-xs cursor-pointer">
+                                ⚡ Check All Domain Links
+                            </button>
+                            <button type="button" onclick="loadDomainHistory()"
+                                class="px-3.5 py-2 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-slate-200 cursor-pointer">
+                                ↻ Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- LinkRot KPI Summary Strip -->
+                    <div id="linkrotSummaryStrip" class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 shadow-sm dark:shadow-none">
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 uppercase">Total Links</p>
+                            <p id="stat-total" class="text-xl font-bold text-slate-900 dark:text-slate-100 mt-1">0</p>
+                        </div>
+                        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 shadow-sm dark:shadow-none">
+                            <p class="text-[11px] text-emerald-600 dark:text-emerald-400 uppercase">Healthy</p>
+                            <p id="stat-healthy" class="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">0</p>
+                        </div>
+                        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 shadow-sm dark:shadow-none">
+                            <p class="text-[11px] text-amber-600 dark:text-amber-400 uppercase">Param Stripped</p>
+                            <p id="stat-stripped" class="text-xl font-bold text-amber-600 dark:text-amber-400 mt-1">0</p>
+                        </div>
+                        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 shadow-sm dark:shadow-none">
+                            <p class="text-[11px] text-rose-600 dark:text-rose-400 uppercase">Broken</p>
+                            <p id="stat-broken" class="text-xl font-bold text-rose-600 dark:text-rose-400 mt-1">0</p>
+                        </div>
+                        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 shadow-sm dark:shadow-none">
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 uppercase">Unchecked</p>
+                            <p id="stat-pending" class="text-xl font-bold text-slate-700 dark:text-slate-300 mt-1">0</p>
+                        </div>
+                    </div>
+
+                    <p id="linkrotSweepStatus" class="text-xs text-slate-500 dark:text-slate-400 min-h-[1rem]"></p>
+
+                    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm dark:shadow-xl overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                    <th class="py-3 px-3">Brand &amp; Keys</th>
+                                    <th class="py-3 px-3">Creative / Mode</th>
+                                    <th class="py-3 px-3">Final URL &amp; Resolved Landing</th>
+                                    <th class="py-3 px-3">LinkRot Status</th>
+                                    <th class="py-3 px-3">Last Checked</th>
+                                    <th class="py-3 px-3 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="linkrotTableBody" class="divide-y divide-slate-200 dark:divide-slate-800/60 text-xs">
+                                <tr>
+                                    <td colspan="6" class="py-6 text-center text-slate-500">No links loaded yet.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -446,6 +513,23 @@
         let activeUser = null;
         let activeDomain = '';
         let historyRecords = [];
+
+        function applyTheme(theme) {
+            const isDark = theme === 'dark';
+            document.documentElement.classList.toggle('dark', isDark);
+            localStorage.setItem('adpulse_theme', isDark ? 'dark' : 'light');
+            const btn = document.getElementById('themeToggleBtn');
+            if (btn) {
+                btn.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+            }
+        }
+
+        function toggleTheme() {
+            const currentlyDark = document.documentElement.classList.contains('dark');
+            applyTheme(currentlyDark ? 'light' : 'dark');
+        }
+
+        applyTheme(localStorage.getItem('adpulse_theme') || 'dark');
 
         function escapeHtml(str) {
             return String(str ?? '')
@@ -712,9 +796,9 @@
             if (!states.length) {
                 listEl.innerHTML = `
                     <button type="button" onclick="selectStateItem('Not Applicable', 'na', true)"
-                        class="w-full px-3 py-2 text-left text-xs hover:bg-slate-800 flex items-center justify-between cursor-pointer">
-                        <span class="text-slate-200">Not Applicable</span>
-                        <span class="text-emerald-400 font-mono ml-2">na</span>
+                        class="w-full px-3 py-2 text-left text-xs hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-between cursor-pointer">
+                        <span class="text-slate-800 dark:text-slate-200">Not Applicable</span>
+                        <span class="text-emerald-600 dark:text-emerald-400 font-mono ml-2">na</span>
                     </button>
                 `;
                 return;
@@ -723,9 +807,9 @@
             listEl.innerHTML = states.map(s => `
                 <button type="button"
                     onclick="selectStateItem('${s.displayName.replace(/'/g, "\\'")}', '${s.abbreviation.replace(/'/g, "\\'")}', true)"
-                    class="w-full px-3 py-2 text-left text-xs hover:bg-slate-800 flex items-center justify-between cursor-pointer">
-                    <span class="text-slate-200 truncate">${escapeHtml(s.displayName)}</span>
-                    <span class="text-emerald-400 font-mono ml-2">${escapeHtml(s.abbreviation)}</span>
+                    class="w-full px-3 py-2 text-left text-xs hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-between cursor-pointer">
+                    <span class="text-slate-800 dark:text-slate-200 truncate">${escapeHtml(s.displayName)}</span>
+                    <span class="text-emerald-600 dark:text-emerald-400 font-mono ml-2">${escapeHtml(s.abbreviation)}</span>
                 </button>
             `).join('');
         }
@@ -746,9 +830,9 @@
                 return `
                     <button type="button"
                         onclick="selectComboItem('${field}', '${item.display_name.replace(/'/g, "\\'")}', '${abbr.replace(/'/g, "\\'")}', true)"
-                        class="w-full px-3 py-2 text-left text-xs hover:bg-slate-800 flex items-center justify-between cursor-pointer">
-                        <span class="text-slate-200 truncate">${escapeHtml(item.display_name)}</span>
-                        <span class="text-emerald-400 font-mono ml-2">${escapeHtml(abbr)}</span>
+                        class="w-full px-3 py-2 text-left text-xs hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-between cursor-pointer">
+                        <span class="text-slate-800 dark:text-slate-200 truncate">${escapeHtml(item.display_name)}</span>
+                        <span class="text-emerald-600 dark:text-emerald-400 font-mono ml-2">${escapeHtml(abbr)}</span>
                     </button>
                 `;
             }).join('');
@@ -770,7 +854,7 @@
                     html += `
                         <button type="button"
                             onclick="saveDynamicVocab('${field}', '${rawQuery.replace(/'/g, "\\'")}', '${abbr}', '${domainParam}')"
-                            class="w-full px-3 py-2 text-left text-xs bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border-t border-slate-700 cursor-pointer">
+                            class="w-full px-3 py-2 text-left text-xs bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-t border-slate-200 dark:border-slate-700 cursor-pointer">
                             + Save "${escapeHtml(rawQuery)}" → code: <span class="font-mono">${escapeHtml(abbr)}</span>
                         </button>
                     `;
@@ -919,19 +1003,19 @@
             container.innerHTML = uploadedCreativeAssets.map(asset => {
                 const ck = (abbreviate4PlusDigits(asset.creativeName) || 'crtv').toLowerCase();
                 return `
-                    <div class="flex items-center justify-between gap-3 px-4 py-2.5 hover:bg-slate-900/70">
+                    <div class="flex items-center justify-between gap-3 px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-900/70">
                         <label class="flex items-center gap-3 min-w-0 flex-1 cursor-pointer">
                             <input type="checkbox" ${asset.selected ? 'checked' : ''}
                                 onchange="toggleAssetSelection('${asset.id}', this.checked)"
                                 class="w-4 h-4 accent-emerald-500 rounded cursor-pointer">
                             <div class="min-w-0">
-                                <p class="text-xs font-medium text-slate-200 truncate">${escapeHtml(asset.fileName)}</p>
+                                <p class="text-xs font-medium text-slate-800 dark:text-slate-200 truncate">${escapeHtml(asset.fileName)}</p>
                                 <p class="text-[11px] text-slate-500">Origin: ${escapeHtml(asset.sourceArchive)}</p>
                             </div>
                         </label>
-                        <span class="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded shrink-0">ck=${escapeHtml(ck)}</span>
+                        <span class="text-[11px] font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded shrink-0">ck=${escapeHtml(ck)}</span>
                         <button type="button" onclick="removeCreativeAsset('${asset.id}')"
-                            class="text-xs text-slate-400 hover:text-rose-400 px-1.5 cursor-pointer" title="Remove asset">✕</button>
+                            class="text-xs text-slate-400 hover:text-rose-500 px-1.5 cursor-pointer" title="Remove asset">✕</button>
                     </div>
                 `;
             }).join('');
@@ -1054,31 +1138,31 @@
             const finalEl = document.getElementById('finalUrlsList');
 
             exampleEl.innerHTML = records.map(r => `
-                <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div class="p-3 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div class="min-w-0 space-y-1">
-                        <span class="text-[11px] font-medium ${r._isPreviewOnly ? 'text-amber-400' : 'text-slate-300'}">${escapeHtml(r.creative_name)}</span>
-                        <p class="font-mono text-xs text-sky-400 break-all">${escapeHtml(r.full_utm_url)}</p>
+                        <span class="text-[11px] font-medium ${r._isPreviewOnly ? 'text-amber-600 dark:text-amber-400' : 'text-slate-700 dark:text-slate-300'}">${escapeHtml(r.creative_name)}</span>
+                        <p class="font-mono text-xs text-sky-600 dark:text-sky-400 break-all">${escapeHtml(r.full_utm_url)}</p>
                     </div>
                     <button type="button" onclick="copyText('${r.full_utm_url.replace(/'/g, "\\'")}', this)"
-                        class="shrink-0 px-3 py-1.5 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs text-slate-200 cursor-pointer">
+                        class="shrink-0 px-3 py-1.5 rounded bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-200 cursor-pointer">
                         Copy UTM
                     </button>
                 </div>
             `).join('');
 
             finalEl.innerHTML = records.map(r => `
-                <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div class="p-3 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div class="min-w-0 space-y-1">
                         <div class="flex items-center gap-2">
-                            <span class="text-[11px] font-medium ${r._isPreviewOnly ? 'text-amber-400' : 'text-slate-300'}">${escapeHtml(r.creative_name)}</span>
-                            <span class="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                            <span class="text-[11px] font-medium ${r._isPreviewOnly ? 'text-amber-600 dark:text-amber-400' : 'text-slate-700 dark:text-slate-300'}">${escapeHtml(r.creative_name)}</span>
+                            <span class="text-[11px] font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
                                 ${r.is_dynamic_creative ? `k=${escapeHtml(r.url_key)} (dco)` : `k=${escapeHtml(r.url_key)} &amp; ck=${escapeHtml(r.creative_key)}`}
                             </span>
                         </div>
-                        <p class="font-mono text-xs text-emerald-400 break-all">${escapeHtml(r.final_shortened_url)}</p>
+                        <p class="font-mono text-xs text-emerald-600 dark:text-emerald-400 break-all">${escapeHtml(r.final_shortened_url)}</p>
                     </div>
                     <button type="button" onclick="copyText('${r.final_shortened_url.replace(/'/g, "\\'")}', this)"
-                        class="shrink-0 px-3 py-1.5 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs text-slate-200 cursor-pointer">
+                        class="shrink-0 px-3 py-1.5 rounded bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-200 cursor-pointer">
                         Copy Final URL
                     </button>
                 </div>
@@ -1140,14 +1224,14 @@
 
             if (!activeUser || !activeDomain) {
                 statusEl.textContent = 'You must be signed in to commit URLs.';
-                statusEl.className = 'text-xs text-rose-400';
+                statusEl.className = 'text-xs text-rose-500 dark:text-rose-400';
                 return;
             }
 
             const validationError = validateMandatoryInputs();
             if (validationError) {
                 statusEl.textContent = validationError;
-                statusEl.className = 'text-xs text-rose-400';
+                statusEl.className = 'text-xs text-rose-500 dark:text-rose-400';
                 return;
             }
 
@@ -1155,7 +1239,7 @@
 
             btn.disabled = true;
             statusEl.textContent = `Committing ${records.length} URL(s) to domain history (${activeDomain})...`;
-            statusEl.className = 'text-xs text-slate-400';
+            statusEl.className = 'text-xs text-slate-500 dark:text-slate-400';
 
             const { error } = await supabaseClient
                 .from('campaign_links')
@@ -1165,17 +1249,18 @@
 
             if (error) {
                 statusEl.textContent = `Database commit failed: ${error.message}`;
-                statusEl.className = 'text-xs text-rose-400';
+                statusEl.className = 'text-xs text-rose-500 dark:text-rose-400';
                 return;
             }
 
-            downloadCampaignCsv(records);
+            downloadCampaignCsv(records, `adpulse-${activeDomain}-${records[0].url_key}.csv`);
             statusEl.textContent = `Committed ${records.length} URL(s) to ${activeDomain} history and downloaded CSV.`;
-            statusEl.className = 'text-xs text-emerald-400';
+            statusEl.className = 'text-xs text-emerald-600 dark:text-emerald-400';
             await loadDomainHistory();
         }
 
-        function downloadCampaignCsv(records) {
+        function downloadCampaignCsv(records, filename) {
+            if (!records || !records.length) return;
             const csvRows = records.map(r => ({
                 owner_domain: r.owner_domain,
                 created_by: r.created_by_email,
@@ -1199,7 +1284,11 @@
                 campaign_key_k: r.url_key,
                 creative_key_ck: r.is_dynamic_creative ? '' : r.creative_key,
                 example_utm_url: r.full_utm_url,
-                final_keyed_url: r.final_shortened_url
+                final_keyed_url: r.final_shortened_url,
+                link_health_status: r.link_health_status || 'pending',
+                http_status: r.http_status || '',
+                final_resolved_url: r.final_resolved_url || '',
+                last_checked_at: r.last_checked_at || ''
             }));
 
             const headers = Object.keys(csvRows[0]);
@@ -1213,54 +1302,18 @@
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `adpulse-${activeDomain}-${records[0].url_key}.csv`;
+            link.download = filename || `adpulse-${activeDomain}-export.csv`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
         }
 
-        async function loadDomainHistory() {
-            document.getElementById('historyDomainLabel').textContent = activeDomain || '—';
-            const tbody = document.getElementById('historyTableBody');
-            tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-500">Loading domain history...</td></tr>`;
+        function filterRecordsByControls(searchInputId, healthFilterId) {
+            const q = (document.getElementById(searchInputId)?.value || '').trim().toLowerCase();
+            const healthFilter = document.getElementById(healthFilterId)?.value || 'all';
 
-            const { data, error } = await supabaseClient
-                .from('campaign_links')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(200);
-
-            if (error) {
-                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-rose-400">${escapeHtml(error.message)}</td></tr>`;
-                return;
-            }
-
-            historyRecords = data || [];
-            updateLinkRotSummaryStats();
-            renderHistoryRows();
-        }
-
-        function updateLinkRotSummaryStats() {
-            const total = historyRecords.length;
-            const healthy = historyRecords.filter(r => r.link_health_status === 'healthy').length;
-            const stripped = historyRecords.filter(r => r.link_health_status === 'param_stripped').length;
-            const broken = historyRecords.filter(r => ['broken', 'timeout', 'unreachable'].includes(r.link_health_status)).length;
-            const pending = historyRecords.filter(r => !r.link_health_status || r.link_health_status === 'pending').length;
-
-            document.getElementById('stat-total').textContent = total;
-            document.getElementById('stat-healthy').textContent = healthy;
-            document.getElementById('stat-stripped').textContent = stripped;
-            document.getElementById('stat-broken').textContent = broken;
-            document.getElementById('stat-pending').textContent = pending;
-        }
-
-        function renderHistoryRows() {
-            const tbody = document.getElementById('historyTableBody');
-            const q = (document.getElementById('historySearchInput')?.value || '').trim().toLowerCase();
-            const healthFilter = document.getElementById('historyHealthFilter')?.value || 'all';
-
-            const filtered = historyRecords.filter(r => {
+            return historyRecords.filter(r => {
                 const statusVal = r.link_health_status || 'pending';
                 if (healthFilter !== 'all') {
                     if (healthFilter === 'broken') {
@@ -1280,68 +1333,141 @@
                     String(r.creative_key || '').toLowerCase().includes(q)
                 );
             });
+        }
 
+        function exportAllHistoryCsv() {
+            const filtered = filterRecordsByControls('historySearchInput', 'historyHealthFilter');
             if (!filtered.length) {
-                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-500">No links match the current filter for ${escapeHtml(activeDomain || 'your domain')}.</td></tr>`;
+                alert('No rows match the current filter to export.');
+                return;
+            }
+            downloadCampaignCsv(filtered, `adpulse-${activeDomain}-campaign-history.csv`);
+        }
+
+        async function loadDomainHistory() {
+            const domainText = activeDomain || '—';
+            document.getElementById('historyDomainLabel').textContent = domainText;
+            document.getElementById('linkrotDomainLabel').textContent = domainText;
+
+            const historyBody = document.getElementById('historyTableBody');
+            const linkrotBody = document.getElementById('linkrotTableBody');
+            const loadingRow = `<tr><td colspan="6" class="py-6 text-center text-slate-500">Loading domain URLs...</td></tr>`;
+
+            historyBody.innerHTML = loadingRow;
+            linkrotBody.innerHTML = loadingRow;
+
+            const { data, error } = await supabaseClient
+                .from('campaign_links')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(1000);
+
+            if (error) {
+                const errRow = `<tr><td colspan="6" class="py-6 text-center text-rose-500 dark:text-rose-400">${escapeHtml(error.message)}</td></tr>`;
+                historyBody.innerHTML = errRow;
+                linkrotBody.innerHTML = errRow;
                 return;
             }
 
-            tbody.innerHTML = filtered.map(row => {
+            historyRecords = data || [];
+            updateLinkRotSummaryStats();
+            renderHistoryRows();
+            renderLinkRotRows();
+        }
+
+        function updateLinkRotSummaryStats() {
+            const total = historyRecords.length;
+            const healthy = historyRecords.filter(r => r.link_health_status === 'healthy').length;
+            const stripped = historyRecords.filter(r => r.link_health_status === 'param_stripped').length;
+            const broken = historyRecords.filter(r => ['broken', 'timeout', 'unreachable'].includes(r.link_health_status)).length;
+            const pending = historyRecords.filter(r => !r.link_health_status || r.link_health_status === 'pending').length;
+
+            document.getElementById('stat-total').textContent = total;
+            document.getElementById('stat-healthy').textContent = healthy;
+            document.getElementById('stat-stripped').textContent = stripped;
+            document.getElementById('stat-broken').textContent = broken;
+            document.getElementById('stat-pending').textContent = pending;
+        }
+
+        function buildTableRowsHtml(records) {
+            return records.map(row => {
                 const statusVal = row.link_health_status || 'pending';
                 const badgeColor =
-                    statusVal === 'healthy' ? 'text-emerald-400 bg-emerald-500/10' :
-                    statusVal === 'param_stripped' ? 'text-amber-400 bg-amber-500/10' :
-                    ['broken', 'timeout', 'unreachable'].includes(statusVal) ? 'text-rose-400 bg-rose-500/10' :
-                    'text-slate-400 bg-slate-800';
+                    statusVal === 'healthy' ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-500/10' :
+                    statusVal === 'param_stripped' ? 'text-amber-700 dark:text-amber-400 bg-amber-500/10' :
+                    ['broken', 'timeout', 'unreachable'].includes(statusVal) ? 'text-rose-700 dark:text-rose-400 bg-rose-500/10' :
+                    'text-slate-600 dark:text-slate-400 bg-slate-200 dark:bg-slate-800';
 
                 const keyDisplay = row.is_dynamic_creative
                     ? `?k=${escapeHtml(row.url_key)}`
                     : `?k=${escapeHtml(row.url_key)}&amp;ck=${escapeHtml(row.creative_key)}`;
 
                 const modeBadge = row.is_dynamic_creative
-                    ? `<span class="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 font-mono">Dynamic Creative</span>`
-                    : `<span class="text-slate-300">${escapeHtml(row.creative_name || '—')}</span>`;
+                    ? `<span class="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-700 dark:text-purple-300 font-mono">Dynamic Creative</span>`
+                    : `<span class="text-slate-800 dark:text-slate-300">${escapeHtml(row.creative_name || '—')}</span>`;
 
                 const hopsText = typeof row.redirect_count === 'number' && row.redirect_count > 0
                     ? ` • ${row.redirect_count} hop${row.redirect_count === 1 ? '' : 's'}`
                     : '';
 
                 const resolvedLine = row.final_resolved_url && row.final_resolved_url !== row.final_shortened_url
-                    ? `<p class="font-mono text-[11px] text-slate-400 truncate max-w-md" title="${escapeHtml(row.final_resolved_url)}">→ ${escapeHtml(row.final_resolved_url)}</p>`
+                    ? `<p class="font-mono text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-md" title="${escapeHtml(row.final_resolved_url)}">→ ${escapeHtml(row.final_resolved_url)}</p>`
                     : '';
 
                 const errorLine = row.last_error_message
-                    ? `<p class="text-[11px] text-rose-300 mt-1">${escapeHtml(row.last_error_message)}</p>`
+                    ? `<p class="text-[11px] text-rose-600 dark:text-rose-300 mt-1">${escapeHtml(row.last_error_message)}</p>`
                     : '';
 
                 return `
-                    <tr class="hover:bg-slate-800/30">
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30">
                         <td class="py-3 px-3">
-                            <div class="font-mono text-emerald-400">${keyDisplay}</div>
-                            <div class="text-[11px] text-slate-400 mt-0.5">Brand: <span class="font-mono text-slate-200">${escapeHtml(row.brand || '—')}</span></div>
+                            <div class="font-mono text-emerald-600 dark:text-emerald-400">${keyDisplay}</div>
+                            <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Brand: <span class="font-mono text-slate-800 dark:text-slate-200">${escapeHtml(row.brand || '—')}</span></div>
                         </td>
                         <td class="py-3 px-3">
                             <div>${modeBadge}</div>
                             <div class="text-[11px] text-slate-500 mt-0.5">${escapeHtml(row.created_by_email || '')}</div>
                         </td>
                         <td class="py-3 px-3">
-                            <p class="font-mono text-slate-200 truncate max-w-md" title="${escapeHtml(row.final_shortened_url)}">${escapeHtml(row.final_shortened_url)}</p>
+                            <p class="font-mono text-slate-800 dark:text-slate-200 truncate max-w-md" title="${escapeHtml(row.final_shortened_url)}">${escapeHtml(row.final_shortened_url)}</p>
                             ${resolvedLine}
                         </td>
                         <td class="py-3 px-3">
                             <span class="px-2 py-0.5 rounded font-mono ${badgeColor}">${escapeHtml(statusVal)}${row.http_status ? ` (${row.http_status})` : ''}${escapeHtml(hopsText)}</span>
                             ${errorLine}
                         </td>
-                        <td class="py-3 px-3 text-slate-400">${row.last_checked_at ? escapeHtml(new Date(row.last_checked_at).toLocaleString()) : 'Never'}</td>
+                        <td class="py-3 px-3 text-slate-500 dark:text-slate-400">${row.last_checked_at ? escapeHtml(new Date(row.last_checked_at).toLocaleString()) : 'Never'}</td>
                         <td class="py-3 px-3 text-right">
                             <button type="button" onclick="runLinkRotCheck('${row.id}', this)"
-                                class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 cursor-pointer">
+                                class="px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 cursor-pointer">
                                 Check link
                             </button>
                         </td>
                     </tr>
                 `;
             }).join('');
+        }
+
+        function renderHistoryRows() {
+            const tbody = document.getElementById('historyTableBody');
+            const filtered = filterRecordsByControls('historySearchInput', 'historyHealthFilter');
+
+            if (!filtered.length) {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-500">No links match the current filter for ${escapeHtml(activeDomain || 'your domain')}.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = buildTableRowsHtml(filtered);
+        }
+
+        function renderLinkRotRows() {
+            const tbody = document.getElementById('linkrotTableBody');
+            const filtered = filterRecordsByControls('linkrotSearchInput', 'linkrotHealthFilter');
+
+            if (!filtered.length) {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-500">No links match the current filter for ${escapeHtml(activeDomain || 'your domain')}.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = buildTableRowsHtml(filtered);
         }
 
         async function invokeLinkRotSentinel(payload) {
@@ -1361,17 +1487,25 @@
                 btnEl.disabled = true;
                 btnEl.textContent = 'Checking...';
             }
-            statusEl.textContent = 'Running server-side LinkRot check...';
-            statusEl.className = 'text-xs text-slate-400';
+            if (statusEl) {
+                statusEl.textContent = 'Running server-side LinkRot check...';
+                statusEl.className = 'text-xs text-slate-500 dark:text-slate-400';
+            }
 
             try {
                 await invokeLinkRotSentinel({ link_id: rowId });
                 await loadDomainHistory();
-                statusEl.textContent = 'LinkRot check completed.';
-                statusEl.className = 'text-xs text-emerald-400';
+                if (statusEl) {
+                    statusEl.textContent = 'LinkRot check completed.';
+                    statusEl.className = 'text-xs text-emerald-600 dark:text-emerald-400';
+                }
             } catch (err) {
-                statusEl.textContent = `LinkRot check error: ${err.message}`;
-                statusEl.className = 'text-xs text-rose-400';
+                if (statusEl) {
+                    statusEl.textContent = `LinkRot check error: ${err.message}`;
+                    statusEl.className = 'text-xs text-rose-500 dark:text-rose-400';
+                } else {
+                    alert(`LinkRot check error: ${err.message}`);
+                }
             } finally {
                 if (btnEl) {
                     btnEl.disabled = false;
@@ -1386,16 +1520,16 @@
             btn.disabled = true;
             btn.textContent = '⏳ Sweeping domain links...';
             statusEl.textContent = `Running server-side LinkRot sweep for ${activeDomain}...`;
-            statusEl.className = 'text-xs text-slate-400';
+            statusEl.className = 'text-xs text-slate-500 dark:text-slate-400';
 
             try {
                 const res = await invokeLinkRotSentinel({ check_all_domain: true });
                 await loadDomainHistory();
                 statusEl.textContent = `Sweep complete: checked ${res?.checked ?? 0} link(s) for ${activeDomain}.`;
-                statusEl.className = 'text-xs text-emerald-400';
+                statusEl.className = 'text-xs text-emerald-600 dark:text-emerald-400';
             } catch (err) {
                 statusEl.textContent = `Domain sweep failed: ${err.message}`;
-                statusEl.className = 'text-xs text-rose-400';
+                statusEl.className = 'text-xs text-rose-500 dark:text-rose-400';
             } finally {
                 btn.disabled = false;
                 btn.textContent = '⚡ Check All Domain Links';
@@ -1403,19 +1537,24 @@
         }
 
         function switchView(viewName) {
-            ['builder', 'history'].forEach(v => {
+            ['builder', 'history', 'linkrot'].forEach(v => {
                 document.getElementById(`view-${v}`).classList.toggle('hidden', v !== viewName);
                 const nav = document.getElementById(`nav-${v}`);
                 if (nav) {
                     nav.className = v === viewName
-                        ? 'w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-emerald-500/10 text-emerald-400 text-left cursor-pointer'
-                        : 'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-200 text-left cursor-pointer';
+                        ? 'w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-left cursor-pointer'
+                        : 'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200 text-left cursor-pointer';
                 }
             });
-            document.getElementById('breadcrumb-current').textContent =
-                viewName === 'builder' ? 'Campaign builder' : 'Campaign history & LinkRot';
 
-            if (viewName === 'history') {
+            const labels = {
+                builder: 'Campaign builder',
+                history: 'Campaign History',
+                linkrot: 'LinkRot Sentinel'
+            };
+            document.getElementById('breadcrumb-current').textContent = labels[viewName] || 'Campaign builder';
+
+            if (viewName === 'history' || viewName === 'linkrot') {
                 loadDomainHistory();
             }
         }
