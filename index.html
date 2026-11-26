@@ -1,9 +1,10 @@
+<!-- public/index.html -->
 <!DOCTYPE html>
 <html lang="en" class="dark" data-mode="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AdPulse OS - Campaign Builder &amp; LinkRot Sentinel</title>
+    <title>AdPulse OS - Campaign Builder, History &amp; LinkRot Sentinel</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -147,38 +148,40 @@
                         Campaign builder
                     </button>
                     <button type="button" onclick="switchView('history')" id="nav-history" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg ap-text-muted ap-hover text-left cursor-pointer">
-                        Campaign history &amp; LinkRot
+                        Campaign History
+                    </button>
+                    <button type="button" onclick="switchView('linkrot')" id="nav-linkrot" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg ap-text-muted ap-hover text-left cursor-pointer">
+                        LinkRot Sentinel
                     </button>
                 </nav>
             </div>
-            <div class="p-3 ap-subtle rounded-xl border text-xs ap-text-muted space-y-2">
-                <div>
-                    <p class="font-medium ap-text-secondary">Active Domain Scope</p>
-                    <p id="sidebarDomain" class="ap-code font-mono truncate">—</p>
-                </div>
-               </div>
+            <div class="p-3 ap-subtle rounded-xl border text-xs ap-text-muted">
+                <p class="font-medium ap-text-secondary">Active Domain Space</p>
+                <p id="sidebarDomain" class="ap-code font-mono truncate mt-0.5">—</p>
+            </div>
         </aside>
 
         <main class="flex-1 flex flex-col min-w-0">
-            <header class="h-16 border-b ap-surface/80 backdrop-blur px-6 flex items-center justify-between gap-4">
+            <header class="min-h-16 py-2.5 border-b ap-surface/80 backdrop-blur px-6 flex items-center justify-between gap-4">
                 <div class="text-sm ap-text-muted flex items-center gap-4">
                     <div>Workspace / <span id="breadcrumb-current" class="font-medium" style="color: var(--text-primary);">Campaign builder</span></div>
                     <div class="flex lg:hidden gap-2">
-                        <button type="button" onclick="switchView('builder')" class="px-2.5 py-1 rounded ap-subtle border ap-text-secondary text-xs">Builder</button>
-                        <button type="button" onclick="switchView('history')" class="px-2.5 py-1 rounded ap-subtle border ap-text-secondary text-xs">History</button>
+                        <button type="button" onclick="switchView('builder')" class="px-2.5 py-1 rounded ap-subtle border ap-text-secondary text-xs cursor-pointer">Builder</button>
+                        <button type="button" onclick="switchView('history')" class="px-2.5 py-1 rounded ap-subtle border ap-text-secondary text-xs cursor-pointer">History</button>
+                        <button type="button" onclick="switchView('linkrot')" class="px-2.5 py-1 rounded ap-subtle border ap-text-secondary text-xs cursor-pointer">LinkRot</button>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-4">
                     <button type="button" id="themeToggleBtn" onclick="toggleMode()"
                         class="px-3 py-1.5 rounded-lg ap-subtle ap-hover border ap-text-secondary text-xs font-medium cursor-pointer" style="border-color: var(--border-strong);">
                         ☀️ Light Mode
                     </button>
-                    <div class="text-right">
+                    <div class="text-right flex flex-col items-end">
                         <p id="headerUserEmail" class="text-xs font-mono ap-code"></p>
-                        <p id="vocabLoadStatus" class="text-[11px] ap-text-muted">Connecting to Supabase...</p>
-                         <button type="button" onclick="handleSignOut()" class="w-full py-1.5 rounded ap-surface ap-hover border ap-text-secondary text-xs cursor-pointer" style="border-color: var(--border-strong);">
-                    Sign out
+                        <button type="button" onclick="handleSignOut()" class="mt-0.5 text-[11px] font-medium ap-danger hover:underline cursor-pointer">
+                            Sign Out
                         </button>
+                        <p id="vocabLoadStatus" class="text-[10px] ap-text-muted mt-0.5">Connecting to Supabase...</p>
                     </div>
                 </div>
             </header>
@@ -425,13 +428,13 @@
                     </section>
                 </div>
 
-                <!-- HISTORY & LINKROT SENTINEL VIEW -->
+                <!-- CAMPAIGN HISTORY VIEW (ALL URLS) -->
                 <div id="view-history" class="space-y-6 hidden">
                     <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                         <div>
-                            <h1 class="text-2xl font-bold tracking-tight">Campaign history &amp; LinkRot Sentinel</h1>
+                            <h1 class="text-2xl font-bold tracking-tight">Campaign History</h1>
                             <p class="text-sm ap-text-muted">
-                                Server-side redirect &amp; parameter integrity monitor for <span id="historyDomainLabel" class="font-mono ap-code">—</span>.
+                                Complete committed URL catalog across <span id="historyDomainLabel" class="font-mono ap-code">—</span>.
                             </p>
                         </div>
                         <div class="flex flex-wrap items-center gap-2.5">
@@ -446,6 +449,60 @@
                             </select>
                             <input id="historySearchInput" type="text" placeholder="Filter by brand, creator, key, or URL..."
                                 oninput="renderHistoryRows()"
+                                class="ap-surface border rounded-lg px-3 py-2 text-xs ap-text-secondary">
+                            <button type="button" onclick="exportFilteredHistoryCsv()"
+                                class="px-3.5 py-2 rounded-lg ap-subtle ap-hover border ap-text-secondary text-xs font-medium cursor-pointer" style="border-color: var(--border-strong);">
+                                ↓ Export Filtered CSV
+                            </button>
+                            <button type="button" onclick="loadDomainHistory()"
+                                class="px-3.5 py-2 rounded-lg ap-surface ap-hover border ap-text-secondary text-xs font-medium cursor-pointer" style="border-color: var(--border-strong);">
+                                ↻ Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="ap-surface border rounded-xl p-6 shadow-xl overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b text-xs ap-text-muted uppercase tracking-wider" style="border-color: var(--border-subtle);">
+                                    <th class="py-3 px-3">Brand &amp; Keys</th>
+                                    <th class="py-3 px-3">Creative / Mode</th>
+                                    <th class="py-3 px-3">Final URL &amp; Resolved Landing</th>
+                                    <th class="py-3 px-3">LinkRot Status</th>
+                                    <th class="py-3 px-3">Last Checked</th>
+                                    <th class="py-3 px-3 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody" class="divide-y text-xs" style="border-color: var(--border-subtle);">
+                                <tr>
+                                    <td colspan="6" class="py-6 text-center ap-text-muted">No history loaded yet.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- LINKROT SENTINEL VIEW -->
+                <div id="view-linkrot" class="space-y-6 hidden">
+                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                        <div>
+                            <h1 class="text-2xl font-bold tracking-tight">LinkRot Sentinel</h1>
+                            <p class="text-sm ap-text-muted">
+                                Server-side redirect &amp; parameter integrity monitor for <span id="linkrotDomainLabel" class="font-mono ap-code">—</span>.
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2.5">
+                            <select id="linkrotHealthFilter" onchange="renderLinkRotRows()"
+                                class="ap-surface border rounded-lg px-3 py-2 text-xs ap-text-secondary">
+                                <option value="all">All statuses</option>
+                                <option value="healthy">Healthy</option>
+                                <option value="param_stripped">Param Stripped</option>
+                                <option value="broken">Broken (4xx/5xx/Loop)</option>
+                                <option value="timeout">Timeout / Unreachable</option>
+                                <option value="pending">Pending</option>
+                            </select>
+                            <input id="linkrotSearchInput" type="text" placeholder="Filter by brand, creator, key, or URL..."
+                                oninput="renderLinkRotRows()"
                                 class="ap-surface border rounded-lg px-3 py-2 text-xs ap-text-secondary">
                             <button type="button" id="checkAllDomainBtn" onclick="runDomainLinkRotSweep()"
                                 class="px-4 py-2 rounded-lg ap-accent-btn font-semibold text-xs cursor-pointer">
@@ -496,9 +553,9 @@
                                     <th class="py-3 px-3 text-right">Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="historyTableBody" class="divide-y text-xs" style="border-color: var(--border-subtle);">
+                            <tbody id="linkrotTableBody" class="divide-y text-xs" style="border-color: var(--border-subtle);">
                                 <tr>
-                                    <td colspan="6" class="py-6 text-center ap-text-muted">No history loaded yet.</td>
+                                    <td colspan="6" class="py-6 text-center ap-text-muted">No links loaded yet.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1281,13 +1338,14 @@
                 return;
             }
 
-            downloadCampaignCsv(records);
+            downloadCampaignCsv(records, `adpulse-${activeDomain}-${records[0].url_key}.csv`);
             statusEl.textContent = `Committed ${records.length} URL(s) to ${activeDomain} history and downloaded CSV.`;
             statusEl.className = 'text-xs ap-code';
             await loadDomainHistory();
         }
 
-        function downloadCampaignCsv(records) {
+        function downloadCampaignCsv(records, filename) {
+            if (!records || !records.length) return;
             const csvRows = records.map(r => ({
                 owner_domain: r.owner_domain,
                 created_by: r.created_by_email,
@@ -1311,7 +1369,11 @@
                 campaign_key_k: r.url_key,
                 creative_key_ck: r.is_dynamic_creative ? '' : r.creative_key,
                 example_utm_url: r.full_utm_url,
-                final_keyed_url: r.final_shortened_url
+                final_keyed_url: r.final_shortened_url,
+                link_health_status: r.link_health_status || 'pending',
+                http_status: r.http_status || '',
+                final_resolved_url: r.final_resolved_url || '',
+                last_checked_at: r.last_checked_at || ''
             }));
 
             const headers = Object.keys(csvRows[0]);
@@ -1325,32 +1387,89 @@
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `adpulse-${activeDomain}-${records[0].url_key}.csv`;
+            link.download = filename || `adpulse-${activeDomain}-export.csv`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
         }
 
-        async function loadDomainHistory() {
-            document.getElementById('historyDomainLabel').textContent = activeDomain || '—';
-            const tbody = document.getElementById('historyTableBody');
-            tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center ap-text-muted">Loading domain history...</td></tr>`;
+        function filterRecordsByControls(searchInputId, healthFilterId) {
+            const q = (document.getElementById(searchInputId)?.value || '').trim().toLowerCase();
+            const healthFilter = document.getElementById(healthFilterId)?.value || 'all';
 
-            const { data, error } = await supabaseClient
-                .from('campaign_links')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(200);
+            return historyRecords.filter(r => {
+                const statusVal = r.link_health_status || 'pending';
+                if (healthFilter !== 'all') {
+                    if (healthFilter === 'broken') {
+                        if (!['broken', 'timeout', 'unreachable'].includes(statusVal)) return false;
+                    } else if (statusVal !== healthFilter) {
+                        return false;
+                    }
+                }
+                if (!q) return true;
+                return (
+                    String(r.brand || '').toLowerCase().includes(q) ||
+                    String(r.created_by_email || '').toLowerCase().includes(q) ||
+                    String(r.final_shortened_url || '').toLowerCase().includes(q) ||
+                    String(r.final_resolved_url || '').toLowerCase().includes(q) ||
+                    String(r.creative_name || '').toLowerCase().includes(q) ||
+                    String(r.url_key || '').toLowerCase().includes(q) ||
+                    String(r.creative_key || '').toLowerCase().includes(q)
+                );
+            });
+        }
 
-            if (error) {
-                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center ap-danger">${escapeHtml(error.message)}</td></tr>`;
+        function exportFilteredHistoryCsv() {
+            const filtered = filterRecordsByControls('historySearchInput', 'historyHealthFilter');
+            if (!filtered.length) {
+                alert('No rows match the current filter to export.');
                 return;
             }
+            downloadCampaignCsv(filtered, `adpulse-${activeDomain}-campaign-history.csv`);
+        }
 
-            historyRecords = data || [];
+        async function loadDomainHistory() {
+            const domainText = activeDomain || '—';
+            document.getElementById('historyDomainLabel').textContent = domainText;
+            document.getElementById('linkrotDomainLabel').textContent = domainText;
+
+            const historyBody = document.getElementById('historyTableBody');
+            const linkrotBody = document.getElementById('linkrotTableBody');
+            const loadingRow = `<tr><td colspan="6" class="py-6 text-center ap-text-muted">Loading domain URLs...</td></tr>`;
+
+            historyBody.innerHTML = loadingRow;
+            linkrotBody.innerHTML = loadingRow;
+
+            // Fetch all committed domain URLs using paginated range requests so Campaign History shows every URL
+            const pageSize = 1000;
+            let allRows = [];
+            let from = 0;
+
+            while (true) {
+                const { data, error } = await supabaseClient
+                    .from('campaign_links')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .range(from, from + pageSize - 1);
+
+                if (error) {
+                    const errRow = `<tr><td colspan="6" class="py-6 text-center ap-danger">${escapeHtml(error.message)}</td></tr>`;
+                    historyBody.innerHTML = errRow;
+                    linkrotBody.innerHTML = errRow;
+                    return;
+                }
+
+                const batch = data || [];
+                allRows = allRows.concat(batch);
+                if (batch.length < pageSize) break;
+                from += pageSize;
+            }
+
+            historyRecords = allRows;
             updateLinkRotSummaryStats();
             renderHistoryRows();
+            renderLinkRotRows();
         }
 
         function updateLinkRotSummaryStats() {
@@ -1380,38 +1499,8 @@
             return 'color: var(--text-muted); background-color: var(--bg-subtle);';
         }
 
-        function renderHistoryRows() {
-            const tbody = document.getElementById('historyTableBody');
-            const q = (document.getElementById('historySearchInput')?.value || '').trim().toLowerCase();
-            const healthFilter = document.getElementById('historyHealthFilter')?.value || 'all';
-
-            const filtered = historyRecords.filter(r => {
-                const statusVal = r.link_health_status || 'pending';
-                if (healthFilter !== 'all') {
-                    if (healthFilter === 'broken') {
-                        if (!['broken', 'timeout', 'unreachable'].includes(statusVal)) return false;
-                    } else if (statusVal !== healthFilter) {
-                        return false;
-                    }
-                }
-                if (!q) return true;
-                return (
-                    String(r.brand || '').toLowerCase().includes(q) ||
-                    String(r.created_by_email || '').toLowerCase().includes(q) ||
-                    String(r.final_shortened_url || '').toLowerCase().includes(q) ||
-                    String(r.final_resolved_url || '').toLowerCase().includes(q) ||
-                    String(r.creative_name || '').toLowerCase().includes(q) ||
-                    String(r.url_key || '').toLowerCase().includes(q) ||
-                    String(r.creative_key || '').toLowerCase().includes(q)
-                );
-            });
-
-            if (!filtered.length) {
-                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center ap-text-muted">No links match the current filter for ${escapeHtml(activeDomain || 'your domain')}.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = filtered.map(row => {
+        function buildTableRowsHtml(records) {
+            return records.map(row => {
                 const statusVal = row.link_health_status || 'pending';
                 const badgeStyle = getStatusBadgeStyle(statusVal);
 
@@ -1465,6 +1554,28 @@
             }).join('');
         }
 
+        function renderHistoryRows() {
+            const tbody = document.getElementById('historyTableBody');
+            const filtered = filterRecordsByControls('historySearchInput', 'historyHealthFilter');
+
+            if (!filtered.length) {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center ap-text-muted">No links match the current filter for ${escapeHtml(activeDomain || 'your domain')}.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = buildTableRowsHtml(filtered);
+        }
+
+        function renderLinkRotRows() {
+            const tbody = document.getElementById('linkrotTableBody');
+            const filtered = filterRecordsByControls('linkrotSearchInput', 'linkrotHealthFilter');
+
+            if (!filtered.length) {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center ap-text-muted">No links match the current filter for ${escapeHtml(activeDomain || 'your domain')}.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = buildTableRowsHtml(filtered);
+        }
+
         async function invokeLinkRotSentinel(payload) {
             const { data, error } = await supabaseClient.functions.invoke(LINKROT_FUNCTION_NAME, {
                 body: payload
@@ -1482,17 +1593,25 @@
                 btnEl.disabled = true;
                 btnEl.textContent = 'Checking...';
             }
-            statusEl.textContent = 'Running server-side LinkRot check...';
-            statusEl.className = 'text-xs ap-text-muted';
+            if (statusEl) {
+                statusEl.textContent = 'Running server-side LinkRot check...';
+                statusEl.className = 'text-xs ap-text-muted';
+            }
 
             try {
                 await invokeLinkRotSentinel({ link_id: rowId });
                 await loadDomainHistory();
-                statusEl.textContent = 'LinkRot check completed.';
-                statusEl.className = 'text-xs ap-code';
+                if (statusEl) {
+                    statusEl.textContent = 'LinkRot check completed.';
+                    statusEl.className = 'text-xs ap-code';
+                }
             } catch (err) {
-                statusEl.textContent = `LinkRot check error: ${err.message}`;
-                statusEl.className = 'text-xs ap-danger';
+                if (statusEl) {
+                    statusEl.textContent = `LinkRot check error: ${err.message}`;
+                    statusEl.className = 'text-xs ap-danger';
+                } else {
+                    alert(`LinkRot check error: ${err.message}`);
+                }
             } finally {
                 if (btnEl) {
                     btnEl.disabled = false;
@@ -1524,7 +1643,7 @@
         }
 
         function switchView(viewName) {
-            ['builder', 'history'].forEach(v => {
+            ['builder', 'history', 'linkrot'].forEach(v => {
                 document.getElementById(`view-${v}`).classList.toggle('hidden', v !== viewName);
                 const nav = document.getElementById(`nav-${v}`);
                 if (nav) {
@@ -1533,10 +1652,15 @@
                         : 'w-full flex items-center gap-3 px-3 py-2 rounded-lg ap-text-muted ap-hover text-left cursor-pointer';
                 }
             });
-            document.getElementById('breadcrumb-current').textContent =
-                viewName === 'builder' ? 'Campaign builder' : 'Campaign history & LinkRot';
 
-            if (viewName === 'history') {
+            const labels = {
+                builder: 'Campaign builder',
+                history: 'Campaign History',
+                linkrot: 'LinkRot Sentinel'
+            };
+            document.getElementById('breadcrumb-current').textContent = labels[viewName] || 'Campaign builder';
+
+            if (viewName === 'history' || viewName === 'linkrot') {
                 loadDomainHistory();
             }
         }
