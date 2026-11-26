@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AdPulse OS - Campaign Builder &amp; LinkRot Beta</title>
+    <title>AdPulse OS - Campaign Builder &amp; LinkRot Sentinel</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -90,9 +90,8 @@
             </header>
 
             <div class="p-8 max-w-7xl w-full mx-auto space-y-6">
+                <!-- BUILDER VIEW -->
                 <div id="view-builder" class="space-y-6">
-
-                    <!-- CAMPAIGN BUILDER -->
                     <section class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-6 shadow-xl">
                         <div class="border-b border-slate-800 pb-4">
                             <h1 class="text-xl font-bold tracking-tight">Campaign Builder</h1>
@@ -332,42 +331,80 @@
                     </section>
                 </div>
 
-                <!-- HISTORY VIEW -->
+                <!-- HISTORY & LINKROT SENTINEL VIEW -->
                 <div id="view-history" class="space-y-6 hidden">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                         <div>
                             <h1 class="text-2xl font-bold tracking-tight">Campaign history &amp; LinkRot Sentinel</h1>
                             <p class="text-sm text-slate-400">
-                                Accessible only to signed-in users on domain <span id="historyDomainLabel" class="font-mono text-emerald-400">—</span>.
+                                Server-side redirect &amp; parameter integrity monitor for <span id="historyDomainLabel" class="font-mono text-emerald-400">—</span>.
                             </p>
                         </div>
-                        <div class="flex flex-wrap items-center gap-3">
-                            <input id="historySearchInput" type="text" placeholder="Filter by creator, key, or URL..."
+                        <div class="flex flex-wrap items-center gap-2.5">
+                            <select id="historyHealthFilter" onchange="renderHistoryRows()"
+                                class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+                                <option value="all">All statuses</option>
+                                <option value="healthy">Healthy</option>
+                                <option value="param_stripped">Param Stripped</option>
+                                <option value="broken">Broken (4xx/5xx/Loop)</option>
+                                <option value="timeout">Timeout / Unreachable</option>
+                                <option value="pending">Pending</option>
+                            </select>
+                            <input id="historySearchInput" type="text" placeholder="Filter by brand, creator, key, or URL..."
                                 oninput="renderHistoryRows()"
                                 class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+                            <button type="button" id="checkAllDomainBtn" onclick="runDomainLinkRotSweep()"
+                                class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-semibold text-xs cursor-pointer">
+                                ⚡ Check All Domain Links
+                            </button>
                             <button type="button" onclick="loadDomainHistory()"
-                                class="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-medium text-slate-200 cursor-pointer">
+                                class="px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-medium text-slate-200 cursor-pointer">
                                 ↻ Refresh
                             </button>
                         </div>
                     </div>
 
+                    <!-- LinkRot KPI Summary Strip -->
+                    <div id="linkrotSummaryStrip" class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3.5">
+                            <p class="text-[11px] text-slate-400 uppercase">Total Links</p>
+                            <p id="stat-total" class="text-xl font-bold text-slate-100 mt-1">0</p>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3.5">
+                            <p class="text-[11px] text-emerald-400 uppercase">Healthy</p>
+                            <p id="stat-healthy" class="text-xl font-bold text-emerald-400 mt-1">0</p>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3.5">
+                            <p class="text-[11px] text-amber-400 uppercase">Param Stripped</p>
+                            <p id="stat-stripped" class="text-xl font-bold text-amber-400 mt-1">0</p>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3.5">
+                            <p class="text-[11px] text-rose-400 uppercase">Broken</p>
+                            <p id="stat-broken" class="text-xl font-bold text-rose-400 mt-1">0</p>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3.5">
+                            <p class="text-[11px] text-slate-400 uppercase">Unchecked</p>
+                            <p id="stat-pending" class="text-xl font-bold text-slate-300 mt-1">0</p>
+                        </div>
+                    </div>
+
+                    <p id="linkrotSweepStatus" class="text-xs text-slate-400 min-h-[1rem]"></p>
+
                     <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="border-b border-slate-800 text-xs text-slate-400 uppercase tracking-wider">
-                                    <th class="py-3 px-3">Keys (k / ck)</th>
+                                    <th class="py-3 px-3">Brand &amp; Keys</th>
                                     <th class="py-3 px-3">Creative / Mode</th>
-                                    <th class="py-3 px-3">Final URL</th>
-                                    <th class="py-3 px-3">Created By</th>
+                                    <th class="py-3 px-3">Final URL &amp; Resolved Landing</th>
                                     <th class="py-3 px-3">LinkRot Status</th>
-                                    <th class="py-3 px-3">Created At</th>
+                                    <th class="py-3 px-3">Last Checked</th>
                                     <th class="py-3 px-3 text-right">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="historyTableBody" class="divide-y divide-slate-800/60 text-xs">
                                 <tr>
-                                    <td colspan="7" class="py-6 text-center text-slate-500">No history loaded yet.</td>
+                                    <td colspan="6" class="py-6 text-center text-slate-500">No history loaded yet.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -380,6 +417,7 @@
     <script>
         const SUPABASE_URL = 'https://stouegbesuceggnegeie.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_QUglOE6uDThXZRZ48kEPhA_ifXTfUok';
+        const LINKROT_FUNCTION_NAME = 'linkrot-sentinel';
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -929,7 +967,6 @@
             const baseHash = Math.abs(hash).toString(36).toLowerCase();
             const k = `${brand ? `${brand}-` : ''}${baseHash}`;
 
-            // Placement abbreviation is included in utm_campaign; abbreviated workspace is used for utm_content
             const campaignSlug = [brand, funnel, obj, tactic, journey, product, subproduct, placement, region, state, lang]
                 .filter(Boolean)
                 .join('-')
@@ -1186,7 +1223,7 @@
         async function loadDomainHistory() {
             document.getElementById('historyDomainLabel').textContent = activeDomain || '—';
             const tbody = document.getElementById('historyTableBody');
-            tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-500">Loading domain history...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-500">Loading domain history...</td></tr>`;
 
             const { data, error } = await supabaseClient
                 .from('campaign_links')
@@ -1195,38 +1232,66 @@
                 .limit(200);
 
             if (error) {
-                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-rose-400">${escapeHtml(error.message)}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-rose-400">${escapeHtml(error.message)}</td></tr>`;
                 return;
             }
 
             historyRecords = data || [];
+            updateLinkRotSummaryStats();
             renderHistoryRows();
+        }
+
+        function updateLinkRotSummaryStats() {
+            const total = historyRecords.length;
+            const healthy = historyRecords.filter(r => r.link_health_status === 'healthy').length;
+            const stripped = historyRecords.filter(r => r.link_health_status === 'param_stripped').length;
+            const broken = historyRecords.filter(r => ['broken', 'timeout', 'unreachable'].includes(r.link_health_status)).length;
+            const pending = historyRecords.filter(r => !r.link_health_status || r.link_health_status === 'pending').length;
+
+            document.getElementById('stat-total').textContent = total;
+            document.getElementById('stat-healthy').textContent = healthy;
+            document.getElementById('stat-stripped').textContent = stripped;
+            document.getElementById('stat-broken').textContent = broken;
+            document.getElementById('stat-pending').textContent = pending;
         }
 
         function renderHistoryRows() {
             const tbody = document.getElementById('historyTableBody');
             const q = (document.getElementById('historySearchInput')?.value || '').trim().toLowerCase();
+            const healthFilter = document.getElementById('historyHealthFilter')?.value || 'all';
 
-            const filtered = q
-                ? historyRecords.filter(r =>
+            const filtered = historyRecords.filter(r => {
+                const statusVal = r.link_health_status || 'pending';
+                if (healthFilter !== 'all') {
+                    if (healthFilter === 'broken') {
+                        if (!['broken', 'timeout', 'unreachable'].includes(statusVal)) return false;
+                    } else if (statusVal !== healthFilter) {
+                        return false;
+                    }
+                }
+                if (!q) return true;
+                return (
+                    String(r.brand || '').toLowerCase().includes(q) ||
                     String(r.created_by_email || '').toLowerCase().includes(q) ||
                     String(r.final_shortened_url || '').toLowerCase().includes(q) ||
+                    String(r.final_resolved_url || '').toLowerCase().includes(q) ||
                     String(r.creative_name || '').toLowerCase().includes(q) ||
                     String(r.url_key || '').toLowerCase().includes(q) ||
                     String(r.creative_key || '').toLowerCase().includes(q)
-                )
-                : historyRecords;
+                );
+            });
 
             if (!filtered.length) {
-                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-500">No links recorded yet for ${escapeHtml(activeDomain || 'your domain')}.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-500">No links match the current filter for ${escapeHtml(activeDomain || 'your domain')}.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = filtered.map(row => {
+                const statusVal = row.link_health_status || 'pending';
                 const badgeColor =
-                    row.link_health_status === 'healthy' ? 'text-emerald-400 bg-emerald-500/10' :
-                    row.link_health_status === 'broken' || row.link_health_status === 'param_stripped' ? 'text-rose-400 bg-rose-500/10' :
-                    row.link_health_status === 'cors_restricted' ? 'text-amber-400 bg-amber-500/10' :
+                    statusVal === 'healthy' ? 'text-emerald-400 bg-emerald-500/10' :
+                    statusVal === 'param_stripped' ? 'text-amber-400 bg-amber-500/10' :
+                    ['broken', 'timeout', 'unreachable'].includes(statusVal) ? 'text-rose-400 bg-rose-500/10' :
                     'text-slate-400 bg-slate-800';
 
                 const keyDisplay = row.is_dynamic_creative
@@ -1237,18 +1302,39 @@
                     ? `<span class="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 font-mono">Dynamic Creative</span>`
                     : `<span class="text-slate-300">${escapeHtml(row.creative_name || '—')}</span>`;
 
+                const hopsText = typeof row.redirect_count === 'number' && row.redirect_count > 0
+                    ? ` • ${row.redirect_count} hop${row.redirect_count === 1 ? '' : 's'}`
+                    : '';
+
+                const resolvedLine = row.final_resolved_url && row.final_resolved_url !== row.final_shortened_url
+                    ? `<p class="font-mono text-[11px] text-slate-400 truncate max-w-md" title="${escapeHtml(row.final_resolved_url)}">→ ${escapeHtml(row.final_resolved_url)}</p>`
+                    : '';
+
+                const errorLine = row.last_error_message
+                    ? `<p class="text-[11px] text-rose-300 mt-1">${escapeHtml(row.last_error_message)}</p>`
+                    : '';
+
                 return `
                     <tr class="hover:bg-slate-800/30">
-                        <td class="py-3 px-3 font-mono text-emerald-400">${keyDisplay}</td>
-                        <td class="py-3 px-3">${modeBadge}</td>
-                        <td class="py-3 px-3 font-mono text-slate-300 truncate max-w-xs" title="${escapeHtml(row.final_shortened_url)}">${escapeHtml(row.final_shortened_url)}</td>
-                        <td class="py-3 px-3 text-slate-200">${escapeHtml(row.created_by_email)}</td>
                         <td class="py-3 px-3">
-                            <span class="px-2 py-0.5 rounded font-mono ${badgeColor}">${escapeHtml(row.link_health_status || 'pending')}${row.http_status ? ` (${row.http_status})` : ''}</span>
+                            <div class="font-mono text-emerald-400">${keyDisplay}</div>
+                            <div class="text-[11px] text-slate-400 mt-0.5">Brand: <span class="font-mono text-slate-200">${escapeHtml(row.brand || '—')}</span></div>
                         </td>
-                        <td class="py-3 px-3 text-slate-400">${escapeHtml(new Date(row.created_at).toLocaleString())}</td>
+                        <td class="py-3 px-3">
+                            <div>${modeBadge}</div>
+                            <div class="text-[11px] text-slate-500 mt-0.5">${escapeHtml(row.created_by_email || '')}</div>
+                        </td>
+                        <td class="py-3 px-3">
+                            <p class="font-mono text-slate-200 truncate max-w-md" title="${escapeHtml(row.final_shortened_url)}">${escapeHtml(row.final_shortened_url)}</p>
+                            ${resolvedLine}
+                        </td>
+                        <td class="py-3 px-3">
+                            <span class="px-2 py-0.5 rounded font-mono ${badgeColor}">${escapeHtml(statusVal)}${row.http_status ? ` (${row.http_status})` : ''}${escapeHtml(hopsText)}</span>
+                            ${errorLine}
+                        </td>
+                        <td class="py-3 px-3 text-slate-400">${row.last_checked_at ? escapeHtml(new Date(row.last_checked_at).toLocaleString()) : 'Never'}</td>
                         <td class="py-3 px-3 text-right">
-                            <button type="button" onclick="runLinkRotCheck('${row.id}')"
+                            <button type="button" onclick="runLinkRotCheck('${row.id}', this)"
                                 class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 cursor-pointer">
                                 Check link
                             </button>
@@ -1258,45 +1344,61 @@
             }).join('');
         }
 
-        async function runLinkRotCheck(rowId) {
-            const row = historyRecords.find(r => r.id === rowId);
-            if (!row) return;
+        async function invokeLinkRotSentinel(payload) {
+            const { data, error } = await supabaseClient.functions.invoke(LINKROT_FUNCTION_NAME, {
+                body: payload
+            });
+            if (error) {
+                throw new Error(error.message || 'Edge function invocation failed');
+            }
+            return data;
+        }
 
-            let httpStatus = null;
-            let paramsPreserved = null;
-            let healthStatus = 'pending';
+        async function runLinkRotCheck(rowId, btnEl) {
+            const statusEl = document.getElementById('linkrotSweepStatus');
+            const prevLabel = btnEl ? btnEl.textContent : 'Check link';
+            if (btnEl) {
+                btnEl.disabled = true;
+                btnEl.textContent = 'Checking...';
+            }
+            statusEl.textContent = 'Running server-side LinkRot check...';
+            statusEl.className = 'text-xs text-slate-400';
 
             try {
-                const resp = await fetch(row.final_shortened_url, { method: 'GET', redirect: 'follow' });
-                httpStatus = resp.status;
-                const resolvedUrl = resp.url || '';
-                const hasK = resolvedUrl.includes(`k=${row.url_key}`);
-                const hasCk = row.is_dynamic_creative ? true : resolvedUrl.includes(`ck=${row.creative_key}`);
-                paramsPreserved = hasK && hasCk;
-
-                if (!resp.ok || resp.status >= 400) {
-                    healthStatus = 'broken';
-                } else if (!paramsPreserved) {
-                    healthStatus = 'param_stripped';
-                } else {
-                    healthStatus = 'healthy';
-                }
-            } catch {
-                healthStatus = 'cors_restricted';
-            }
-
-            const { error } = await supabaseClient
-                .from('campaign_links')
-                .update({
-                    http_status: httpStatus,
-                    params_preserved: paramsPreserved,
-                    last_checked_at: new Date().toISOString(),
-                    link_health_status: healthStatus
-                })
-                .eq('id', rowId);
-
-            if (!error) {
+                await invokeLinkRotSentinel({ link_id: rowId });
                 await loadDomainHistory();
+                statusEl.textContent = 'LinkRot check completed.';
+                statusEl.className = 'text-xs text-emerald-400';
+            } catch (err) {
+                statusEl.textContent = `LinkRot check error: ${err.message}`;
+                statusEl.className = 'text-xs text-rose-400';
+            } finally {
+                if (btnEl) {
+                    btnEl.disabled = false;
+                    btnEl.textContent = prevLabel;
+                }
+            }
+        }
+
+        async function runDomainLinkRotSweep() {
+            const statusEl = document.getElementById('linkrotSweepStatus');
+            const btn = document.getElementById('checkAllDomainBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Sweeping domain links...';
+            statusEl.textContent = `Running server-side LinkRot sweep for ${activeDomain}...`;
+            statusEl.className = 'text-xs text-slate-400';
+
+            try {
+                const res = await invokeLinkRotSentinel({ check_all_domain: true });
+                await loadDomainHistory();
+                statusEl.textContent = `Sweep complete: checked ${res?.checked ?? 0} link(s) for ${activeDomain}.`;
+                statusEl.className = 'text-xs text-emerald-400';
+            } catch (err) {
+                statusEl.textContent = `Domain sweep failed: ${err.message}`;
+                statusEl.className = 'text-xs text-rose-400';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '⚡ Check All Domain Links';
             }
         }
 
