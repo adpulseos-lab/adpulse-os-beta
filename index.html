@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AdPulse OS — UTM Standardizer &amp; LinkRot Sentinel</title>
+    <title>AdPulse OS — Enterprise Campaign Taxonomy &amp; LinkRot Sentinel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -18,57 +18,84 @@
       .font-mono {
         font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
       }
+      select:disabled,
+      input:disabled {
+        background-color: #f8fafc;
+        color: #94a3b8;
+        cursor: not-allowed;
+      }
     </style>
   </head>
-  <body class="bg-slate-50 text-slate-900 antialiased min-h-screen flex flex-col">
-    <!-- Auth Gate View (Visible when signed out) -->
+  <body class="bg-slate-950 text-slate-900 antialiased min-h-screen flex flex-col">
+    <!-- =================================================================== -->
+    <!-- AUTH GATE VIEW (SIGN IN)                                            -->
+    <!-- =================================================================== -->
     <div
       id="auth-view"
-      class="flex-1 flex items-center justify-center px-4 py-12"
+      class="flex-1 flex items-center justify-center px-4 py-12 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950"
     >
-      <div class="w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-sm p-8">
+      <div class="w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-xl p-8">
         <div class="flex items-center gap-3 mb-6">
+          <!-- AdPulse OS Pulse-Wave Emblem -->
           <div
-            class="h-10 w-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-sm"
+            class="h-11 w-11 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white flex items-center justify-center shadow-md"
           >
-            A
+            <svg
+              class="w-6 h-6"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M2 12h4l3-7 4 14 3-7h6" />
+              <circle cx="19" cy="12" r="1.5" fill="currentColor" />
+            </svg>
           </div>
           <div>
-            <h1 class="text-lg font-bold text-slate-900 leading-tight">
-              AdPulse OS
-            </h1>
+            <div class="flex items-center gap-2">
+              <h1 class="text-lg font-bold text-slate-900 tracking-tight">
+                AdPulse OS
+              </h1>
+              <span
+                class="px-1.5 py-0.5 text-[10px] font-mono font-semibold uppercase rounded bg-indigo-50 text-indigo-700 border border-indigo-200"
+              >
+                Governance
+              </span>
+            </div>
             <p class="text-xs text-slate-500">
-              UTM Standardizer &amp; LinkRot Sentinel
+              UTM Taxonomy Standardizer &amp; LinkRot Sentinel
             </p>
           </div>
         </div>
 
         <p class="text-sm text-slate-600 mb-5">
-          Sign in with your corporate email to access your domain-scoped campaign taxonomy, audit history, and link health monitors.
+          Sign in with your corporate email address to access your domain-isolated taxonomy builder, audit ledger, and automated link health monitor.
         </p>
 
         <form id="magic-link-form" class="space-y-4">
           <div>
             <label
               for="auth-email-input"
-              class="block text-xs font-medium text-slate-700 mb-1"
+              class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
             >
-              Work Email
+              Corporate Email
             </label>
             <input
               id="auth-email-input"
               type="email"
               required
-              placeholder="you@company.com"
-              class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              placeholder="name@company.com"
+              class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
             />
           </div>
           <button
             id="auth-submit-btn"
             type="submit"
-            class="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50 transition"
+            class="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50 transition"
           >
-            Send Magic Link
+            Send Magic Sign-In Link
           </button>
         </form>
 
@@ -76,49 +103,72 @@
       </div>
     </div>
 
-    <!-- Main Authenticated Workspace Shell -->
-    <div id="app-shell" class="hidden flex-1 flex flex-col">
-      <!-- Top Navigation Bar -->
-      <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <!-- =================================================================== -->
+    <!-- MAIN WORKSPACE SHELL                                                -->
+    <!-- =================================================================== -->
+    <div id="app-shell" class="hidden flex-1 flex flex-col bg-slate-50">
+      <!-- Dark Executive Header matching Figma Design -->
+      <header class="bg-slate-950 text-white border-b border-slate-800 sticky top-0 z-30">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-          <div class="flex items-center gap-6">
-            <!-- Brand -->
-            <div class="flex items-center gap-2.5">
+          <div class="flex items-center gap-7">
+            <!-- Brand Lockup -->
+            <div class="flex items-center gap-3">
               <div
-                class="h-8 w-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-sm"
+                class="h-9 w-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center shadow-sm"
               >
-                A
+                <svg
+                  class="w-5 h-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M2 12h4l3-7 4 14 3-7h6" />
+                  <circle cx="19" cy="12" r="1.5" fill="currentColor" />
+                </svg>
               </div>
-              <span class="font-bold text-slate-900 tracking-tight">
-                AdPulse OS
-              </span>
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="font-bold text-white tracking-tight text-base">
+                    AdPulse
+                  </span>
+                  <span class="font-mono text-xs font-semibold text-indigo-400">
+                    OS
+                  </span>
+                </div>
+                <p class="text-[10px] text-slate-400 leading-none">
+                  Campaign Governance
+                </p>
+              </div>
             </div>
 
-            <!-- Primary Navigation Tabs -->
-            <nav aria-label="Primary" class="flex items-center gap-1">
+            <!-- Primary Navigation -->
+            <nav aria-label="Primary" class="flex items-center gap-1.5">
               <button
                 type="button"
                 data-nav-target="builder"
-                class="nav-tab px-3 py-2 rounded-lg text-sm font-medium transition bg-indigo-50 text-indigo-700"
+                class="nav-tab px-3.5 py-2 rounded-lg text-xs font-semibold transition bg-indigo-600 text-white shadow-sm"
               >
                 Campaign Builder
               </button>
               <button
                 type="button"
                 data-nav-target="history"
-                class="nav-tab px-3 py-2 rounded-lg text-sm font-medium transition text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                class="nav-tab px-3.5 py-2 rounded-lg text-xs font-semibold transition text-slate-300 hover:text-white hover:bg-slate-800"
               >
                 Campaign History
               </button>
               <button
                 type="button"
                 data-nav-target="sentinel"
-                class="nav-tab px-3 py-2 rounded-lg text-sm font-medium transition text-slate-600 hover:text-slate-900 hover:bg-slate-100 inline-flex items-center gap-2"
+                class="nav-tab px-3.5 py-2 rounded-lg text-xs font-semibold transition text-slate-300 hover:text-white hover:bg-slate-800 inline-flex items-center gap-2"
               >
                 <span>LinkRot Sentinel</span>
                 <span
                   id="nav-broken-badge"
-                  class="hidden px-1.5 py-0.5 text-[11px] font-mono font-semibold rounded-full bg-rose-100 text-rose-700"
+                  class="hidden px-1.5 py-0.5 text-[10px] font-mono font-bold rounded-full bg-rose-500 text-white"
                 >
                   0
                 </span>
@@ -126,24 +176,24 @@
             </nav>
           </div>
 
-          <!-- User & Domain Context -->
+          <!-- Tenant Domain & User Actions -->
           <div class="flex items-center gap-3">
             <span
               id="header-domain-pill"
-              class="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-mono font-medium bg-slate-100 text-slate-700 border border-slate-200"
+              class="hidden sm:inline-flex items-center px-2.5 py-1 rounded-md text-xs font-mono font-medium bg-slate-900 text-indigo-300 border border-slate-700"
             >
               —
             </span>
             <span
               id="header-user-email"
-              class="hidden md:inline text-xs text-slate-500"
+              class="hidden md:inline text-xs text-slate-400"
             >
               —
             </span>
             <button
               id="sign-out-btn"
               type="button"
-              class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition"
+              class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800 transition"
             >
               Sign Out
             </button>
@@ -151,202 +201,334 @@
         </div>
       </header>
 
-      <!-- Workspace Content -->
+      <!-- Workspace Main Content -->
       <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- =============================================================== -->
-        <!-- VIEW 1: CAMPAIGN BUILDER                                        -->
+        <!-- VIEW 1: CAMPAIGN BUILDER (FULL CONTROLLED TAXONOMY)             -->
         <!-- =============================================================== -->
         <section id="view-builder" class="workspace-view space-y-6">
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <h1 class="text-xl font-bold text-slate-900">
-                Campaign UTM &amp; Tokenized Link Builder
+                Campaign Taxonomy &amp; Tokenized Link Builder
               </h1>
               <p class="text-sm text-slate-500">
-                Generate governed <code class="font-mono text-xs bg-slate-200/70 px-1 py-0.5 rounded">k=</code> and <code class="font-mono text-xs bg-slate-200/70 px-1 py-0.5 rounded">ck=</code> tracking URLs registered automatically in LinkRot Sentinel.
+                Enforces standardized abbreviations across Funnel, Source, Medium, Objective, Tactic, Journey, Placement, Geo, and Language with deterministic <code class="font-mono text-xs bg-slate-200/80 px-1 py-0.5 rounded">k=</code> &amp; <code class="font-mono text-xs bg-slate-200/80 px-1 py-0.5 rounded">ck=</code> keys.
               </p>
             </div>
+
+            <button
+              id="builder-reset-btn"
+              type="button"
+              class="self-start sm:self-auto rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 transition"
+            >
+              Reset Form
+            </button>
           </div>
 
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Form Card -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <!-- Left 8 Columns: Structured Taxonomy Form -->
             <form
               id="campaign-builder-form"
-              class="lg:col-span-2 bg-white border border-slate-200 rounded-xl shadow-sm p-6 space-y-5"
+              class="lg:col-span-8 bg-white border border-slate-200 rounded-xl shadow-sm divide-y divide-slate-100"
             >
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Section A: Brand, Workspace & Destination -->
+              <div class="p-6 space-y-4">
+                <div class="flex items-center justify-between">
+                  <h2 class="text-xs font-bold uppercase tracking-wider text-indigo-600">
+                    1. Campaign Identity &amp; Landing Destination
+                  </h2>
+                  <span class="text-[11px] font-mono text-slate-400">Required *</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">
+                      Brand Code / Name *
+                    </label>
+                    <input
+                      id="tax-brand"
+                      type="text"
+                      required
+                      placeholder="e.g. CFC, SLV, IGN, BVD"
+                      class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">
+                      Campaign Workspace / Flight *
+                    </label>
+                    <input
+                      id="tax-workspace"
+                      type="text"
+                      required
+                      placeholder="e.g. Q4_Welcome_Offer"
+                      class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    />
+                  </div>
+                </div>
+
                 <div>
                   <label class="block text-xs font-medium text-slate-700 mb-1">
-                    Brand *
+                    Destination Landing URL *
                   </label>
                   <input
-                    id="builder-brand"
-                    type="text"
+                    id="tax-base-url"
+                    type="url"
                     required
-                    placeholder="e.g. CFC"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                  />
-                </div>
-                <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">
-                    Campaign Workspace / Name *
-                  </label>
-                  <input
-                    id="builder-workspace"
-                    type="text"
-                    required
-                    placeholder="e.g. Q4_Acquisition_UK"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    placeholder="https://www.example.com/en/promotions/welcome"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-mono text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   />
                 </div>
               </div>
 
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">
-                    Source *
-                  </label>
-                  <select
-                    id="builder-source"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                  >
-                    <option value="google">google</option>
-                    <option value="meta">meta</option>
-                    <option value="dv360">dv360</option>
-                    <option value="tiktok">tiktok</option>
-                    <option value="affiliate">affiliate</option>
-                    <option value="crm">crm</option>
-                  </select>
+              <!-- Section B: Channel & Strategic Taxonomy -->
+              <div class="p-6 space-y-4">
+                <h2 class="text-xs font-bold uppercase tracking-wider text-indigo-600">
+                  2. Channel, Funnel &amp; Strategy Taxonomy
+                </h2>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">
+                      Source *
+                    </label>
+                    <select
+                      id="tax-source"
+                      class="tax-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    ></select>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">
+                      Medium *
+                    </label>
+                    <select
+                      id="tax-medium"
+                      class="tax-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    ></select>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">
+                      Placement *
+                    </label>
+                    <select
+                      id="tax-placement"
+                      class="tax-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    ></select>
+                  </div>
                 </div>
-                <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">
-                    Medium *
-                  </label>
-                  <select
-                    id="builder-medium"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                  >
-                    <option value="cpc">cpc</option>
-                    <option value="paid_social">paid_social</option>
-                    <option value="display">display</option>
-                    <option value="video">video</option>
-                    <option value="email">email</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">
-                    Funnel / Objective
-                  </label>
-                  <select
-                    id="builder-objective"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                  >
-                    <option value="acq_ftd">acq_ftd (Acquisition)</option>
-                    <option value="prosp_reach">prosp_reach (Prospecting)</option>
-                    <option value="retarg_conv">retarg_conv (Retargeting)</option>
-                    <option value="react_crm">react_crm (Reactivation)</option>
-                  </select>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">
+                      Funnel Stage *
+                    </label>
+                    <select
+                      id="tax-funnel"
+                      class="tax-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    ></select>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">
+                      Objective *
+                    </label>
+                    <select
+                      id="tax-objective"
+                      class="tax-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    ></select>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">
+                      Tactic *
+                    </label>
+                    <select
+                      id="tax-tactic"
+                      class="tax-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    ></select>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">
+                      Journey *
+                    </label>
+                    <select
+                      id="tax-journey"
+                      class="tax-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    ></select>
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <label class="block text-xs font-medium text-slate-700 mb-1">
-                  Destination Base URL *
-                </label>
-                <input
-                  id="builder-base-url"
-                  type="url"
-                  required
-                  placeholder="https://www.example.com/promotions/welcome"
-                  class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-mono focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                />
+              <!-- Section C: Geography & Localization -->
+              <div class="p-6 space-y-4">
+                <h2 class="text-xs font-bold uppercase tracking-wider text-indigo-600">
+                  3. Geography &amp; Localization
+                </h2>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">
+                      Region / Country *
+                    </label>
+                    <select
+                      id="tax-region"
+                      class="tax-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    ></select>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">
+                      State / Province
+                    </label>
+                    <select
+                      id="tax-state"
+                      class="tax-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    ></select>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">
+                      Language *
+                    </label>
+                    <select
+                      id="tax-language"
+                      class="tax-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    ></select>
+                  </div>
+                </div>
               </div>
 
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
-                <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">
-                    Creative Name
+              <!-- Section D: Creative Asset Selection -->
+              <div class="p-6 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <h2 class="text-xs font-bold uppercase tracking-wider text-indigo-600">
+                    4. Creative Asset &amp; Dynamic Creative (DCO)
+                  </h2>
+                  <label class="inline-flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      id="tax-is-dco"
+                      type="checkbox"
+                      class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span class="text-xs font-medium text-slate-700">
+                      Dynamic Creative Optimization (DCO — omit <code class="font-mono">ck=</code>)
+                    </span>
                   </label>
-                  <input
-                    id="builder-creative-name"
-                    type="text"
-                    placeholder="e.g. Hero_Video_15s_V2"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                  />
                 </div>
 
-                <label class="inline-flex items-center gap-2.5 pb-2 cursor-pointer select-none">
-                  <input
-                    id="builder-is-dco"
-                    type="checkbox"
-                    class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                  />
-                  <span class="text-xs font-medium text-slate-700">
-                    Dynamic Creative (DCO — omit <code class="font-mono">ck=</code> check)
-                  </span>
-                </label>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">
+                      Creative Format / Asset Type
+                    </label>
+                    <select
+                      id="tax-creative-format"
+                      class="tax-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    ></select>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">
+                      Dimensions / Ratio
+                    </label>
+                    <select
+                      id="tax-creative-size"
+                      class="tax-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    ></select>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">
+                      Creative Variant / Concept Name
+                    </label>
+                    <input
+                      id="tax-creative-name"
+                      type="text"
+                      placeholder="e.g. FreeSpins_Hero_V1"
+                      class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div class="pt-2 flex items-center justify-between gap-4">
+              <!-- Submit Footer -->
+              <div class="p-6 bg-slate-50/70 rounded-b-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <p id="builder-feedback" class="text-xs text-rose-600 hidden"></p>
                 <button
                   id="builder-submit-btn"
                   type="submit"
-                  class="ml-auto rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50 transition"
+                  class="sm:ml-auto rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50 transition"
                 >
-                  Generate &amp; Register Link
+                  Generate &amp; Register Governed Link
                 </button>
               </div>
             </form>
 
-            <!-- Generated Output Preview Card -->
-            <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 flex flex-col justify-between space-y-4">
-              <div>
-                <h2 class="text-sm font-semibold text-slate-900">
-                  Generated Tracking Payload
-                </h2>
-                <p class="text-xs text-slate-500 mt-1">
-                  Deterministic keys are persisted to <code class="font-mono">campaign_links</code> and checked hourly by LinkRot Sentinel.
-                </p>
+            <!-- Right 4 Columns: Live Concatenated UTM & Key Preview -->
+            <aside class="lg:col-span-4 space-y-4 sticky top-20">
+              <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 space-y-4">
+                <div class="flex items-center justify-between">
+                  <h2 class="text-sm font-bold text-slate-900">
+                    Live Governed Output
+                  </h2>
+                  <span
+                    id="preview-status-pill"
+                    class="px-2 py-0.5 rounded-full text-[11px] font-mono font-medium bg-slate-100 text-slate-600"
+                  >
+                    Live Preview
+                  </span>
+                </div>
 
-                <dl class="mt-4 space-y-3 text-xs">
-                  <div class="flex justify-between py-1.5 border-b border-slate-100">
-                    <dt class="text-slate-500">URL Key (<code>k</code>)</dt>
-                    <dd id="preview-url-key" class="font-mono font-semibold text-slate-900">
+                <dl class="space-y-2.5 text-xs">
+                  <div class="py-1.5 border-b border-slate-100">
+                    <dt class="text-slate-500 mb-0.5">utm_source / utm_medium</dt>
+                    <dd id="preview-utm-sm" class="font-mono font-medium text-slate-900">
+                      —
+                    </dd>
+                  </div>
+                  <div class="py-1.5 border-b border-slate-100">
+                    <dt class="text-slate-500 mb-0.5">utm_campaign (Concatenated)</dt>
+                    <dd id="preview-utm-campaign" class="font-mono font-medium text-indigo-700 break-all">
+                      —
+                    </dd>
+                  </div>
+                  <div class="py-1.5 border-b border-slate-100">
+                    <dt class="text-slate-500 mb-0.5">utm_content (Placement &amp; Asset)</dt>
+                    <dd id="preview-utm-content" class="font-mono font-medium text-slate-900 break-all">
                       —
                     </dd>
                   </div>
                   <div class="flex justify-between py-1.5 border-b border-slate-100">
-                    <dt class="text-slate-500">Creative Key (<code>ck</code>)</dt>
+                    <dt class="text-slate-500">URL Key (<code>k=</code>)</dt>
+                    <dd id="preview-url-key" class="font-mono font-semibold text-slate-900">
+                      Auto-generated on save
+                    </dd>
+                  </div>
+                  <div class="flex justify-between py-1.5 border-b border-slate-100">
+                    <dt class="text-slate-500">Creative Key (<code>ck=</code>)</dt>
                     <dd id="preview-creative-key" class="font-mono font-semibold text-slate-900">
-                      —
+                      Auto-generated on save
                     </dd>
                   </div>
                 </dl>
 
-                <div class="mt-4">
-                  <label class="block text-xs font-medium text-slate-700 mb-1">
-                    Final Tracked URL
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1.5">
+                    Final Tracking URL
                   </label>
                   <textarea
                     id="preview-final-url"
-                    rows="4"
+                    rows="5"
                     readonly
-                    placeholder="Submit the form to generate a tokenized tracking URL..."
-                    class="w-full rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-xs font-mono text-slate-800 focus:outline-none"
+                    class="w-full rounded-lg border border-slate-200 bg-slate-900 p-3 text-xs font-mono text-emerald-300 leading-relaxed focus:outline-none"
                   ></textarea>
                 </div>
-              </div>
 
-              <button
-                id="copy-generated-url-btn"
-                type="button"
-                disabled
-                class="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 transition"
-              >
-                Copy Tracked URL
-              </button>
-            </div>
+                <button
+                  id="copy-generated-url-btn"
+                  type="button"
+                  disabled
+                  class="w-full rounded-lg bg-slate-900 px-4 py-2.5 text-xs font-semibold text-white hover:bg-slate-800 disabled:opacity-40 transition"
+                >
+                  Copy Registered Tracking URL
+                </button>
+              </div>
+            </aside>
           </div>
         </section>
 
@@ -360,7 +542,7 @@
                 Campaign History &amp; Audit Ledger
               </h1>
               <p class="text-sm text-slate-500">
-                All governed UTM links created across your workspace domain.
+                Domain-scoped ledger of all governed tracking URLs and deterministic keys.
               </p>
             </div>
 
@@ -368,26 +550,25 @@
               <button
                 id="history-export-csv-btn"
                 type="button"
-                class="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 transition"
+                class="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
               >
                 Export CSV
               </button>
               <button
                 id="history-refresh-btn"
                 type="button"
-                class="rounded-lg bg-slate-900 px-3.5 py-2 text-xs font-medium text-white hover:bg-slate-800 transition"
+                class="rounded-lg bg-slate-900 px-3.5 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition"
               >
                 Refresh
               </button>
             </div>
           </div>
 
-          <!-- Search & Filter Bar -->
           <div class="bg-white border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row gap-3">
             <input
               id="history-search-input"
               type="search"
-              placeholder="Filter by brand, workspace, k=, ck=, creator email, or URL..."
+              placeholder="Search brand, campaign workspace, k=, ck=, creator email, or URL..."
               class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
             <select
@@ -398,7 +579,6 @@
             </select>
           </div>
 
-          <!-- History Table -->
           <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
             <div class="overflow-x-auto">
               <table class="min-w-full divide-y divide-slate-200 text-left text-xs">
@@ -428,7 +608,7 @@
         </section>
 
         <!-- =============================================================== -->
-        <!-- VIEW 3: LINKROT SENTINEL                                        -->
+        <!-- VIEW 3: LINKROT SENTINEL + DOMAIN ALERT RECIPIENTS CARD         -->
         <!-- =============================================================== -->
         <section id="view-sentinel" class="workspace-view hidden space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -437,14 +617,14 @@
                 LinkRot Sentinel
               </h1>
               <p class="text-sm text-slate-500">
-                Automated hourly redirect, HTTP status, and <code class="font-mono text-xs bg-slate-200/70 px-1 py-0.5 rounded">k=</code> / <code class="font-mono text-xs bg-slate-200/70 px-1 py-0.5 rounded">ck=</code> parameter integrity monitor.
+                Automated hourly redirect, HTTP status, and <code class="font-mono text-xs bg-slate-200/80 px-1 py-0.5 rounded">k=</code> / <code class="font-mono text-xs bg-slate-200/80 px-1 py-0.5 rounded">ck=</code> parameter integrity monitor.
               </p>
             </div>
 
             <button
               id="sentinel-scan-all-btn"
               type="button"
-              class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50 transition"
+              class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50 transition"
             >
               Run Domain Scan Now
             </button>
@@ -488,14 +668,12 @@
 
             <div class="mt-4 space-y-3">
               <div class="flex flex-col sm:flex-row gap-2">
-                <div class="relative flex-1">
-                  <input
-                    id="alert-recipient-input"
-                    type="email"
-                    placeholder="Add recipient email (e.g. paidmedia@yourdomain.com) and press Enter"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                  />
-                </div>
+                <input
+                  id="alert-recipient-input"
+                  type="email"
+                  placeholder="Add recipient email (e.g. paidmedia@yourdomain.com) and press Enter"
+                  class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                />
                 <button
                   id="alert-recipient-add-btn"
                   type="button"
@@ -515,7 +693,7 @@
                 </span>
               </div>
 
-              <!-- Validation / Status Feedback + Save Action -->
+              <!-- Status & Save Action -->
               <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
                 <div class="text-xs">
                   <p id="alert-settings-error" class="text-rose-600 hidden"></p>
@@ -528,7 +706,7 @@
                 <button
                   id="alert-settings-save-btn"
                   type="button"
-                  class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50 transition"
+                  class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50 transition"
                 >
                   Save Alert Settings
                 </button>
@@ -566,7 +744,7 @@
             />
             <select
               id="sentinel-status-filter"
-              class="sm:w-52 rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              class="sm:w-56 rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             >
               <option value="">All Health Statuses</option>
               <option value="degraded">All Broken &amp; Stripped</option>
@@ -624,9 +802,302 @@
       const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
       // -------------------------------------------------------------------
-      // 2. SHARED UTILITIES
+      // 2. CONTROLLED VOCABULARY TAXONOMY DICTIONARIES
+      // -------------------------------------------------------------------
+      const TAXONOMY = {
+        funnel: [
+          { code: "tofu", label: "Top of Funnel — Awareness (tofu)" },
+          { code: "mofu", label: "Middle of Funnel — Consideration (mofu)" },
+          { code: "bofu", label: "Bottom of Funnel — Conversion / FTD (bofu)" },
+          { code: "ret", label: "Retention & Reactivation (ret)" },
+        ],
+        source: [
+          { code: "google", label: "Google Ads / Search / PMax (google)" },
+          { code: "meta", label: "Meta — Facebook & Instagram (meta)" },
+          { code: "dv360", label: "Display & Video 360 (dv360)" },
+          { code: "tiktok", label: "TikTok Ads (tiktok)" },
+          { code: "snapchat", label: "Snapchat Ads (snapchat)" },
+          { code: "reddit", label: "Reddit Ads (reddit)" },
+          { code: "x", label: "X / Twitter Ads (x)" },
+          { code: "linkedin", label: "LinkedIn Ads (linkedin)" },
+          { code: "apple_search", label: "Apple Search Ads (apple_search)" },
+          { code: "bing", label: "Microsoft Advertising (bing)" },
+          { code: "taboola", label: "Taboola Native (taboola)" },
+          { code: "outbrain", label: "Outbrain Native (outbrain)" },
+          { code: "affiliate", label: "Affiliate / Partner Network (affiliate)" },
+          { code: "direct_io", label: "Direct Publisher IO (direct_io)" },
+          { code: "crm_moengage", label: "CRM — MoEngage (crm_moengage)" },
+        ],
+        medium: [
+          { code: "cpc", label: "Paid Search / CPC (cpc)" },
+          { code: "paid_social", label: "Paid Social (paid_social)" },
+          { code: "display", label: "Programmatic / Direct Display (display)" },
+          { code: "olv", label: "Online Video / Pre-Roll (olv)" },
+          { code: "ctv", label: "Connected TV (ctv)" },
+          { code: "native", label: "Native Content (native)" },
+          { code: "affiliate", label: "Affiliate CPA / RevShare (affiliate)" },
+          { code: "email", label: "CRM Email (email)" },
+          { code: "push", label: "CRM Push Notification (push)" },
+          { code: "sms", label: "CRM SMS (sms)" },
+        ],
+        objective: [
+          { code: "awr", label: "Brand Awareness & Reach (awr)" },
+          { code: "trf", label: "Qualified Traffic / Clicks (trf)" },
+          { code: "reg", label: "Account Registration / Lead (reg)" },
+          { code: "ftd", label: "First-Time Deposit / Purchase (ftd)" },
+          { code: "dep", label: "Repeat Deposit / LTV Value (dep)" },
+          { code: "app", label: "App Install & Deep Link (app)" },
+        ],
+        tactic: [
+          { code: "brd", label: "Brand Exact / Phrase (brd)" },
+          { code: "nbr", label: "Non-Brand Generic (nbr)" },
+          { code: "cmp", label: "Competitor Conquesting (cmp)" },
+          { code: "pmax", label: "Performance Max Automated (pmax)" },
+          { code: "prosp", label: "Broad / Interest Prospecting (prosp)" },
+          { code: "lal", label: "Lookalike / 1P Seed Audience (lal)" },
+          { code: "rtg", label: "Site / Cart Abandoner Retargeting (rtg)" },
+          { code: "lapsed", label: "Lapsed Player Winback (lapsed)" },
+          { code: "vip", label: "High-Value VIP Tier (vip)" },
+        ],
+        journey: [
+          { code: "acq", label: "New Player Acquisition (acq)" },
+          { code: "onb", label: "KYC & Onboarding Nurture (onb)" },
+          { code: "conv", label: "First Deposit Conversion (conv)" },
+          { code: "xsell", label: "Product Cross-Sell (xsell)" },
+          { code: "react", label: "Churn Prevention & Reactivation (react)" },
+        ],
+        placement: [
+          { code: "serp", label: "Search Engine Results Page (serp)" },
+          { code: "feed", label: "Social In-Feed (feed)" },
+          { code: "stories", label: "Stories / Vertical Fullscreen (stories)" },
+          { code: "reels", label: "Reels / Short-Form Video (reels)" },
+          { code: "instream", label: "In-Stream Video (instream)" },
+          { code: "ros", label: "Run of Site / Open Exchange (ros)" },
+          { code: "pmp", label: "Private Marketplace Deal (pmp)" },
+          { code: "takeover", label: "Homepage / High-Impact Takeover (takeover)" },
+          { code: "inbox", label: "CRM Inbox / Lifecycle Trigger (inbox)" },
+        ],
+        region: [
+          { code: "uk", label: "United Kingdom (uk)" },
+          { code: "ie", label: "Ireland (ie)" },
+          { code: "ca", label: "Canada (ca)" },
+          { code: "us", label: "United States (us)" },
+          { code: "de", label: "Germany (de)" },
+          { code: "es", label: "Spain (es)" },
+          { code: "se", label: "Sweden (se)" },
+          { code: "br", label: "Brazil (br)" },
+          { code: "mx", label: "Mexico (mx)" },
+          { code: "au", label: "Australia (au)" },
+          { code: "nz", label: "New Zealand (nz)" },
+          { code: "global", label: "Multi-Region / Global (global)" },
+        ],
+        statesByRegion: {
+          uk: [
+            { code: "all", label: "All UK Nations (all)" },
+            { code: "eng", label: "England (eng)" },
+            { code: "sct", label: "Scotland (sct)" },
+            { code: "wls", label: "Wales (wls)" },
+            { code: "nir", label: "Northern Ireland (nir)" },
+          ],
+          ca: [
+            { code: "all", label: "All Regulated Provinces (all)" },
+            { code: "on", label: "Ontario (on)" },
+            { code: "bc", label: "British Columbia (bc)" },
+            { code: "ab", label: "Alberta (ab)" },
+            { code: "qc", label: "Quebec (qc)" },
+          ],
+          us: [
+            { code: "all", label: "All Licensed States (all)" },
+            { code: "nj", label: "New Jersey (nj)" },
+            { code: "pa", label: "Pennsylvania (pa)" },
+            { code: "mi", label: "Michigan (mi)" },
+            { code: "ny", label: "New York (ny)" },
+            { code: "co", label: "Colorado (co)" },
+            { code: "il", label: "Illinois (il)" },
+            { code: "oh", label: "Ohio (oh)" },
+          ],
+        },
+        language: [
+          { code: "en", label: "English (en)" },
+          { code: "es", label: "Spanish (es)" },
+          { code: "pt", label: "Portuguese (pt)" },
+          { code: "de", label: "German (de)" },
+          { code: "fr", label: "French (fr)" },
+          { code: "sv", label: "Swedish (sv)" },
+        ],
+        creativeFormat: [
+          { code: "rsa", label: "Responsive Search Ad (rsa)" },
+          { code: "static", label: "Static Banner / Image (static)" },
+          { code: "html5", label: "HTML5 Rich Media (html5)" },
+          { code: "vid15", label: "Video 15s (vid15)" },
+          { code: "vid30", label: "Video 30s (vid30)" },
+          { code: "carousel", label: "Multi-Card Carousel (carousel)" },
+          { code: "dco", label: "Dynamic Creative Feed (dco)" },
+        ],
+        creativeSize: [
+          { code: "na", label: "Text / N/A (na)" },
+          { code: "1x1", label: "1:1 Square — 1080x1080 (1x1)" },
+          { code: "9x16", label: "9:16 Vertical — 1080x1920 (9x16)" },
+          { code: "16x9", label: "16:9 Landscape — 1920x1080 (16x9)" },
+          { code: "300x250", label: "300x250 Medium Rectangle (300x250)" },
+          { code: "728x90", label: "728x90 Leaderboard (728x90)" },
+          { code: "320x50", label: "320x50 Mobile Banner (320x50)" },
+        ],
+      };
+
+      function populateSelect(id, items, defaultCode = null) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.innerHTML = items
+          .map(
+            (item) =>
+              `<option value="${item.code}" ${
+                item.code === defaultCode ? "selected" : ""
+              }>${item.label}</option>`
+          )
+          .join("");
+      }
+
+      function syncStateOptions() {
+        const region = document.getElementById("tax-region").value;
+        const states = TAXONOMY.statesByRegion[region] || [
+          { code: "all", label: "National / All Regions (all)" },
+        ];
+        populateSelect("tax-state", states, states[0].code);
+      }
+
+      function initTaxonomyControls() {
+        populateSelect("tax-funnel", TAXONOMY.funnel, "bofu");
+        populateSelect("tax-source", TAXONOMY.source, "google");
+        populateSelect("tax-medium", TAXONOMY.medium, "cpc");
+        populateSelect("tax-objective", TAXONOMY.objective, "ftd");
+        populateSelect("tax-tactic", TAXONOMY.tactic, "nbr");
+        populateSelect("tax-journey", TAXONOMY.journey, "acq");
+        populateSelect("tax-placement", TAXONOMY.placement, "serp");
+        populateSelect("tax-region", TAXONOMY.region, "uk");
+        populateSelect("tax-language", TAXONOMY.language, "en");
+        populateSelect("tax-creative-format", TAXONOMY.creativeFormat, "rsa");
+        populateSelect("tax-creative-size", TAXONOMY.creativeSize, "na");
+        syncStateOptions();
+      }
+
+      function slugifyToken(str) {
+        return String(str || "")
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "");
+      }
+
+      function buildTaxonomyStrings() {
+        const brand = slugifyToken(document.getElementById("tax-brand").value) || "brand";
+        const workspace =
+          slugifyToken(document.getElementById("tax-workspace").value) || "campaign";
+        const source = document.getElementById("tax-source").value;
+        const medium = document.getElementById("tax-medium").value;
+        const funnel = document.getElementById("tax-funnel").value;
+        const objective = document.getElementById("tax-objective").value;
+        const tactic = document.getElementById("tax-tactic").value;
+        const journey = document.getElementById("tax-journey").value;
+        const placement = document.getElementById("tax-placement").value;
+        const region = document.getElementById("tax-region").value;
+        const state = document.getElementById("tax-state").value;
+        const language = document.getElementById("tax-language").value;
+        const creativeFormat = document.getElementById("tax-creative-format").value;
+        const creativeSize = document.getElementById("tax-creative-size").value;
+        const creativeName = slugifyToken(
+          document.getElementById("tax-creative-name").value
+        );
+        const isDco = document.getElementById("tax-is-dco").checked;
+
+        const geoToken = state && state !== "all" ? `${region}-${state}` : region;
+        const utmCampaign = [
+          brand,
+          geoToken,
+          language,
+          funnel,
+          objective,
+          tactic,
+          journey,
+          workspace,
+        ].join("_");
+
+        const utmContent = [
+          placement,
+          isDco ? "dco" : creativeFormat,
+          creativeSize,
+          creativeName || "default",
+        ].join("_");
+
+        return {
+          brandRaw: document.getElementById("tax-brand").value.trim(),
+          workspaceRaw: document.getElementById("tax-workspace").value.trim(),
+          creativeNameRaw: document.getElementById("tax-creative-name").value.trim(),
+          source,
+          medium,
+          utmCampaign,
+          utmContent,
+          isDco,
+        };
+      }
+
+      function updateLivePreview(savedKeys = null) {
+        const t = buildTaxonomyStrings();
+        const baseUrlRaw = document.getElementById("tax-base-url").value.trim();
+
+        document.getElementById("preview-utm-sm").textContent = `${t.source} / ${t.medium}`;
+        document.getElementById("preview-utm-campaign").textContent = t.utmCampaign;
+        document.getElementById("preview-utm-content").textContent = t.utmContent;
+
+        const previewUrlKey = savedKeys?.urlKey || "<generated_k>";
+        const previewCreativeKey = t.isDco
+          ? "Omitted (DCO mode)"
+          : savedKeys?.creativeKey || "<generated_ck>";
+
+        if (savedKeys) {
+          document.getElementById("preview-url-key").textContent = savedKeys.urlKey;
+          document.getElementById("preview-creative-key").textContent = t.isDco
+            ? `${savedKeys.creativeKey} (DCO)`
+            : savedKeys.creativeKey;
+          document.getElementById("preview-status-pill").textContent = "Registered";
+          document.getElementById("preview-status-pill").className =
+            "px-2 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200";
+        } else {
+          document.getElementById("preview-url-key").textContent = "Auto-generated on save";
+          document.getElementById("preview-creative-key").textContent = t.isDco
+            ? "Omitted (DCO)"
+            : "Auto-generated on save";
+          document.getElementById("preview-status-pill").textContent = "Live Preview";
+          document.getElementById("preview-status-pill").className =
+            "px-2 py-0.5 rounded-full text-[11px] font-mono font-medium bg-slate-100 text-slate-600";
+        }
+
+        let displayUrl;
+        try {
+          const u = new URL(baseUrlRaw || "https://www.example.com/");
+          u.searchParams.set("utm_source", t.source);
+          u.searchParams.set("utm_medium", t.medium);
+          u.searchParams.set("utm_campaign", t.utmCampaign);
+          u.searchParams.set("utm_content", t.utmContent);
+          u.searchParams.set("k", previewUrlKey);
+          if (!t.isDco) {
+            u.searchParams.set("ck", previewCreativeKey);
+          }
+          displayUrl = decodeURIComponent(u.toString());
+        } catch {
+          displayUrl = "Enter a valid http:// or https:// destination URL to preview.";
+        }
+
+        document.getElementById("preview-final-url").value = displayUrl;
+      }
+
+      // -------------------------------------------------------------------
+      // 3. SHARED UTILITIES & STATE
       // -------------------------------------------------------------------
       const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      let currentUser = null;
+      let ownerDomain = "";
+      let domainLinks = [];
 
       function escapeHtml(value) {
         return String(value ?? "")
@@ -672,13 +1143,6 @@
       }
 
       // -------------------------------------------------------------------
-      // 3. STATE
-      // -------------------------------------------------------------------
-      let currentUser = null;
-      let ownerDomain = "";
-      let domainLinks = [];
-
-      // -------------------------------------------------------------------
       // 4. NAVIGATION ROUTER
       // -------------------------------------------------------------------
       function switchView(targetName) {
@@ -691,8 +1155,8 @@
         document.querySelectorAll(".nav-tab").forEach((btn) => {
           const isMatch = btn.getAttribute("data-nav-target") === targetName;
           btn.className = isMatch
-            ? "nav-tab px-3 py-2 rounded-lg text-sm font-medium transition bg-indigo-50 text-indigo-700 inline-flex items-center gap-2"
-            : "nav-tab px-3 py-2 rounded-lg text-sm font-medium transition text-slate-600 hover:text-slate-900 hover:bg-slate-100 inline-flex items-center gap-2";
+            ? "nav-tab px-3.5 py-2 rounded-lg text-xs font-semibold transition bg-indigo-600 text-white shadow-sm inline-flex items-center gap-2"
+            : "nav-tab px-3.5 py-2 rounded-lg text-xs font-semibold transition text-slate-300 hover:text-white hover:bg-slate-800 inline-flex items-center gap-2";
         });
       }
 
@@ -727,7 +1191,7 @@
         });
 
         authSubmitBtn.disabled = false;
-        authSubmitBtn.textContent = "Send Magic Link";
+        authSubmitBtn.textContent = "Send Magic Sign-In Link";
         authMessage.classList.remove("hidden");
         authMessage.textContent = error
           ? `Sign-in error: ${error.message}`
@@ -739,7 +1203,7 @@
       });
 
       // -------------------------------------------------------------------
-      // 6. DATA LOADING (ALL DOMAIN LINKS)
+      // 6. DATA LOADING
       // -------------------------------------------------------------------
       async function loadDomainLinks() {
         if (!ownerDomain) return;
@@ -781,92 +1245,113 @@
       }
 
       // -------------------------------------------------------------------
-      // 7. CAMPAIGN BUILDER
+      // 7. BUILDER EVENT BINDINGS
       // -------------------------------------------------------------------
-      const builderForm = document.getElementById("campaign-builder-form");
-      const builderFeedback = document.getElementById("builder-feedback");
-      const builderSubmitBtn = document.getElementById("builder-submit-btn");
-      const copyUrlBtn = document.getElementById("copy-generated-url-btn");
+      initTaxonomyControls();
+      updateLivePreview();
 
-      builderForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        builderFeedback.classList.add("hidden");
+      document.getElementById("tax-region").addEventListener("change", () => {
+        syncStateOptions();
+        updateLivePreview();
+      });
 
-        const brand = document.getElementById("builder-brand").value.trim();
-        const workspace = document.getElementById("builder-workspace").value.trim();
-        const source = document.getElementById("builder-source").value;
-        const medium = document.getElementById("builder-medium").value;
-        const objective = document.getElementById("builder-objective").value;
-        const baseUrlRaw = document.getElementById("builder-base-url").value.trim();
-        const creativeName = document
-          .getElementById("builder-creative-name")
-          .value.trim();
-        const isDco = document.getElementById("builder-is-dco").checked;
+      document.getElementById("tax-is-dco").addEventListener("change", (e) => {
+        const isDco = e.target.checked;
+        document.getElementById("tax-creative-format").disabled = isDco;
+        document.getElementById("tax-creative-size").disabled = isDco;
+        updateLivePreview();
+      });
 
-        let parsedUrl;
-        try {
-          parsedUrl = new URL(baseUrlRaw);
-        } catch {
-          builderFeedback.textContent = "Please enter a valid http/https destination URL.";
-          builderFeedback.classList.remove("hidden");
-          return;
-        }
-
-        const urlKey = generateShortKey("k_", 8);
-        const creativeKey = generateShortKey("ck_", 8);
-
-        parsedUrl.searchParams.set("utm_source", source);
-        parsedUrl.searchParams.set("utm_medium", medium);
-        parsedUrl.searchParams.set("utm_campaign", `${brand}_${workspace}_${objective}`.toLowerCase());
-        parsedUrl.searchParams.set("k", urlKey);
-        if (!isDco) {
-          parsedUrl.searchParams.set("ck", creativeKey);
-        }
-
-        const finalUrl = parsedUrl.toString();
-
-        builderSubmitBtn.disabled = true;
-        builderSubmitBtn.textContent = "Saving...";
-
-        const { error } = await supabase.from("campaign_links").insert({
-          owner_domain: ownerDomain,
-          created_by_email: currentUser.email.toLowerCase(),
-          brand,
-          campaign_workspace: workspace,
-          url_key: urlKey,
-          creative_key: creativeKey,
-          creative_name: creativeName || null,
-          is_dynamic_creative: isDco,
-          final_shortened_url: finalUrl,
-          link_health_status: "pending",
+      document
+        .querySelectorAll("#campaign-builder-form input, #campaign-builder-form select")
+        .forEach((el) => {
+          el.addEventListener("input", () => updateLivePreview());
+          el.addEventListener("change", () => updateLivePreview());
         });
 
-        builderSubmitBtn.disabled = false;
-        builderSubmitBtn.textContent = "Generate & Register Link";
+      const copyUrlBtn = document.getElementById("copy-generated-url-btn");
 
-        if (error) {
-          builderFeedback.textContent = `Error saving link: ${error.message}`;
-          builderFeedback.classList.remove("hidden");
-          return;
-        }
-
-        document.getElementById("preview-url-key").textContent = urlKey;
-        document.getElementById("preview-creative-key").textContent = isDco
-          ? `${creativeKey} (DCO)`
-          : creativeKey;
-        document.getElementById("preview-final-url").value = finalUrl;
-        copyUrlBtn.disabled = false;
-
-        await loadDomainLinks();
+      document.getElementById("builder-reset-btn").addEventListener("click", () => {
+        document.getElementById("campaign-builder-form").reset();
+        document.getElementById("tax-creative-format").disabled = false;
+        document.getElementById("tax-creative-size").disabled = false;
+        initTaxonomyControls();
+        copyUrlBtn.disabled = true;
+        updateLivePreview();
       });
+
+      document
+        .getElementById("campaign-builder-form")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const feedback = document.getElementById("builder-feedback");
+          const submitBtn = document.getElementById("builder-submit-btn");
+          feedback.classList.add("hidden");
+
+          const baseUrlRaw = document.getElementById("tax-base-url").value.trim();
+          let parsedUrl;
+          try {
+            parsedUrl = new URL(baseUrlRaw);
+          } catch {
+            feedback.textContent = "Please enter a valid http/https destination URL.";
+            feedback.classList.remove("hidden");
+            return;
+          }
+
+          const t = buildTaxonomyStrings();
+          const urlKey = generateShortKey("k_", 8);
+          const creativeKey = generateShortKey("ck_", 8);
+
+          parsedUrl.searchParams.set("utm_source", t.source);
+          parsedUrl.searchParams.set("utm_medium", t.medium);
+          parsedUrl.searchParams.set("utm_campaign", t.utmCampaign);
+          parsedUrl.searchParams.set("utm_content", t.utmContent);
+          parsedUrl.searchParams.set("k", urlKey);
+          if (!t.isDco) {
+            parsedUrl.searchParams.set("ck", creativeKey);
+          }
+
+          const finalUrl = parsedUrl.toString();
+
+          submitBtn.disabled = true;
+          submitBtn.textContent = "Registering...";
+
+          const { error } = await supabase.from("campaign_links").insert({
+            owner_domain: ownerDomain,
+            created_by_email: currentUser.email.toLowerCase(),
+            brand: t.brandRaw,
+            campaign_workspace: t.workspaceRaw,
+            url_key: urlKey,
+            creative_key: creativeKey,
+            creative_name: t.creativeNameRaw || null,
+            is_dynamic_creative: t.isDco,
+            final_shortened_url: finalUrl,
+            link_health_status: "pending",
+          });
+
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Generate & Register Governed Link";
+
+          if (error) {
+            feedback.textContent = `Error saving link: ${error.message}`;
+            feedback.classList.remove("hidden");
+            return;
+          }
+
+          updateLivePreview({ urlKey, creativeKey });
+          document.getElementById("preview-final-url").value = finalUrl;
+          copyUrlBtn.disabled = false;
+
+          await loadDomainLinks();
+        });
 
       copyUrlBtn.addEventListener("click", async () => {
         const val = document.getElementById("preview-final-url").value;
         if (!val) return;
         await navigator.clipboard.writeText(val);
-        copyUrlBtn.textContent = "Copied!";
+        copyUrlBtn.textContent = "Copied to Clipboard!";
         setTimeout(() => {
-          copyUrlBtn.textContent = "Copy Tracked URL";
+          copyUrlBtn.textContent = "Copy Registered Tracking URL";
         }, 1500);
       });
 
@@ -1171,9 +1656,7 @@
         const payload = linkId ? { link_id: linkId } : {};
         const { error } = await supabase.functions.invoke(
           SENTINEL_FUNCTION_NAME,
-          {
-            body: payload,
-          }
+          { body: payload }
         );
 
         if (error) {
@@ -1217,7 +1700,12 @@
       // -------------------------------------------------------------------
       // 10. DOMAIN ALERT RECIPIENTS SETTINGS CARD
       // -------------------------------------------------------------------
+      let boundAlertDomain = "";
+
       function initDomainAlertSettings() {
+        if (!ownerDomain || boundAlertDomain === ownerDomain) return;
+        boundAlertDomain = ownerDomain;
+
         const domainBadge = document.getElementById("alert-settings-domain-badge");
         const enabledCheckbox = document.getElementById("alert-digest-enabled");
         const emailInput = document.getElementById("alert-recipient-input");
@@ -1232,21 +1720,10 @@
         let recipients = [];
 
         function showFeedback({ error = "", status = "" }) {
-          if (error) {
-            errorEl.textContent = error;
-            errorEl.classList.remove("hidden");
-          } else {
-            errorEl.textContent = "";
-            errorEl.classList.add("hidden");
-          }
-
-          if (status) {
-            statusEl.textContent = status;
-            statusEl.classList.remove("hidden");
-          } else {
-            statusEl.textContent = "";
-            statusEl.classList.add("hidden");
-          }
+          errorEl.textContent = error;
+          errorEl.classList.toggle("hidden", !error);
+          statusEl.textContent = status;
+          statusEl.classList.toggle("hidden", !status);
         }
 
         function renderChips() {
@@ -1312,7 +1789,6 @@
         });
 
         addBtn.addEventListener("click", addEmailFromInput);
-
         emailInput.addEventListener("keydown", (e) => {
           if (e.key === "Enter") {
             e.preventDefault();
@@ -1424,6 +1900,7 @@
         if (!session?.user?.email) {
           currentUser = null;
           ownerDomain = "";
+          boundAlertDomain = "";
           appShell.classList.add("hidden");
           authView.classList.remove("hidden");
           return;
