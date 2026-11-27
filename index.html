@@ -286,7 +286,8 @@
                             <!-- LOCKED TAXONOMIES & FILTERED GEO/LANGUAGE -->
                             <div class="relative combo-wrapper" data-field="funnel">
                                 <label class="block text-xs ap-text-muted mb-1">Funnel <span class="ap-danger">*</span></label>
-                                <input id="search-funnel" type="text" required readonly onfocus="openCombo('funnel')"
+                                <input id="search-funnel" type="text" required placeholder="Search funnel..." autocomplete="off"
+                                    onfocus="openCombo('funnel')" oninput="filterCombo('funnel')"
                                     class="w-full ap-input border rounded-lg px-3 py-2 text-sm cursor-pointer">
                                 <input type="hidden" id="f-funnel" value="">
                                 <div id="list-funnel" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto ap-surface border rounded-lg shadow-2xl divide-y" style="border-color: var(--border-strong);"></div>
@@ -295,7 +296,8 @@
 
                             <div class="relative combo-wrapper" data-field="tactic">
                                 <label class="block text-xs ap-text-muted mb-1">Tactic <span class="ap-danger">*</span></label>
-                                <input id="search-tactic" type="text" required readonly onfocus="openCombo('tactic')"
+                                <input id="search-tactic" type="text" required placeholder="Search tactic..." autocomplete="off"
+                                    onfocus="openCombo('tactic')" oninput="filterCombo('tactic')"
                                     class="w-full ap-input border rounded-lg px-3 py-2 text-sm cursor-pointer">
                                 <input type="hidden" id="f-tactic" value="">
                                 <div id="list-tactic" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto ap-surface border rounded-lg shadow-2xl divide-y" style="border-color: var(--border-strong);"></div>
@@ -304,7 +306,8 @@
 
                             <div class="relative combo-wrapper" data-field="medium">
                                 <label class="block text-xs ap-text-muted mb-1">Medium <span class="ap-danger">*</span></label>
-                                <input id="search-medium" type="text" required readonly onfocus="openCombo('medium')"
+                                <input id="search-medium" type="text" required placeholder="Search medium..." autocomplete="off"
+                                    onfocus="openCombo('medium')" oninput="filterCombo('medium')"
                                     class="w-full ap-input border rounded-lg px-3 py-2 text-sm cursor-pointer">
                                 <input type="hidden" id="f-medium" value="">
                                 <div id="list-medium" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto ap-surface border rounded-lg shadow-2xl divide-y" style="border-color: var(--border-strong);"></div>
@@ -618,6 +621,10 @@
         const DOMAIN_SCOPED_FIELDS = new Set(['brand', 'product', 'subproduct', 'placement', 'objective', 'journey']);
         const DYNAMIC_ADD_FIELDS = new Set(['brand', 'source', 'product', 'subproduct', 'placement', 'objective', 'journey']);
         const LOCKED_PREPOPULATED_FIELDS = ['funnel', 'tactic', 'medium', 'region', 'lang'];
+        const ALL_COMBO_FIELDS = [
+            'brand', 'source', 'product', 'subproduct', 'placement', 'objective',
+            'journey', 'funnel', 'tactic', 'medium', 'region', 'state', 'lang'
+        ];
         const VOWELS = new Set(['a', 'e', 'i', 'o', 'u']);
         const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -637,6 +644,7 @@
             lang: []
         };
 
+        const comboSnapshot = {};
         let uploadedCreativeAssets = [];
         let activeUser = null;
         let activeDomain = '';
@@ -746,9 +754,11 @@
                     document.getElementById('f-state').value = '';
                     document.getElementById('preview-state').textContent = 'URL code: —';
                 }
-                const matches = countryStates.filter(
-                    s => s.displayName.toLowerCase().includes(q) || s.abbreviation.toLowerCase().includes(q)
-                );
+                const matches = q
+                    ? countryStates.filter(
+                        s => s.displayName.toLowerCase().includes(q) || s.abbreviation.toLowerCase().includes(q)
+                    )
+                    : countryStates;
                 renderStateList(matches);
                 document.getElementById('list-state').classList.remove('hidden');
                 renderAllOutputs();
@@ -763,6 +773,9 @@
                 const abbr = String(exactMatch.abbreviation || '').toLowerCase();
                 document.getElementById(`f-${field}`).value = abbr;
                 document.getElementById(`preview-${field}`).textContent = `URL code: ${abbr}`;
+                if (field === 'region') {
+                    syncStateFieldForCountry();
+                }
             } else if (trimmed && DYNAMIC_ADD_FIELDS.has(field)) {
                 const liveCode = abbreviate4PlusDigits(trimmed).toLowerCase();
                 document.getElementById(`f-${field}`).value = '';
@@ -770,11 +783,16 @@
             } else {
                 document.getElementById(`f-${field}`).value = '';
                 document.getElementById(`preview-${field}`).textContent = 'URL code: —';
+                if (field === 'region') {
+                    syncStateFieldForCountry();
+                }
             }
 
-            const matches = (TAXONOMY[field] || []).filter(item =>
-                item.display_name.toLowerCase().includes(q) || String(item.abbreviation || '').toLowerCase().includes(q)
-            );
+            const matches = q
+                ? (TAXONOMY[field] || []).filter(item =>
+                    item.display_name.toLowerCase().includes(q) || String(item.abbreviation || '').toLowerCase().includes(q)
+                )
+                : (TAXONOMY[field] || []);
             renderComboList(field, matches, trimmed);
             document.getElementById(`list-${field}`).classList.remove('hidden');
             renderAllOutputs();
@@ -1029,7 +1047,7 @@
 
             const countryStates = getStatesForSelectedCountry();
             if (countryStates.length) {
-                searchStateEl.placeholder = 'Select state / province...';
+                searchStateEl.placeholder = 'Click or type to search state / province...';
                 selectStateItem(countryStates[0].displayName, countryStates[0].abbreviation, false);
             } else {
                 searchStateEl.value = 'Not Applicable';
@@ -1041,23 +1059,82 @@
 
         function openCombo(field) {
             document.querySelectorAll('.combo-list').forEach(el => el.classList.add('hidden'));
+
+            const inputEl = document.getElementById(`search-${field}`);
+            const hiddenEl = document.getElementById(`f-${field}`);
+
+            comboSnapshot[field] = {
+                displayName: inputEl ? inputEl.value : '',
+                code: hiddenEl ? hiddenEl.value : ''
+            };
+
+            if (inputEl && !inputEl.readOnly) {
+                inputEl.value = '';
+            }
+
             if (field === 'state') {
-                const q = (document.getElementById('search-state').value || '').trim().toLowerCase();
                 const countryStates = getStatesForSelectedCountry();
-                const filtered = q && q !== 'not applicable'
-                    ? countryStates.filter(s => s.displayName.toLowerCase().includes(q) || s.abbreviation.includes(q))
-                    : countryStates;
-                renderStateList(filtered);
+                renderStateList(countryStates);
                 document.getElementById('list-state').classList.remove('hidden');
                 return;
             }
-            const rawVal = document.getElementById(`search-${field}`).value;
-            renderComboList(field, TAXONOMY[field] || [], rawVal.trim());
+
+            renderComboList(field, TAXONOMY[field] || [], '');
             document.getElementById(`list-${field}`).classList.remove('hidden');
         }
 
         function filterCombo(field) {
-            handleDynamicInput(field);
+            const rawVal = document.getElementById(`search-${field}`).value;
+            const q = rawVal.trim().toLowerCase();
+
+            if (field === 'state') {
+                const countryStates = getStatesForSelectedCountry();
+                const exactState = q ? countryStates.find(s => s.displayName.toLowerCase() === q) : null;
+                if (exactState) {
+                    document.getElementById('f-state').value = exactState.abbreviation;
+                    document.getElementById('preview-state').textContent = `URL code: ${exactState.abbreviation}`;
+                } else {
+                    document.getElementById('f-state').value = '';
+                    document.getElementById('preview-state').textContent = 'URL code: —';
+                }
+                const matches = q
+                    ? countryStates.filter(
+                        s => s.displayName.toLowerCase().includes(q) || s.abbreviation.toLowerCase().includes(q)
+                    )
+                    : countryStates;
+                renderStateList(matches);
+                document.getElementById('list-state').classList.remove('hidden');
+                renderAllOutputs();
+                return;
+            }
+
+            const exactMatch = q
+                ? (TAXONOMY[field] || []).find(item => item.display_name.trim().toLowerCase() === q)
+                : null;
+
+            if (exactMatch) {
+                const abbr = String(exactMatch.abbreviation || '').toLowerCase();
+                document.getElementById(`f-${field}`).value = abbr;
+                document.getElementById(`preview-${field}`).textContent = `URL code: ${abbr}`;
+                if (field === 'region') {
+                    syncStateFieldForCountry();
+                }
+            } else {
+                document.getElementById(`f-${field}`).value = '';
+                document.getElementById(`preview-${field}`).textContent = 'URL code: —';
+                if (field === 'region') {
+                    syncStateFieldForCountry();
+                }
+            }
+
+            const matches = q
+                ? (TAXONOMY[field] || []).filter(item =>
+                    item.display_name.toLowerCase().includes(q) || String(item.abbreviation || '').toLowerCase().includes(q)
+                )
+                : (TAXONOMY[field] || []);
+            renderComboList(field, matches, rawVal.trim());
+            document.getElementById(`list-${field}`).classList.remove('hidden');
+            renderAllOutputs();
         }
 
         function renderStateList(states) {
@@ -1856,6 +1933,27 @@
                 }
             }
         }
+
+        ALL_COMBO_FIELDS.forEach(field => {
+            const inputEl = document.getElementById(`search-${field}`);
+            if (!inputEl) return;
+            inputEl.addEventListener('blur', () => {
+                setTimeout(() => {
+                    const hiddenEl = document.getElementById(`f-${field}`);
+                    const snap = comboSnapshot[field];
+                    if (hiddenEl && !hiddenEl.value && snap?.code) {
+                        inputEl.value = snap.displayName;
+                        hiddenEl.value = snap.code;
+                        const prevEl = document.getElementById(`preview-${field}`);
+                        if (prevEl) prevEl.textContent = `URL code: ${snap.code}`;
+                        if (field === 'region') {
+                            syncStateFieldForCountry();
+                        }
+                        renderAllOutputs();
+                    }
+                }, 150);
+            });
+        });
 
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.combo-wrapper')) {
