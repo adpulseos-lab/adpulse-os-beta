@@ -109,9 +109,11 @@
         <div class="w-full max-w-md ap-surface border rounded-2xl p-6 space-y-5 shadow-2xl">
             <div class="space-y-1">
                 <span class="text-xs font-mono uppercase tracking-wider ap-code">AdPulse OS • Private Beta</span>
-                <h1 class="text-xl font-bold">Sign in to workspace</h1>
-                <p class="text-xs ap-text-muted">Access is restricted to approved beta emails. Users on the same email domain share custom taxonomies and campaign history.</p>
+                <h1 id="authGateTitle" class="text-xl font-bold">Sign in to workspace</h1>
+                <p id="authGateSubtitle" class="text-xs ap-text-muted">Access is restricted to approved beta emails. Users on the same email domain share custom taxonomies and campaign history.</p>
             </div>
+
+            <!-- 1. SIGN IN FORM -->
             <form id="loginForm" onsubmit="handleSignIn(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs ap-text-muted mb-1">Work / Beta Email</label>
@@ -119,7 +121,13 @@
                         class="w-full ap-input border rounded-lg px-3 py-2 text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs ap-text-muted mb-1">Password</label>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-xs ap-text-muted">Password</label>
+                        <button type="button" onclick="switchAuthMode('forgot')"
+                            class="text-[11px] ap-code hover:underline cursor-pointer">
+                            Forgot password?
+                        </button>
+                    </div>
                     <input id="loginPassword" type="password" required placeholder="••••••••"
                         class="w-full ap-input border rounded-lg px-3 py-2 text-sm">
                 </div>
@@ -128,6 +136,45 @@
                     Sign in
                 </button>
                 <p id="loginError" class="text-xs ap-danger min-h-[1rem]"></p>
+            </form>
+
+            <!-- 2. FORGOT PASSWORD FORM -->
+            <form id="forgotPasswordForm" onsubmit="handleForgotPassword(event)" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-xs ap-text-muted mb-1">Work / Beta Email</label>
+                    <input id="resetEmail" type="email" required placeholder="name@company.com"
+                        class="w-full ap-input border rounded-lg px-3 py-2 text-sm">
+                </div>
+                <button type="submit" id="forgotSubmitBtn"
+                    class="w-full py-2.5 rounded-lg ap-accent-btn font-semibold text-sm transition-colors cursor-pointer">
+                    Send password reset link
+                </button>
+                <div class="flex items-center justify-between pt-1">
+                    <button type="button" onclick="switchAuthMode('signin')"
+                        class="text-xs ap-text-muted hover:underline cursor-pointer">
+                        ← Back to sign in
+                    </button>
+                </div>
+                <p id="forgotStatus" class="text-xs min-h-[1rem]"></p>
+            </form>
+
+            <!-- 3. SET NEW PASSWORD FORM (AFTER CLICKING RECOVERY LINK) -->
+            <form id="updatePasswordForm" onsubmit="handleUpdatePassword(event)" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-xs ap-text-muted mb-1">New Password (min. 8 characters)</label>
+                    <input id="newPasswordInput" type="password" required minlength="8" placeholder="••••••••"
+                        class="w-full ap-input border rounded-lg px-3 py-2 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs ap-text-muted mb-1">Confirm New Password</label>
+                    <input id="confirmNewPasswordInput" type="password" required minlength="8" placeholder="••••••••"
+                        class="w-full ap-input border rounded-lg px-3 py-2 text-sm">
+                </div>
+                <button type="submit" id="updatePasswordBtn"
+                    class="w-full py-2.5 rounded-lg ap-accent-btn font-semibold text-sm transition-colors cursor-pointer">
+                    Update password &amp; sign in
+                </button>
+                <p id="updatePasswordStatus" class="text-xs min-h-[1rem]"></p>
             </form>
         </div>
     </div>
@@ -613,7 +660,7 @@
 
     <script>
         const SUPABASE_URL = 'https://stouegbesuceggnegeie.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_QUglOE6uDThXZRZ48kEPhA_ifXTfUok';
+        const SUPABASE_ANON_KEY = '<YOUR_SUPABASE_PUBLISHABLE_OR_ANON_KEY>';
         const LINKROT_FUNCTION_NAME = 'linkrot-sentinel-index-ts';
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -650,6 +697,7 @@
         let activeDomain = '';
         let historyRecords = [];
         let alertRecipients = [];
+        let isPasswordRecoveryFlow = false;
 
         function applyMode(mode) {
             const normalized = mode === 'light' ? 'light' : 'dark';
@@ -798,6 +846,37 @@
             renderAllOutputs();
         }
 
+        // -------------------------------------------------------------------
+        // AUTHENTICATION & PASSWORD RECOVERY FLOWS
+        // -------------------------------------------------------------------
+        function switchAuthMode(mode) {
+            const titleEl = document.getElementById('authGateTitle');
+            const subEl = document.getElementById('authGateSubtitle');
+            const loginForm = document.getElementById('loginForm');
+            const forgotForm = document.getElementById('forgotPasswordForm');
+            const updateForm = document.getElementById('updatePasswordForm');
+
+            loginForm.classList.toggle('hidden', mode !== 'signin');
+            forgotForm.classList.toggle('hidden', mode !== 'forgot');
+            updateForm.classList.toggle('hidden', mode !== 'recovery');
+
+            if (mode === 'forgot') {
+                titleEl.textContent = 'Reset your password';
+                subEl.textContent = 'Enter your beta account email and we will send you a one-time password recovery link.';
+                const currentEmail = document.getElementById('loginEmail')?.value.trim();
+                if (currentEmail) document.getElementById('resetEmail').value = currentEmail;
+                document.getElementById('forgotStatus').textContent = '';
+            } else if (mode === 'recovery') {
+                titleEl.textContent = 'Set a new password';
+                subEl.textContent = 'Your recovery link was verified. Choose a new password to enter your AdPulse OS workspace.';
+                document.getElementById('updatePasswordStatus').textContent = '';
+            } else {
+                titleEl.textContent = 'Sign in to workspace';
+                subEl.textContent = 'Access is restricted to approved beta emails. Users on the same email domain share custom taxonomies and campaign history.';
+                document.getElementById('loginError').textContent = '';
+            }
+        }
+
         async function handleSignIn(event) {
             event.preventDefault();
             const email = document.getElementById('loginEmail').value.trim();
@@ -821,18 +900,97 @@
             await onAuthenticated(data.user);
         }
 
+        async function handleForgotPassword(event) {
+            event.preventDefault();
+            const email = document.getElementById('resetEmail').value.trim().toLowerCase();
+            const statusEl = document.getElementById('forgotStatus');
+            const btn = document.getElementById('forgotSubmitBtn');
+
+            if (!EMAIL_REGEX.test(email)) {
+                statusEl.textContent = 'Please enter a valid email address.';
+                statusEl.className = 'text-xs ap-danger min-h-[1rem]';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Sending link...';
+            statusEl.textContent = '';
+
+            const redirectUrl = `${window.location.origin}${window.location.pathname}`;
+            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                redirectTo: redirectUrl
+            });
+
+            btn.disabled = false;
+            btn.textContent = 'Send password reset link';
+
+            if (error) {
+                statusEl.textContent = error.message;
+                statusEl.className = 'text-xs ap-danger min-h-[1rem]';
+                return;
+            }
+
+            statusEl.textContent = `If ${email} is registered, a password reset link has been sent. Check your inbox.`;
+            statusEl.className = 'text-xs ap-code min-h-[1rem]';
+        }
+
+        async function handleUpdatePassword(event) {
+            event.preventDefault();
+            const newPassword = document.getElementById('newPasswordInput').value;
+            const confirmPassword = document.getElementById('confirmNewPasswordInput').value;
+            const statusEl = document.getElementById('updatePasswordStatus');
+            const btn = document.getElementById('updatePasswordBtn');
+
+            if (newPassword !== confirmPassword) {
+                statusEl.textContent = 'Passwords do not match.';
+                statusEl.className = 'text-xs ap-danger min-h-[1rem]';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Updating...';
+            statusEl.textContent = '';
+
+            const { data, error } = await supabaseClient.auth.updateUser({
+                password: newPassword
+            });
+
+            btn.disabled = false;
+            btn.textContent = 'Update password & sign in';
+
+            if (error) {
+                statusEl.textContent = error.message;
+                statusEl.className = 'text-xs ap-danger min-h-[1rem]';
+                return;
+            }
+
+            isPasswordRecoveryFlow = false;
+            document.getElementById('newPasswordInput').value = '';
+            document.getElementById('confirmNewPasswordInput').value = '';
+            if (window.location.hash.includes('type=recovery') || window.location.search.includes('code=')) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+
+            switchAuthMode('signin');
+            if (data?.user) {
+                await onAuthenticated(data.user);
+            }
+        }
+
         async function handleSignOut() {
             await supabaseClient.auth.signOut();
+            isPasswordRecoveryFlow = false;
             activeUser = null;
             activeDomain = '';
             historyRecords = [];
             alertRecipients = [];
+            switchAuthMode('signin');
             document.getElementById('appShell').classList.add('hidden');
             document.getElementById('authGate').classList.remove('hidden');
         }
 
         async function onAuthenticated(user) {
-            if (!user || !user.email) return;
+            if (!user || !user.email || isPasswordRecoveryFlow) return;
             activeUser = user;
             activeDomain = user.email.toLowerCase().split('@')[1] || '';
 
@@ -1961,7 +2119,31 @@
             }
         });
 
+        supabaseClient.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'PASSWORD_RECOVERY') {
+                isPasswordRecoveryFlow = true;
+                document.getElementById('appShell').classList.add('hidden');
+                document.getElementById('authGate').classList.remove('hidden');
+                switchAuthMode('recovery');
+                return;
+            }
+
+            if (event === 'SIGNED_IN' && session?.user && !isPasswordRecoveryFlow) {
+                await onAuthenticated(session.user);
+            }
+        });
+
         (async () => {
+            const isRecoveryUrl =
+                window.location.hash.includes('type=recovery') ||
+                new URLSearchParams(window.location.search).get('type') === 'recovery';
+
+            if (isRecoveryUrl) {
+                isPasswordRecoveryFlow = true;
+                switchAuthMode('recovery');
+                return;
+            }
+
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session?.user) {
                 await onAuthenticated(session.user);
