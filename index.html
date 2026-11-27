@@ -1,1932 +1,1682 @@
+<!-- public/index.html -->
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AdPulse OS — Enterprise Campaign Taxonomy &amp; LinkRot Sentinel</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
+<html lang="en" class="dark" data-mode="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdPulse OS - Campaign Builder, History &amp; LinkRot Sentinel</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <style>
-      body {
-        font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-      }
-      .font-mono {
-        font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-      }
-      select:disabled,
-      input:disabled {
-        background-color: #f8fafc;
-        color: #94a3b8;
-        cursor: not-allowed;
-      }
+        /* Theme Variables: Dark (Default Slate/Emerald) & Daylight Light Mode */
+        :root,
+        html[data-mode="dark"] {
+            --bg-app: #020617;
+            --bg-surface: #0f172a;
+            --bg-subtle: #090d16;
+            --bg-input: #020617;
+            --bg-hover: rgba(30, 41, 59, 0.55);
+            --border-subtle: #1e293b;
+            --border-strong: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --accent: #10b981;
+            --accent-hover: #34d399;
+            --accent-soft: rgba(16, 185, 129, 0.12);
+            --accent-fg: #020617;
+            --code-fg: #34d399;
+            --url-fg: #38bdf8;
+            --danger-fg: #fb7185;
+            --danger-soft: rgba(251, 113, 133, 0.12);
+            --warn-fg: #fbbf24;
+            --warn-soft: rgba(251, 191, 36, 0.12);
+            --purple-fg: #d8b4fe;
+            --purple-soft: rgba(168, 85, 247, 0.14);
+            --scrollbar-track: #020617;
+            --scrollbar-thumb: #1e293b;
+            --scrollbar-thumb-hover: #10b981;
+        }
+
+        html[data-mode="light"] {
+            --bg-app: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-subtle: #f1f5f9;
+            --bg-input: #ffffff;
+            --bg-hover: #e2e8f0;
+            --border-subtle: #e2e8f0;
+            --border-strong: #cbd5e1;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --accent: #059669;
+            --accent-hover: #10b981;
+            --accent-soft: rgba(5, 150, 105, 0.12);
+            --accent-fg: #ffffff;
+            --code-fg: #047857;
+            --url-fg: #0284c7;
+            --danger-fg: #e11d48;
+            --danger-soft: rgba(225, 29, 72, 0.10);
+            --warn-fg: #b45309;
+            --warn-soft: rgba(217, 119, 6, 0.12);
+            --purple-fg: #7e22ce;
+            --purple-soft: rgba(147, 51, 234, 0.11);
+            --scrollbar-track: #f1f5f9;
+            --scrollbar-thumb: #cbd5e1;
+            --scrollbar-thumb-hover: #059669;
+        }
+
+        .ap-app { background-color: var(--bg-app); color: var(--text-primary); }
+        .ap-surface { background-color: var(--bg-surface); border-color: var(--border-subtle); }
+        .ap-subtle { background-color: var(--bg-subtle); border-color: var(--border-subtle); }
+        .ap-input {
+            background-color: var(--bg-input);
+            border-color: var(--border-subtle);
+            color: var(--text-primary);
+        }
+        .ap-input:focus { border-color: var(--accent); outline: none; }
+        .ap-hover:hover { background-color: var(--bg-hover); }
+        .ap-text-secondary { color: var(--text-secondary); }
+        .ap-text-muted { color: var(--text-muted); }
+        .ap-code { color: var(--code-fg); }
+        .ap-url { color: var(--url-fg); }
+        .ap-danger { color: var(--danger-fg); }
+        .ap-warn { color: var(--warn-fg); }
+        .ap-accent-btn {
+            background-color: var(--accent);
+            color: var(--accent-fg);
+        }
+        .ap-accent-btn:hover { background-color: var(--accent-hover); }
+        .ap-nav-active {
+            background-color: var(--accent-soft);
+            color: var(--code-fg);
+        }
+        .ap-pill {
+            background-color: var(--accent-soft);
+            color: var(--code-fg);
+        }
+
+        .combo-list::-webkit-scrollbar { width: 6px; }
+        .combo-list::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+        .combo-list::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+        .combo-list::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
     </style>
-  </head>
-  <body class="bg-slate-950 text-slate-900 antialiased min-h-screen flex flex-col">
-    <!-- =================================================================== -->
-    <!-- AUTH GATE VIEW (SIGN IN)                                            -->
-    <!-- =================================================================== -->
-    <div
-      id="auth-view"
-      class="flex-1 flex items-center justify-center px-4 py-12 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950"
-    >
-      <div class="w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-xl p-8">
-        <div class="flex items-center gap-3 mb-6">
-          <!-- AdPulse OS Pulse-Wave Emblem -->
-          <div
-            class="h-11 w-11 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white flex items-center justify-center shadow-md"
-          >
-            <svg
-              class="w-6 h-6"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M2 12h4l3-7 4 14 3-7h6" />
-              <circle cx="19" cy="12" r="1.5" fill="currentColor" />
-            </svg>
-          </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <h1 class="text-lg font-bold text-slate-900 tracking-tight">
-                AdPulse OS
-              </h1>
-              <span
-                class="px-1.5 py-0.5 text-[10px] font-mono font-semibold uppercase rounded bg-indigo-50 text-indigo-700 border border-indigo-200"
-              >
-                Governance
-              </span>
+</head>
+<body class="ap-app min-h-screen font-sans antialiased selection:bg-emerald-500 selection:text-slate-950 transition-colors duration-150">
+    <!-- Beta Login Overlay -->
+    <div id="authGate" class="fixed inset-0 z-50 ap-app/95 backdrop-blur flex items-center justify-center p-4">
+        <div class="w-full max-w-md ap-surface border rounded-2xl p-6 space-y-5 shadow-2xl">
+            <div class="space-y-1">
+                <span class="text-xs font-mono uppercase tracking-wider ap-code">AdPulse OS • Private Beta</span>
+                <h1 class="text-xl font-bold">Sign in to workspace</h1>
+                <p class="text-xs ap-text-muted">Access is restricted to approved beta emails. Users on the same email domain share custom taxonomies and campaign history.</p>
             </div>
-            <p class="text-xs text-slate-500">
-              UTM Taxonomy Standardizer &amp; LinkRot Sentinel
-            </p>
-          </div>
-        </div>
-
-        <p class="text-sm text-slate-600 mb-5">
-          Sign in with your corporate email address to access your domain-isolated taxonomy builder, audit ledger, and automated link health monitor.
-        </p>
-
-        <form id="magic-link-form" class="space-y-4">
-          <div>
-            <label
-              for="auth-email-input"
-              class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
-            >
-              Corporate Email
-            </label>
-            <input
-              id="auth-email-input"
-              type="email"
-              required
-              placeholder="name@company.com"
-              class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-            />
-          </div>
-          <button
-            id="auth-submit-btn"
-            type="submit"
-            class="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50 transition"
-          >
-            Send Magic Sign-In Link
-          </button>
-        </form>
-
-        <p id="auth-message" class="mt-4 text-xs text-slate-600 hidden"></p>
-      </div>
-    </div>
-
-    <!-- =================================================================== -->
-    <!-- MAIN WORKSPACE SHELL                                                -->
-    <!-- =================================================================== -->
-    <div id="app-shell" class="hidden flex-1 flex flex-col bg-slate-50">
-      <!-- Dark Executive Header matching Figma Design -->
-      <header class="bg-slate-950 text-white border-b border-slate-800 sticky top-0 z-30">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-          <div class="flex items-center gap-7">
-            <!-- Brand Lockup -->
-            <div class="flex items-center gap-3">
-              <div
-                class="h-9 w-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center shadow-sm"
-              >
-                <svg
-                  class="w-5 h-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path d="M2 12h4l3-7 4 14 3-7h6" />
-                  <circle cx="19" cy="12" r="1.5" fill="currentColor" />
-                </svg>
-              </div>
-              <div>
-                <div class="flex items-center gap-1.5">
-                  <span class="font-bold text-white tracking-tight text-base">
-                    AdPulse
-                  </span>
-                  <span class="font-mono text-xs font-semibold text-indigo-400">
-                    OS
-                  </span>
-                </div>
-                <p class="text-[10px] text-slate-400 leading-none">
-                  Campaign Governance
-                </p>
-              </div>
-            </div>
-
-            <!-- Primary Navigation -->
-            <nav aria-label="Primary" class="flex items-center gap-1.5">
-              <button
-                type="button"
-                data-nav-target="builder"
-                class="nav-tab px-3.5 py-2 rounded-lg text-xs font-semibold transition bg-indigo-600 text-white shadow-sm"
-              >
-                Campaign Builder
-              </button>
-              <button
-                type="button"
-                data-nav-target="history"
-                class="nav-tab px-3.5 py-2 rounded-lg text-xs font-semibold transition text-slate-300 hover:text-white hover:bg-slate-800"
-              >
-                Campaign History
-              </button>
-              <button
-                type="button"
-                data-nav-target="sentinel"
-                class="nav-tab px-3.5 py-2 rounded-lg text-xs font-semibold transition text-slate-300 hover:text-white hover:bg-slate-800 inline-flex items-center gap-2"
-              >
-                <span>LinkRot Sentinel</span>
-                <span
-                  id="nav-broken-badge"
-                  class="hidden px-1.5 py-0.5 text-[10px] font-mono font-bold rounded-full bg-rose-500 text-white"
-                >
-                  0
-                </span>
-              </button>
-            </nav>
-          </div>
-
-          <!-- Tenant Domain & User Actions -->
-          <div class="flex items-center gap-3">
-            <span
-              id="header-domain-pill"
-              class="hidden sm:inline-flex items-center px-2.5 py-1 rounded-md text-xs font-mono font-medium bg-slate-900 text-indigo-300 border border-slate-700"
-            >
-              —
-            </span>
-            <span
-              id="header-user-email"
-              class="hidden md:inline text-xs text-slate-400"
-            >
-              —
-            </span>
-            <button
-              id="sign-out-btn"
-              type="button"
-              class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800 transition"
-            >
-              Sign Out
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <!-- Workspace Main Content -->
-      <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- =============================================================== -->
-        <!-- VIEW 1: CAMPAIGN BUILDER (FULL CONTROLLED TAXONOMY)             -->
-        <!-- =============================================================== -->
-        <section id="view-builder" class="workspace-view space-y-6">
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <h1 class="text-xl font-bold text-slate-900">
-                Campaign Taxonomy &amp; Tokenized Link Builder
-              </h1>
-              <p class="text-sm text-slate-500">
-                Enforces standardized abbreviations across Funnel, Source, Medium, Objective, Tactic, Journey, Placement, Geo, and Language with deterministic <code class="font-mono text-xs bg-slate-200/80 px-1 py-0.5 rounded">k=</code> &amp; <code class="font-mono text-xs bg-slate-200/80 px-1 py-0.5 rounded">ck=</code> keys.
-              </p>
-            </div>
-
-            <button
-              id="builder-reset-btn"
-              type="button"
-              class="self-start sm:self-auto rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 transition"
-            >
-              Reset Form
-            </button>
-          </div>
-
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            <!-- Left 8 Columns: Structured Taxonomy Form -->
-            <form
-              id="campaign-builder-form"
-              class="lg:col-span-8 bg-white border border-slate-200 rounded-xl shadow-sm divide-y divide-slate-100"
-            >
-              <!-- Section A: Brand, Workspace & Destination -->
-              <div class="p-6 space-y-4">
-                <div class="flex items-center justify-between">
-                  <h2 class="text-xs font-bold uppercase tracking-wider text-indigo-600">
-                    1. Campaign Identity &amp; Landing Destination
-                  </h2>
-                  <span class="text-[11px] font-mono text-slate-400">Required *</span>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">
-                      Brand Code / Name *
-                    </label>
-                    <input
-                      id="tax-brand"
-                      type="text"
-                      required
-                      placeholder="e.g. CFC, SLV, IGN, BVD"
-                      class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">
-                      Campaign Workspace / Flight *
-                    </label>
-                    <input
-                      id="tax-workspace"
-                      type="text"
-                      required
-                      placeholder="e.g. Q4_Welcome_Offer"
-                      class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    />
-                  </div>
-                </div>
-
+            <form id="loginForm" onsubmit="handleSignIn(event)" class="space-y-4">
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">
-                    Destination Landing URL *
-                  </label>
-                  <input
-                    id="tax-base-url"
-                    type="url"
-                    required
-                    placeholder="https://www.example.com/en/promotions/welcome"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-mono text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                  />
+                    <label class="block text-xs ap-text-muted mb-1">Work / Beta Email</label>
+                    <input id="loginEmail" type="email" required placeholder="name@company.com"
+                        class="w-full ap-input border rounded-lg px-3 py-2 text-sm">
                 </div>
-              </div>
-
-              <!-- Section B: Channel & Strategic Taxonomy -->
-              <div class="p-6 space-y-4">
-                <h2 class="text-xs font-bold uppercase tracking-wider text-indigo-600">
-                  2. Channel, Funnel &amp; Strategy Taxonomy
-                </h2>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">
-                      Source *
-                    </label>
-                    <select
-                      id="tax-source"
-                      class="tax-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    ></select>
-                  </div>
-                  <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">
-                      Medium *
-                    </label>
-                    <select
-                      id="tax-medium"
-                      class="tax-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    ></select>
-                  </div>
-                  <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">
-                      Placement *
-                    </label>
-                    <select
-                      id="tax-placement"
-                      class="tax-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    ></select>
-                  </div>
+                <div>
+                    <label class="block text-xs ap-text-muted mb-1">Password</label>
+                    <input id="loginPassword" type="password" required placeholder="••••••••"
+                        class="w-full ap-input border rounded-lg px-3 py-2 text-sm">
                 </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">
-                      Funnel Stage *
-                    </label>
-                    <select
-                      id="tax-funnel"
-                      class="tax-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    ></select>
-                  </div>
-                  <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">
-                      Objective *
-                    </label>
-                    <select
-                      id="tax-objective"
-                      class="tax-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    ></select>
-                  </div>
-                  <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">
-                      Tactic *
-                    </label>
-                    <select
-                      id="tax-tactic"
-                      class="tax-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    ></select>
-                  </div>
-                  <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">
-                      Journey *
-                    </label>
-                    <select
-                      id="tax-journey"
-                      class="tax-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    ></select>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Section C: Geography & Localization -->
-              <div class="p-6 space-y-4">
-                <h2 class="text-xs font-bold uppercase tracking-wider text-indigo-600">
-                  3. Geography &amp; Localization
-                </h2>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">
-                      Region / Country *
-                    </label>
-                    <select
-                      id="tax-region"
-                      class="tax-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    ></select>
-                  </div>
-                  <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">
-                      State / Province
-                    </label>
-                    <select
-                      id="tax-state"
-                      class="tax-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    ></select>
-                  </div>
-                  <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">
-                      Language *
-                    </label>
-                    <select
-                      id="tax-language"
-                      class="tax-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    ></select>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Section D: Creative Asset Selection -->
-              <div class="p-6 space-y-4">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                  <h2 class="text-xs font-bold uppercase tracking-wider text-indigo-600">
-                    4. Creative Asset &amp; Dynamic Creative (DCO)
-                  </h2>
-                  <label class="inline-flex items-center gap-2 cursor-pointer select-none">
-                    <input
-                      id="tax-is-dco"
-                      type="checkbox"
-                      class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                    />
-                    <span class="text-xs font-medium text-slate-700">
-                      Dynamic Creative Optimization (DCO — omit <code class="font-mono">ck=</code>)
-                    </span>
-                  </label>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">
-                      Creative Format / Asset Type
-                    </label>
-                    <select
-                      id="tax-creative-format"
-                      class="tax-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    ></select>
-                  </div>
-                  <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">
-                      Dimensions / Ratio
-                    </label>
-                    <select
-                      id="tax-creative-size"
-                      class="tax-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    ></select>
-                  </div>
-                  <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">
-                      Creative Variant / Concept Name
-                    </label>
-                    <input
-                      id="tax-creative-name"
-                      type="text"
-                      placeholder="e.g. FreeSpins_Hero_V1"
-                      class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <!-- Submit Footer -->
-              <div class="p-6 bg-slate-50/70 rounded-b-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <p id="builder-feedback" class="text-xs text-rose-600 hidden"></p>
-                <button
-                  id="builder-submit-btn"
-                  type="submit"
-                  class="sm:ml-auto rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50 transition"
-                >
-                  Generate &amp; Register Governed Link
+                <button type="submit" id="loginSubmitBtn"
+                    class="w-full py-2.5 rounded-lg ap-accent-btn font-semibold text-sm transition-colors cursor-pointer">
+                    Sign in
                 </button>
-              </div>
+                <p id="loginError" class="text-xs ap-danger min-h-[1rem]"></p>
             </form>
-
-            <!-- Right 4 Columns: Live Concatenated UTM & Key Preview -->
-            <aside class="lg:col-span-4 space-y-4 sticky top-20">
-              <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 space-y-4">
-                <div class="flex items-center justify-between">
-                  <h2 class="text-sm font-bold text-slate-900">
-                    Live Governed Output
-                  </h2>
-                  <span
-                    id="preview-status-pill"
-                    class="px-2 py-0.5 rounded-full text-[11px] font-mono font-medium bg-slate-100 text-slate-600"
-                  >
-                    Live Preview
-                  </span>
-                </div>
-
-                <dl class="space-y-2.5 text-xs">
-                  <div class="py-1.5 border-b border-slate-100">
-                    <dt class="text-slate-500 mb-0.5">utm_source / utm_medium</dt>
-                    <dd id="preview-utm-sm" class="font-mono font-medium text-slate-900">
-                      —
-                    </dd>
-                  </div>
-                  <div class="py-1.5 border-b border-slate-100">
-                    <dt class="text-slate-500 mb-0.5">utm_campaign (Concatenated)</dt>
-                    <dd id="preview-utm-campaign" class="font-mono font-medium text-indigo-700 break-all">
-                      —
-                    </dd>
-                  </div>
-                  <div class="py-1.5 border-b border-slate-100">
-                    <dt class="text-slate-500 mb-0.5">utm_content (Placement &amp; Asset)</dt>
-                    <dd id="preview-utm-content" class="font-mono font-medium text-slate-900 break-all">
-                      —
-                    </dd>
-                  </div>
-                  <div class="flex justify-between py-1.5 border-b border-slate-100">
-                    <dt class="text-slate-500">URL Key (<code>k=</code>)</dt>
-                    <dd id="preview-url-key" class="font-mono font-semibold text-slate-900">
-                      Auto-generated on save
-                    </dd>
-                  </div>
-                  <div class="flex justify-between py-1.5 border-b border-slate-100">
-                    <dt class="text-slate-500">Creative Key (<code>ck=</code>)</dt>
-                    <dd id="preview-creative-key" class="font-mono font-semibold text-slate-900">
-                      Auto-generated on save
-                    </dd>
-                  </div>
-                </dl>
-
-                <div>
-                  <label class="block text-xs font-semibold text-slate-700 mb-1.5">
-                    Final Tracking URL
-                  </label>
-                  <textarea
-                    id="preview-final-url"
-                    rows="5"
-                    readonly
-                    class="w-full rounded-lg border border-slate-200 bg-slate-900 p-3 text-xs font-mono text-emerald-300 leading-relaxed focus:outline-none"
-                  ></textarea>
-                </div>
-
-                <button
-                  id="copy-generated-url-btn"
-                  type="button"
-                  disabled
-                  class="w-full rounded-lg bg-slate-900 px-4 py-2.5 text-xs font-semibold text-white hover:bg-slate-800 disabled:opacity-40 transition"
-                >
-                  Copy Registered Tracking URL
-                </button>
-              </div>
-            </aside>
-          </div>
-        </section>
-
-        <!-- =============================================================== -->
-        <!-- VIEW 2: CAMPAIGN HISTORY                                        -->
-        <!-- =============================================================== -->
-        <section id="view-history" class="workspace-view hidden space-y-6">
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 class="text-xl font-bold text-slate-900">
-                Campaign History &amp; Audit Ledger
-              </h1>
-              <p class="text-sm text-slate-500">
-                Domain-scoped ledger of all governed tracking URLs and deterministic keys.
-              </p>
-            </div>
-
-            <div class="flex items-center gap-2">
-              <button
-                id="history-export-csv-btn"
-                type="button"
-                class="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
-              >
-                Export CSV
-              </button>
-              <button
-                id="history-refresh-btn"
-                type="button"
-                class="rounded-lg bg-slate-900 px-3.5 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition"
-              >
-                Refresh
-              </button>
-            </div>
-          </div>
-
-          <div class="bg-white border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row gap-3">
-            <input
-              id="history-search-input"
-              type="search"
-              placeholder="Search brand, campaign workspace, k=, ck=, creator email, or URL..."
-              class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            />
-            <select
-              id="history-brand-filter"
-              class="sm:w-48 rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            >
-              <option value="">All Brands</option>
-            </select>
-          </div>
-
-          <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-            <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-slate-200 text-left text-xs">
-                <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold">
-                  <tr>
-                    <th class="px-4 py-3">Created</th>
-                    <th class="px-4 py-3">Brand / Workspace</th>
-                    <th class="px-4 py-3">Keys</th>
-                    <th class="px-4 py-3">Tracked URL</th>
-                    <th class="px-4 py-3">Creator</th>
-                    <th class="px-4 py-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="history-table-body" class="divide-y divide-slate-100 bg-white">
-                  <tr>
-                    <td colspan="6" class="px-4 py-8 text-center text-slate-400">
-                      Loading domain campaign history...
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="px-4 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
-              <span id="history-count-label">0 links</span>
-            </div>
-          </div>
-        </section>
-
-        <!-- =============================================================== -->
-        <!-- VIEW 3: LINKROT SENTINEL + DOMAIN ALERT RECIPIENTS CARD         -->
-        <!-- =============================================================== -->
-        <section id="view-sentinel" class="workspace-view hidden space-y-6">
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 class="text-xl font-bold text-slate-900">
-                LinkRot Sentinel
-              </h1>
-              <p class="text-sm text-slate-500">
-                Automated hourly redirect, HTTP status, and <code class="font-mono text-xs bg-slate-200/80 px-1 py-0.5 rounded">k=</code> / <code class="font-mono text-xs bg-slate-200/80 px-1 py-0.5 rounded">ck=</code> parameter integrity monitor.
-              </p>
-            </div>
-
-            <button
-              id="sentinel-scan-all-btn"
-              type="button"
-              class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50 transition"
-            >
-              Run Domain Scan Now
-            </button>
-          </div>
-
-          <!-- Hourly Digest Alert Recipients Settings Card -->
-          <section
-            id="domain-alert-settings-card"
-            class="bg-white border border-slate-200 rounded-xl shadow-sm p-5"
-          >
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-slate-100">
-              <div>
-                <div class="flex items-center gap-2">
-                  <h2 class="text-base font-semibold text-slate-900">
-                    Hourly Digest Alert Recipients
-                  </h2>
-                  <span
-                    id="alert-settings-domain-badge"
-                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-slate-100 text-slate-700"
-                  >
-                    —
-                  </span>
-                </div>
-                <p class="text-xs text-slate-500 mt-1">
-                  Configure email recipients for the hourly LinkRot Sentinel digest. Leave blank to fall back to individual link creators in your domain.
-                </p>
-              </div>
-
-              <label class="inline-flex items-center gap-2.5 cursor-pointer select-none">
-                <input
-                  id="alert-digest-enabled"
-                  type="checkbox"
-                  checked
-                  class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                />
-                <span class="text-sm font-medium text-slate-700">
-                  Enable hourly digest
-                </span>
-              </label>
-            </div>
-
-            <div class="mt-4 space-y-3">
-              <div class="flex flex-col sm:flex-row gap-2">
-                <input
-                  id="alert-recipient-input"
-                  type="email"
-                  placeholder="Add recipient email (e.g. paidmedia@yourdomain.com) and press Enter"
-                  class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                />
-                <button
-                  id="alert-recipient-add-btn"
-                  type="button"
-                  class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-slate-50 px-3.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 transition"
-                >
-                  Add Email
-                </button>
-              </div>
-
-              <!-- Recipient Chips -->
-              <div
-                id="alert-recipients-chips"
-                class="flex flex-wrap items-center gap-2 min-h-[32px]"
-              >
-                <span class="text-xs text-slate-400 italic">
-                  No custom recipients configured (creator fallback active).
-                </span>
-              </div>
-
-              <!-- Status & Save Action -->
-              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
-                <div class="text-xs">
-                  <p id="alert-settings-error" class="text-rose-600 hidden"></p>
-                  <p id="alert-settings-status" class="text-emerald-600 hidden"></p>
-                  <p id="alert-settings-last-digest" class="text-slate-500">
-                    Last digest sent: —
-                  </p>
-                </div>
-
-                <button
-                  id="alert-settings-save-btn"
-                  type="button"
-                  class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50 transition"
-                >
-                  Save Alert Settings
-                </button>
-              </div>
-            </div>
-          </section>
-
-          <!-- Health KPI Summary Strip -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div class="bg-white border border-slate-200 rounded-xl p-4">
-              <div class="text-xs font-medium text-slate-500">Total Monitored</div>
-              <div id="kpi-total" class="mt-1 text-2xl font-bold text-slate-900">0</div>
-            </div>
-            <div class="bg-white border border-slate-200 rounded-xl p-4">
-              <div class="text-xs font-medium text-emerald-600">Healthy (2xx + Keys Intact)</div>
-              <div id="kpi-healthy" class="mt-1 text-2xl font-bold text-emerald-700">0</div>
-            </div>
-            <div class="bg-white border border-slate-200 rounded-xl p-4">
-              <div class="text-xs font-medium text-amber-600">Param Stripped</div>
-              <div id="kpi-stripped" class="mt-1 text-2xl font-bold text-amber-700">0</div>
-            </div>
-            <div class="bg-white border border-slate-200 rounded-xl p-4">
-              <div class="text-xs font-medium text-rose-600">Broken / Timeout / Unreachable</div>
-              <div id="kpi-broken" class="mt-1 text-2xl font-bold text-rose-700">0</div>
-            </div>
-          </div>
-
-          <!-- Sentinel Filter Bar -->
-          <div class="bg-white border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row gap-3">
-            <input
-              id="sentinel-search-input"
-              type="search"
-              placeholder="Search URL, resolved landing URL, error message, brand, or key..."
-              class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            />
-            <select
-              id="sentinel-status-filter"
-              class="sm:w-56 rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            >
-              <option value="">All Health Statuses</option>
-              <option value="degraded">All Broken &amp; Stripped</option>
-              <option value="broken">Broken (4xx / 5xx / Loop)</option>
-              <option value="param_stripped">Param Stripped (k / ck lost)</option>
-              <option value="timeout">Timeout</option>
-              <option value="unreachable">Unreachable</option>
-              <option value="healthy">Healthy</option>
-              <option value="pending">Pending First Check</option>
-            </select>
-          </div>
-
-          <!-- LinkRot Sentinel Health Table -->
-          <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-            <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-slate-200 text-left text-xs">
-                <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold">
-                  <tr>
-                    <th class="px-4 py-3">Health Status</th>
-                    <th class="px-4 py-3">Brand &amp; Keys</th>
-                    <th class="px-4 py-3">Source &amp; Resolved Landing URL</th>
-                    <th class="px-4 py-3">Diagnostics</th>
-                    <th class="px-4 py-3">Last Checked</th>
-                    <th class="px-4 py-3 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody id="sentinel-table-body" class="divide-y divide-slate-100 bg-white">
-                  <tr>
-                    <td colspan="6" class="px-4 py-8 text-center text-slate-400">
-                      Loading LinkRot Sentinel diagnostics...
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-      </main>
+        </div>
     </div>
 
-    <!-- =================================================================== -->
-    <!-- APPLICATION SCRIPT                                                  -->
-    <!-- =================================================================== -->
-    <script type="module">
-      import { createClient } from "https://esm.sh/@supabase/supabase-js@2.46.1";
-
-      // -------------------------------------------------------------------
-      // 1. SUPABASE CONFIGURATION
-      // Replace SUPABASE_ANON_KEY with your project's Publishable / Anon key
-      // -------------------------------------------------------------------
-      const SUPABASE_URL = "https://stouegbesuceggnegeie.supabase.co";
-      const SUPABASE_ANON_KEY = "sb_publishable_QUglOE6uDThXZRZ48kEPhA_ifXTfUok";
-      const SENTINEL_FUNCTION_NAME = "linkrot-sentinel-index-ts";
-
-      const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-      // -------------------------------------------------------------------
-      // 2. CONTROLLED VOCABULARY TAXONOMY DICTIONARIES
-      // -------------------------------------------------------------------
-      const TAXONOMY = {
-        funnel: [
-          { code: "tofu", label: "Top of Funnel — Awareness (tofu)" },
-          { code: "mofu", label: "Middle of Funnel — Consideration (mofu)" },
-          { code: "bofu", label: "Bottom of Funnel — Conversion / FTD (bofu)" },
-          { code: "ret", label: "Retention & Reactivation (ret)" },
-        ],
-        source: [
-          { code: "google", label: "Google Ads / Search / PMax (google)" },
-          { code: "meta", label: "Meta — Facebook & Instagram (meta)" },
-          { code: "dv360", label: "Display & Video 360 (dv360)" },
-          { code: "tiktok", label: "TikTok Ads (tiktok)" },
-          { code: "snapchat", label: "Snapchat Ads (snapchat)" },
-          { code: "reddit", label: "Reddit Ads (reddit)" },
-          { code: "x", label: "X / Twitter Ads (x)" },
-          { code: "linkedin", label: "LinkedIn Ads (linkedin)" },
-          { code: "apple_search", label: "Apple Search Ads (apple_search)" },
-          { code: "bing", label: "Microsoft Advertising (bing)" },
-          { code: "taboola", label: "Taboola Native (taboola)" },
-          { code: "outbrain", label: "Outbrain Native (outbrain)" },
-          { code: "affiliate", label: "Affiliate / Partner Network (affiliate)" },
-          { code: "direct_io", label: "Direct Publisher IO (direct_io)" },
-          { code: "crm_moengage", label: "CRM — MoEngage (crm_moengage)" },
-        ],
-        medium: [
-          { code: "cpc", label: "Paid Search / CPC (cpc)" },
-          { code: "paid_social", label: "Paid Social (paid_social)" },
-          { code: "display", label: "Programmatic / Direct Display (display)" },
-          { code: "olv", label: "Online Video / Pre-Roll (olv)" },
-          { code: "ctv", label: "Connected TV (ctv)" },
-          { code: "native", label: "Native Content (native)" },
-          { code: "affiliate", label: "Affiliate CPA / RevShare (affiliate)" },
-          { code: "email", label: "CRM Email (email)" },
-          { code: "push", label: "CRM Push Notification (push)" },
-          { code: "sms", label: "CRM SMS (sms)" },
-        ],
-        objective: [
-          { code: "awr", label: "Brand Awareness & Reach (awr)" },
-          { code: "trf", label: "Qualified Traffic / Clicks (trf)" },
-          { code: "reg", label: "Account Registration / Lead (reg)" },
-          { code: "ftd", label: "First-Time Deposit / Purchase (ftd)" },
-          { code: "dep", label: "Repeat Deposit / LTV Value (dep)" },
-          { code: "app", label: "App Install & Deep Link (app)" },
-        ],
-        tactic: [
-          { code: "brd", label: "Brand Exact / Phrase (brd)" },
-          { code: "nbr", label: "Non-Brand Generic (nbr)" },
-          { code: "cmp", label: "Competitor Conquesting (cmp)" },
-          { code: "pmax", label: "Performance Max Automated (pmax)" },
-          { code: "prosp", label: "Broad / Interest Prospecting (prosp)" },
-          { code: "lal", label: "Lookalike / 1P Seed Audience (lal)" },
-          { code: "rtg", label: "Site / Cart Abandoner Retargeting (rtg)" },
-          { code: "lapsed", label: "Lapsed Player Winback (lapsed)" },
-          { code: "vip", label: "High-Value VIP Tier (vip)" },
-        ],
-        journey: [
-          { code: "acq", label: "New Player Acquisition (acq)" },
-          { code: "onb", label: "KYC & Onboarding Nurture (onb)" },
-          { code: "conv", label: "First Deposit Conversion (conv)" },
-          { code: "xsell", label: "Product Cross-Sell (xsell)" },
-          { code: "react", label: "Churn Prevention & Reactivation (react)" },
-        ],
-        placement: [
-          { code: "serp", label: "Search Engine Results Page (serp)" },
-          { code: "feed", label: "Social In-Feed (feed)" },
-          { code: "stories", label: "Stories / Vertical Fullscreen (stories)" },
-          { code: "reels", label: "Reels / Short-Form Video (reels)" },
-          { code: "instream", label: "In-Stream Video (instream)" },
-          { code: "ros", label: "Run of Site / Open Exchange (ros)" },
-          { code: "pmp", label: "Private Marketplace Deal (pmp)" },
-          { code: "takeover", label: "Homepage / High-Impact Takeover (takeover)" },
-          { code: "inbox", label: "CRM Inbox / Lifecycle Trigger (inbox)" },
-        ],
-        region: [
-          { code: "uk", label: "United Kingdom (uk)" },
-          { code: "ie", label: "Ireland (ie)" },
-          { code: "ca", label: "Canada (ca)" },
-          { code: "us", label: "United States (us)" },
-          { code: "de", label: "Germany (de)" },
-          { code: "es", label: "Spain (es)" },
-          { code: "se", label: "Sweden (se)" },
-          { code: "br", label: "Brazil (br)" },
-          { code: "mx", label: "Mexico (mx)" },
-          { code: "au", label: "Australia (au)" },
-          { code: "nz", label: "New Zealand (nz)" },
-          { code: "global", label: "Multi-Region / Global (global)" },
-        ],
-        statesByRegion: {
-          uk: [
-            { code: "all", label: "All UK Nations (all)" },
-            { code: "eng", label: "England (eng)" },
-            { code: "sct", label: "Scotland (sct)" },
-            { code: "wls", label: "Wales (wls)" },
-            { code: "nir", label: "Northern Ireland (nir)" },
-          ],
-          ca: [
-            { code: "all", label: "All Regulated Provinces (all)" },
-            { code: "on", label: "Ontario (on)" },
-            { code: "bc", label: "British Columbia (bc)" },
-            { code: "ab", label: "Alberta (ab)" },
-            { code: "qc", label: "Quebec (qc)" },
-          ],
-          us: [
-            { code: "all", label: "All Licensed States (all)" },
-            { code: "nj", label: "New Jersey (nj)" },
-            { code: "pa", label: "Pennsylvania (pa)" },
-            { code: "mi", label: "Michigan (mi)" },
-            { code: "ny", label: "New York (ny)" },
-            { code: "co", label: "Colorado (co)" },
-            { code: "il", label: "Illinois (il)" },
-            { code: "oh", label: "Ohio (oh)" },
-          ],
-        },
-        language: [
-          { code: "en", label: "English (en)" },
-          { code: "es", label: "Spanish (es)" },
-          { code: "pt", label: "Portuguese (pt)" },
-          { code: "de", label: "German (de)" },
-          { code: "fr", label: "French (fr)" },
-          { code: "sv", label: "Swedish (sv)" },
-        ],
-        creativeFormat: [
-          { code: "rsa", label: "Responsive Search Ad (rsa)" },
-          { code: "static", label: "Static Banner / Image (static)" },
-          { code: "html5", label: "HTML5 Rich Media (html5)" },
-          { code: "vid15", label: "Video 15s (vid15)" },
-          { code: "vid30", label: "Video 30s (vid30)" },
-          { code: "carousel", label: "Multi-Card Carousel (carousel)" },
-          { code: "dco", label: "Dynamic Creative Feed (dco)" },
-        ],
-        creativeSize: [
-          { code: "na", label: "Text / N/A (na)" },
-          { code: "1x1", label: "1:1 Square — 1080x1080 (1x1)" },
-          { code: "9x16", label: "9:16 Vertical — 1080x1920 (9x16)" },
-          { code: "16x9", label: "16:9 Landscape — 1920x1080 (16x9)" },
-          { code: "300x250", label: "300x250 Medium Rectangle (300x250)" },
-          { code: "728x90", label: "728x90 Leaderboard (728x90)" },
-          { code: "320x50", label: "320x50 Mobile Banner (320x50)" },
-        ],
-      };
-
-      function populateSelect(id, items, defaultCode = null) {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.innerHTML = items
-          .map(
-            (item) =>
-              `<option value="${item.code}" ${
-                item.code === defaultCode ? "selected" : ""
-              }>${item.label}</option>`
-          )
-          .join("");
-      }
-
-      function syncStateOptions() {
-        const region = document.getElementById("tax-region").value;
-        const states = TAXONOMY.statesByRegion[region] || [
-          { code: "all", label: "National / All Regions (all)" },
-        ];
-        populateSelect("tax-state", states, states[0].code);
-      }
-
-      function initTaxonomyControls() {
-        populateSelect("tax-funnel", TAXONOMY.funnel, "bofu");
-        populateSelect("tax-source", TAXONOMY.source, "google");
-        populateSelect("tax-medium", TAXONOMY.medium, "cpc");
-        populateSelect("tax-objective", TAXONOMY.objective, "ftd");
-        populateSelect("tax-tactic", TAXONOMY.tactic, "nbr");
-        populateSelect("tax-journey", TAXONOMY.journey, "acq");
-        populateSelect("tax-placement", TAXONOMY.placement, "serp");
-        populateSelect("tax-region", TAXONOMY.region, "uk");
-        populateSelect("tax-language", TAXONOMY.language, "en");
-        populateSelect("tax-creative-format", TAXONOMY.creativeFormat, "rsa");
-        populateSelect("tax-creative-size", TAXONOMY.creativeSize, "na");
-        syncStateOptions();
-      }
-
-      function slugifyToken(str) {
-        return String(str || "")
-          .trim()
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-+|-+$/g, "");
-      }
-
-      function buildTaxonomyStrings() {
-        const brand = slugifyToken(document.getElementById("tax-brand").value) || "brand";
-        const workspace =
-          slugifyToken(document.getElementById("tax-workspace").value) || "campaign";
-        const source = document.getElementById("tax-source").value;
-        const medium = document.getElementById("tax-medium").value;
-        const funnel = document.getElementById("tax-funnel").value;
-        const objective = document.getElementById("tax-objective").value;
-        const tactic = document.getElementById("tax-tactic").value;
-        const journey = document.getElementById("tax-journey").value;
-        const placement = document.getElementById("tax-placement").value;
-        const region = document.getElementById("tax-region").value;
-        const state = document.getElementById("tax-state").value;
-        const language = document.getElementById("tax-language").value;
-        const creativeFormat = document.getElementById("tax-creative-format").value;
-        const creativeSize = document.getElementById("tax-creative-size").value;
-        const creativeName = slugifyToken(
-          document.getElementById("tax-creative-name").value
-        );
-        const isDco = document.getElementById("tax-is-dco").checked;
-
-        const geoToken = state && state !== "all" ? `${region}-${state}` : region;
-        const utmCampaign = [
-          brand,
-          geoToken,
-          language,
-          funnel,
-          objective,
-          tactic,
-          journey,
-          workspace,
-        ].join("_");
-
-        const utmContent = [
-          placement,
-          isDco ? "dco" : creativeFormat,
-          creativeSize,
-          creativeName || "default",
-        ].join("_");
-
-        return {
-          brandRaw: document.getElementById("tax-brand").value.trim(),
-          workspaceRaw: document.getElementById("tax-workspace").value.trim(),
-          creativeNameRaw: document.getElementById("tax-creative-name").value.trim(),
-          source,
-          medium,
-          utmCampaign,
-          utmContent,
-          isDco,
-        };
-      }
-
-      function updateLivePreview(savedKeys = null) {
-        const t = buildTaxonomyStrings();
-        const baseUrlRaw = document.getElementById("tax-base-url").value.trim();
-
-        document.getElementById("preview-utm-sm").textContent = `${t.source} / ${t.medium}`;
-        document.getElementById("preview-utm-campaign").textContent = t.utmCampaign;
-        document.getElementById("preview-utm-content").textContent = t.utmContent;
-
-        const previewUrlKey = savedKeys?.urlKey || "<generated_k>";
-        const previewCreativeKey = t.isDco
-          ? "Omitted (DCO mode)"
-          : savedKeys?.creativeKey || "<generated_ck>";
-
-        if (savedKeys) {
-          document.getElementById("preview-url-key").textContent = savedKeys.urlKey;
-          document.getElementById("preview-creative-key").textContent = t.isDco
-            ? `${savedKeys.creativeKey} (DCO)`
-            : savedKeys.creativeKey;
-          document.getElementById("preview-status-pill").textContent = "Registered";
-          document.getElementById("preview-status-pill").className =
-            "px-2 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200";
-        } else {
-          document.getElementById("preview-url-key").textContent = "Auto-generated on save";
-          document.getElementById("preview-creative-key").textContent = t.isDco
-            ? "Omitted (DCO)"
-            : "Auto-generated on save";
-          document.getElementById("preview-status-pill").textContent = "Live Preview";
-          document.getElementById("preview-status-pill").className =
-            "px-2 py-0.5 rounded-full text-[11px] font-mono font-medium bg-slate-100 text-slate-600";
-        }
-
-        let displayUrl;
-        try {
-          const u = new URL(baseUrlRaw || "https://www.example.com/");
-          u.searchParams.set("utm_source", t.source);
-          u.searchParams.set("utm_medium", t.medium);
-          u.searchParams.set("utm_campaign", t.utmCampaign);
-          u.searchParams.set("utm_content", t.utmContent);
-          u.searchParams.set("k", previewUrlKey);
-          if (!t.isDco) {
-            u.searchParams.set("ck", previewCreativeKey);
-          }
-          displayUrl = decodeURIComponent(u.toString());
-        } catch {
-          displayUrl = "Enter a valid http:// or https:// destination URL to preview.";
-        }
-
-        document.getElementById("preview-final-url").value = displayUrl;
-      }
-
-      // -------------------------------------------------------------------
-      // 3. SHARED UTILITIES & STATE
-      // -------------------------------------------------------------------
-      const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      let currentUser = null;
-      let ownerDomain = "";
-      let domainLinks = [];
-
-      function escapeHtml(value) {
-        return String(value ?? "")
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;");
-      }
-
-      function generateShortKey(prefix, length = 8) {
-        const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-        const bytes = new Uint8Array(length);
-        crypto.getRandomValues(bytes);
-        let out = prefix;
-        for (let i = 0; i < length; i++) {
-          out += chars[bytes[i] % chars.length];
-        }
-        return out;
-      }
-
-      function formatTimestamp(isoString) {
-        if (!isoString) return "Never";
-        return new Date(isoString).toLocaleString(undefined, {
-          dateStyle: "short",
-          timeStyle: "short",
-        });
-      }
-
-      function renderHealthBadge(status) {
-        const s = (status || "pending").toLowerCase();
-        const styles = {
-          healthy: "bg-emerald-50 text-emerald-700 border-emerald-200",
-          param_stripped: "bg-amber-50 text-amber-800 border-amber-200",
-          broken: "bg-rose-50 text-rose-700 border-rose-200",
-          timeout: "bg-rose-50 text-rose-700 border-rose-200",
-          unreachable: "bg-rose-50 text-rose-700 border-rose-200",
-          pending: "bg-slate-100 text-slate-600 border-slate-200",
-        };
-        const cls = styles[s] || styles.pending;
-        return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-mono font-semibold border ${cls}">${escapeHtml(
-          s
-        )}</span>`;
-      }
-
-      // -------------------------------------------------------------------
-      // 4. NAVIGATION ROUTER
-      // -------------------------------------------------------------------
-      function switchView(targetName) {
-        document.querySelectorAll(".workspace-view").forEach((el) => {
-          el.classList.add("hidden");
-        });
-        const targetEl = document.getElementById(`view-${targetName}`);
-        if (targetEl) targetEl.classList.remove("hidden");
-
-        document.querySelectorAll(".nav-tab").forEach((btn) => {
-          const isMatch = btn.getAttribute("data-nav-target") === targetName;
-          btn.className = isMatch
-            ? "nav-tab px-3.5 py-2 rounded-lg text-xs font-semibold transition bg-indigo-600 text-white shadow-sm inline-flex items-center gap-2"
-            : "nav-tab px-3.5 py-2 rounded-lg text-xs font-semibold transition text-slate-300 hover:text-white hover:bg-slate-800 inline-flex items-center gap-2";
-        });
-      }
-
-      document.querySelectorAll(".nav-tab").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          switchView(btn.getAttribute("data-nav-target"));
-        });
-      });
-
-      // -------------------------------------------------------------------
-      // 5. AUTHENTICATION FLOW
-      // -------------------------------------------------------------------
-      const authView = document.getElementById("auth-view");
-      const appShell = document.getElementById("app-shell");
-      const magicLinkForm = document.getElementById("magic-link-form");
-      const authEmailInput = document.getElementById("auth-email-input");
-      const authSubmitBtn = document.getElementById("auth-submit-btn");
-      const authMessage = document.getElementById("auth-message");
-
-      magicLinkForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const email = authEmailInput.value.trim().toLowerCase();
-        if (!EMAIL_REGEX.test(email)) return;
-
-        authSubmitBtn.disabled = true;
-        authSubmitBtn.textContent = "Sending...";
-        authMessage.classList.add("hidden");
-
-        const { error } = await supabase.auth.signInWithOtp({
-          email,
-          options: { emailRedirectTo: window.location.origin },
-        });
-
-        authSubmitBtn.disabled = false;
-        authSubmitBtn.textContent = "Send Magic Sign-In Link";
-        authMessage.classList.remove("hidden");
-        authMessage.textContent = error
-          ? `Sign-in error: ${error.message}`
-          : `Magic link sent to ${email}. Check your inbox to sign in.`;
-      });
-
-      document.getElementById("sign-out-btn").addEventListener("click", async () => {
-        await supabase.auth.signOut();
-      });
-
-      // -------------------------------------------------------------------
-      // 6. DATA LOADING
-      // -------------------------------------------------------------------
-      async function loadDomainLinks() {
-        if (!ownerDomain) return;
-
-        const { data, error } = await supabase
-          .from("campaign_links")
-          .select("*")
-          .eq("owner_domain", ownerDomain)
-          .order("created_at", { ascending: false });
-
-        if (error) {
-          console.error("Failed to load domain links:", error);
-          return;
-        }
-
-        domainLinks = data || [];
-        updateBrandFilterOptions();
-        renderHistoryTable();
-        renderSentinelView();
-      }
-
-      function updateBrandFilterOptions() {
-        const brandSelect = document.getElementById("history-brand-filter");
-        const currentVal = brandSelect.value;
-        const brands = Array.from(
-          new Set(domainLinks.map((r) => r.brand).filter(Boolean))
-        ).sort();
-
-        brandSelect.innerHTML =
-          `<option value="">All Brands</option>` +
-          brands
-            .map(
-              (b) =>
-                `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`
-            )
-            .join("");
-
-        brandSelect.value = brands.includes(currentVal) ? currentVal : "";
-      }
-
-      // -------------------------------------------------------------------
-      // 7. BUILDER EVENT BINDINGS
-      // -------------------------------------------------------------------
-      initTaxonomyControls();
-      updateLivePreview();
-
-      document.getElementById("tax-region").addEventListener("change", () => {
-        syncStateOptions();
-        updateLivePreview();
-      });
-
-      document.getElementById("tax-is-dco").addEventListener("change", (e) => {
-        const isDco = e.target.checked;
-        document.getElementById("tax-creative-format").disabled = isDco;
-        document.getElementById("tax-creative-size").disabled = isDco;
-        updateLivePreview();
-      });
-
-      document
-        .querySelectorAll("#campaign-builder-form input, #campaign-builder-form select")
-        .forEach((el) => {
-          el.addEventListener("input", () => updateLivePreview());
-          el.addEventListener("change", () => updateLivePreview());
-        });
-
-      const copyUrlBtn = document.getElementById("copy-generated-url-btn");
-
-      document.getElementById("builder-reset-btn").addEventListener("click", () => {
-        document.getElementById("campaign-builder-form").reset();
-        document.getElementById("tax-creative-format").disabled = false;
-        document.getElementById("tax-creative-size").disabled = false;
-        initTaxonomyControls();
-        copyUrlBtn.disabled = true;
-        updateLivePreview();
-      });
-
-      document
-        .getElementById("campaign-builder-form")
-        .addEventListener("submit", async (e) => {
-          e.preventDefault();
-          const feedback = document.getElementById("builder-feedback");
-          const submitBtn = document.getElementById("builder-submit-btn");
-          feedback.classList.add("hidden");
-
-          const baseUrlRaw = document.getElementById("tax-base-url").value.trim();
-          let parsedUrl;
-          try {
-            parsedUrl = new URL(baseUrlRaw);
-          } catch {
-            feedback.textContent = "Please enter a valid http/https destination URL.";
-            feedback.classList.remove("hidden");
-            return;
-          }
-
-          const t = buildTaxonomyStrings();
-          const urlKey = generateShortKey("k_", 8);
-          const creativeKey = generateShortKey("ck_", 8);
-
-          parsedUrl.searchParams.set("utm_source", t.source);
-          parsedUrl.searchParams.set("utm_medium", t.medium);
-          parsedUrl.searchParams.set("utm_campaign", t.utmCampaign);
-          parsedUrl.searchParams.set("utm_content", t.utmContent);
-          parsedUrl.searchParams.set("k", urlKey);
-          if (!t.isDco) {
-            parsedUrl.searchParams.set("ck", creativeKey);
-          }
-
-          const finalUrl = parsedUrl.toString();
-
-          submitBtn.disabled = true;
-          submitBtn.textContent = "Registering...";
-
-          const { error } = await supabase.from("campaign_links").insert({
-            owner_domain: ownerDomain,
-            created_by_email: currentUser.email.toLowerCase(),
-            brand: t.brandRaw,
-            campaign_workspace: t.workspaceRaw,
-            url_key: urlKey,
-            creative_key: creativeKey,
-            creative_name: t.creativeNameRaw || null,
-            is_dynamic_creative: t.isDco,
-            final_shortened_url: finalUrl,
-            link_health_status: "pending",
-          });
-
-          submitBtn.disabled = false;
-          submitBtn.textContent = "Generate & Register Governed Link";
-
-          if (error) {
-            feedback.textContent = `Error saving link: ${error.message}`;
-            feedback.classList.remove("hidden");
-            return;
-          }
-
-          updateLivePreview({ urlKey, creativeKey });
-          document.getElementById("preview-final-url").value = finalUrl;
-          copyUrlBtn.disabled = false;
-
-          await loadDomainLinks();
-        });
-
-      copyUrlBtn.addEventListener("click", async () => {
-        const val = document.getElementById("preview-final-url").value;
-        if (!val) return;
-        await navigator.clipboard.writeText(val);
-        copyUrlBtn.textContent = "Copied to Clipboard!";
-        setTimeout(() => {
-          copyUrlBtn.textContent = "Copy Registered Tracking URL";
-        }, 1500);
-      });
-
-      // -------------------------------------------------------------------
-      // 8. CAMPAIGN HISTORY TABLE & CSV EXPORT
-      // -------------------------------------------------------------------
-      const historySearchInput = document.getElementById("history-search-input");
-      const historyBrandFilter = document.getElementById("history-brand-filter");
-
-      function getFilteredHistoryRows() {
-        const q = historySearchInput.value.trim().toLowerCase();
-        const brand = historyBrandFilter.value;
-
-        return domainLinks.filter((row) => {
-          if (brand && row.brand !== brand) return false;
-          if (!q) return true;
-          const haystack = [
-            row.brand,
-            row.campaign_workspace,
-            row.url_key,
-            row.creative_key,
-            row.creative_name,
-            row.created_by_email,
-            row.final_shortened_url,
-          ]
-            .filter(Boolean)
-            .join(" ")
-            .toLowerCase();
-          return haystack.includes(q);
-        });
-      }
-
-      function renderHistoryTable() {
-        const tbody = document.getElementById("history-table-body");
-        const countLabel = document.getElementById("history-count-label");
-        const rows = getFilteredHistoryRows();
-
-        countLabel.textContent = `${rows.length} link${rows.length === 1 ? "" : "s"}`;
-
-        if (rows.length === 0) {
-          tbody.innerHTML = `
-            <tr>
-              <td colspan="6" class="px-4 py-8 text-center text-slate-400">
-                No campaign links match the current filter.
-              </td>
-            </tr>
-          `;
-          return;
-        }
-
-        tbody.innerHTML = rows
-          .map(
-            (row) => `
-            <tr class="hover:bg-slate-50/80">
-              <td class="px-4 py-3 whitespace-nowrap text-slate-500">
-                ${escapeHtml(formatTimestamp(row.created_at))}
-              </td>
-              <td class="px-4 py-3">
-                <div class="font-semibold text-slate-900">${escapeHtml(row.brand || "—")}</div>
-                <div class="text-slate-500">${escapeHtml(row.campaign_workspace || "—")}</div>
-              </td>
-              <td class="px-4 py-3 font-mono">
-                <div>k=${escapeHtml(row.url_key)}</div>
-                <div class="text-slate-500">
-                  ${
-                    row.is_dynamic_creative
-                      ? "DCO"
-                      : `ck=${escapeHtml(row.creative_key)}`
-                  }
+    <!-- Main App Shell -->
+    <div id="appShell" class="min-h-screen flex hidden">
+        <aside class="w-64 ap-surface border-r p-4 flex flex-col justify-between hidden lg:flex select-none">
+            <div>
+                <div class="flex items-center gap-3 px-2 mb-8">
+                    <div class="w-9 h-9 rounded-xl ap-accent-btn flex items-center justify-center font-bold">AP</div>
+                    <div class="flex items-baseline font-bold tracking-tight text-lg">
+                        <span>AdPulse</span>
+                        <span class="ap-code text-xs ml-1 font-semibold uppercase tracking-wider">OS</span>
+                    </div>
                 </div>
-              </td>
-              <td class="px-4 py-3 font-mono max-w-md break-all text-slate-700">
-                <a
-                  href="${escapeHtml(row.final_shortened_url)}"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="hover:text-indigo-600 underline decoration-slate-300"
-                >
-                  ${escapeHtml(row.final_shortened_url)}
-                </a>
-              </td>
-              <td class="px-4 py-3 text-slate-600">
-                ${escapeHtml(row.created_by_email || "—")}
-              </td>
-              <td class="px-4 py-3 text-right whitespace-nowrap">
-                <button
-                  type="button"
-                  data-copy-url="${escapeHtml(row.final_shortened_url)}"
-                  class="rounded border border-slate-300 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:bg-slate-50"
-                >
-                  Copy
-                </button>
-              </td>
-            </tr>
-          `
-          )
-          .join("");
-      }
+                <nav class="space-y-1 text-sm font-medium">
+                    <button type="button" onclick="switchView('builder')" id="nav-builder" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg ap-nav-active text-left cursor-pointer">
+                        Campaign builder
+                    </button>
+                    <button type="button" onclick="switchView('history')" id="nav-history" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg ap-text-muted ap-hover text-left cursor-pointer">
+                        Campaign History
+                    </button>
+                    <button type="button" onclick="switchView('linkrot')" id="nav-linkrot" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg ap-text-muted ap-hover text-left cursor-pointer">
+                        LinkRot Sentinel
+                    </button>
+                </nav>
+            </div>
+            <div class="p-3 ap-subtle rounded-xl border text-xs ap-text-muted">
+                <p class="font-medium ap-text-secondary">Active Domain Space</p>
+                <p id="sidebarDomain" class="ap-code font-mono truncate mt-0.5">—</p>
+            </div>
+        </aside>
 
-      historySearchInput.addEventListener("input", renderHistoryTable);
-      historyBrandFilter.addEventListener("change", renderHistoryTable);
-      document
-        .getElementById("history-refresh-btn")
-        .addEventListener("click", loadDomainLinks);
-
-      document
-        .getElementById("history-table-body")
-        .addEventListener("click", async (e) => {
-          const btn = e.target.closest("[data-copy-url]");
-          if (!btn) return;
-          await navigator.clipboard.writeText(btn.getAttribute("data-copy-url"));
-          const orig = btn.textContent;
-          btn.textContent = "Copied";
-          setTimeout(() => {
-            btn.textContent = orig;
-          }, 1200);
-        });
-
-      document
-        .getElementById("history-export-csv-btn")
-        .addEventListener("click", () => {
-          const rows = getFilteredHistoryRows();
-          const headers = [
-            "created_at",
-            "owner_domain",
-            "brand",
-            "campaign_workspace",
-            "url_key",
-            "creative_key",
-            "is_dynamic_creative",
-            "final_shortened_url",
-            "link_health_status",
-            "created_by_email",
-          ];
-          const csvLines = [
-            headers.join(","),
-            ...rows.map((r) =>
-              headers
-                .map((h) => `"${String(r[h] ?? "").replace(/"/g, '""')}"`)
-                .join(",")
-            ),
-          ];
-          const blob = new Blob([csvLines.join("\n")], {
-            type: "text/csv;charset=utf-8;",
-          });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = `adpulse-campaign-history-${ownerDomain}.csv`;
-          a.click();
-          URL.revokeObjectURL(url);
-        });
-
-      // -------------------------------------------------------------------
-      // 9. LINKROT SENTINEL TABLE & ON-DEMAND CHECKS
-      // -------------------------------------------------------------------
-      const sentinelSearchInput = document.getElementById("sentinel-search-input");
-      const sentinelStatusFilter = document.getElementById("sentinel-status-filter");
-
-      function renderSentinelView() {
-        const total = domainLinks.length;
-        const healthy = domainLinks.filter(
-          (r) => r.link_health_status === "healthy"
-        ).length;
-        const stripped = domainLinks.filter(
-          (r) => r.link_health_status === "param_stripped"
-        ).length;
-        const broken = domainLinks.filter((r) =>
-          ["broken", "timeout", "unreachable"].includes(r.link_health_status)
-        ).length;
-
-        document.getElementById("kpi-total").textContent = String(total);
-        document.getElementById("kpi-healthy").textContent = String(healthy);
-        document.getElementById("kpi-stripped").textContent = String(stripped);
-        document.getElementById("kpi-broken").textContent = String(broken);
-
-        const degradedTotal = stripped + broken;
-        const navBadge = document.getElementById("nav-broken-badge");
-        if (degradedTotal > 0) {
-          navBadge.textContent = String(degradedTotal);
-          navBadge.classList.remove("hidden");
-        } else {
-          navBadge.classList.add("hidden");
-        }
-
-        const q = sentinelSearchInput.value.trim().toLowerCase();
-        const statusFilter = sentinelStatusFilter.value;
-
-        const filtered = domainLinks.filter((row) => {
-          const st = (row.link_health_status || "pending").toLowerCase();
-          if (statusFilter === "degraded") {
-            if (!["broken", "param_stripped", "timeout", "unreachable"].includes(st)) {
-              return false;
-            }
-          } else if (statusFilter && st !== statusFilter) {
-            return false;
-          }
-
-          if (!q) return true;
-          const haystack = [
-            row.brand,
-            row.url_key,
-            row.creative_key,
-            row.final_shortened_url,
-            row.final_resolved_url,
-            row.last_error_message,
-          ]
-            .filter(Boolean)
-            .join(" ")
-            .toLowerCase();
-          return haystack.includes(q);
-        });
-
-        const tbody = document.getElementById("sentinel-table-body");
-        if (filtered.length === 0) {
-          tbody.innerHTML = `
-            <tr>
-              <td colspan="6" class="px-4 py-8 text-center text-slate-400">
-                No monitored links match the current filter.
-              </td>
-            </tr>
-          `;
-          return;
-        }
-
-        tbody.innerHTML = filtered
-          .map(
-            (row) => `
-            <tr class="hover:bg-slate-50/80">
-              <td class="px-4 py-3 whitespace-nowrap">
-                ${renderHealthBadge(row.link_health_status)}
-                ${
-                  row.http_status
-                    ? `<div class="mt-1 font-mono text-[11px] text-slate-500">HTTP ${escapeHtml(
-                        row.http_status
-                      )} (${row.redirect_count ?? 0} hops)</div>`
-                    : ""
-                }
-              </td>
-              <td class="px-4 py-3 font-mono">
-                <div class="font-sans font-semibold text-slate-900">${escapeHtml(
-                  row.brand || "—"
-                )}</div>
-                <div>k=${escapeHtml(row.url_key)}</div>
-                <div class="text-slate-500">
-                  ${
-                    row.is_dynamic_creative
-                      ? "DCO"
-                      : `ck=${escapeHtml(row.creative_key)}`
-                  }
+        <main class="flex-1 flex flex-col min-w-0">
+            <header class="min-h-16 py-2.5 border-b ap-surface/80 backdrop-blur px-6 flex items-center justify-between gap-4">
+                <div class="text-sm ap-text-muted flex items-center gap-4">
+                    <div>Workspace / <span id="breadcrumb-current" class="font-medium" style="color: var(--text-primary);">Campaign builder</span></div>
+                    <div class="flex lg:hidden gap-2">
+                        <button type="button" onclick="switchView('builder')" class="px-2.5 py-1 rounded ap-subtle border ap-text-secondary text-xs cursor-pointer">Builder</button>
+                        <button type="button" onclick="switchView('history')" class="px-2.5 py-1 rounded ap-subtle border ap-text-secondary text-xs cursor-pointer">History</button>
+                        <button type="button" onclick="switchView('linkrot')" class="px-2.5 py-1 rounded ap-subtle border ap-text-secondary text-xs cursor-pointer">LinkRot</button>
+                    </div>
                 </div>
-              </td>
-              <td class="px-4 py-3 font-mono max-w-md break-all">
-                <div class="text-slate-800">${escapeHtml(
-                  row.final_shortened_url
-                )}</div>
-                ${
-                  row.final_resolved_url &&
-                  row.final_resolved_url !== row.final_shortened_url
-                    ? `<div class="mt-1 text-[11px] text-slate-500">&rarr; ${escapeHtml(
-                        row.final_resolved_url
-                      )}</div>`
-                    : ""
-                }
-              </td>
-              <td class="px-4 py-3 text-slate-600 max-w-xs">
-                ${
-                  row.last_error_message
-                    ? `<span class="text-rose-700 font-medium">${escapeHtml(
-                        row.last_error_message
-                      )}</span>`
-                    : `<span class="text-slate-400">OK</span>`
-                }
-              </td>
-              <td class="px-4 py-3 whitespace-nowrap text-slate-500">
-                ${escapeHtml(formatTimestamp(row.last_checked_at))}
-              </td>
-              <td class="px-4 py-3 text-right whitespace-nowrap">
-                <button
-                  type="button"
-                  data-check-link-id="${escapeHtml(row.id)}"
-                  class="rounded border border-slate-300 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
-                >
-                  Check Now
-                </button>
-              </td>
-            </tr>
-          `
-          )
-          .join("");
-      }
+                <div class="flex items-center gap-4">
+                    <button type="button" id="themeToggleBtn" onclick="toggleMode()"
+                        class="px-3 py-1.5 rounded-lg ap-subtle ap-hover border ap-text-secondary text-xs font-medium cursor-pointer" style="border-color: var(--border-strong);">
+                        ☀️ Light Mode
+                    </button>
+                    <div class="text-right flex flex-col items-end">
+                        <p id="headerUserEmail" class="text-xs font-mono ap-code"></p>
+                        <button type="button" onclick="handleSignOut()" class="px-3 py-1.5 rounded-lg mt-0.5 text-[11px] font-medium ap-danger hover:underline ap-subtle ap-hover border ap-text-secondary text-xs font-medium cursor-pointer" style="border-color: var(--border-strong);">
+                            Sign Out
+                        </button>
+                        <p id="vocabLoadStatus" class="text-[10px] ap-text-muted mt-0.5">Connecting to Supabase...</p>
+                    </div>
+                </div>
+            </header>
 
-      sentinelSearchInput.addEventListener("input", renderSentinelView);
-      sentinelStatusFilter.addEventListener("change", renderSentinelView);
+            <div class="p-8 max-w-7xl w-full mx-auto space-y-6">
+                <!-- BUILDER VIEW -->
+                <div id="view-builder" class="space-y-6">
+                    <section class="ap-surface border rounded-xl p-6 space-y-6 shadow-xl">
+                        <div class="border-b pb-4" style="border-color: var(--border-subtle);">
+                            <h1 class="text-xl font-bold tracking-tight">Campaign Builder</h1>
+                            <p class="text-xs ap-text-muted">
+                                All fields are mandatory. <span class="ap-text-secondary font-medium">Brand, Product, Sub-Product, Placement, Objective, and Journey</span> are scoped to your email domain (<span id="builderDomainInline" class="font-mono ap-code">—</span>).
+                            </p>
+                        </div>
 
-      async function invokeSentinelCheck(linkId = null) {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        if (!session?.access_token) return;
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs ap-text-muted mb-1">Campaign Workspace / Label <span class="ap-danger">*</span></label>
+                                <input id="f-workspace" type="text" required placeholder="Required campaign workspace or label" oninput="updateWorkspacePreview(); renderAllOutputs();"
+                                    class="w-full ap-input border rounded-lg px-3 py-2 text-sm">
+                                <span id="preview-workspace" class="text-[11px] ap-code mt-1 block font-mono">utm_content code: —</span>
+                            </div>
+                            <div>
+                                <label class="block text-xs ap-text-muted mb-1">Destination URL <span class="ap-danger">*</span></label>
+                                <input id="f-dest" type="text" required value="https://example.com/landing" oninput="renderAllOutputs()"
+                                    class="w-full ap-input border rounded-lg px-3 py-2 text-sm">
+                            </div>
+                        </div>
 
-        const payload = linkId ? { link_id: linkId } : {};
-        const { error } = await supabase.functions.invoke(
-          SENTINEL_FUNCTION_NAME,
-          { body: payload }
-        );
+                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <!-- DOMAIN-SCOPED FIELDS -->
+                            <div class="relative combo-wrapper" data-field="brand">
+                                <label class="block text-xs ap-text-muted mb-1">Brand <span class="ap-danger">*</span> <span class="ap-code opacity-80">(Domain-only)</span></label>
+                                <input id="search-brand" type="text" required placeholder="Type to search or add..." autocomplete="off"
+                                    onfocus="openCombo('brand')" oninput="handleDynamicInput('brand')"
+                                    class="w-full ap-input border rounded-lg px-3 py-2 text-sm">
+                                <input type="hidden" id="f-brand" value="">
+                                <div id="list-brand" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto ap-surface border rounded-lg shadow-2xl divide-y" style="border-color: var(--border-strong);"></div>
+                                <span id="preview-brand" class="text-[11px] ap-code mt-1 block font-mono">URL code: —</span>
+                            </div>
 
-        if (error) {
-          alert(`LinkRot check failed: ${error.message}`);
-          return;
-        }
+                            <div class="relative combo-wrapper" data-field="source">
+                                <label class="block text-xs ap-text-muted mb-1">Source <span class="ap-danger">*</span></label>
+                                <input id="search-source" type="text" required placeholder="Search or add source..." autocomplete="off"
+                                    onfocus="openCombo('source')" oninput="handleDynamicInput('source')"
+                                    class="w-full ap-input border rounded-lg px-3 py-2 text-sm">
+                                <input type="hidden" id="f-source" value="">
+                                <div id="list-source" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto ap-surface border rounded-lg shadow-2xl divide-y" style="border-color: var(--border-strong);"></div>
+                                <span id="preview-source" class="text-[11px] ap-code mt-1 block font-mono">URL code: —</span>
+                            </div>
 
-        await loadDomainLinks();
-      }
+                            <div class="relative combo-wrapper" data-field="product">
+                                <label class="block text-xs ap-text-muted mb-1">Product <span class="ap-danger">*</span> <span class="ap-code opacity-80">(Domain-only)</span></label>
+                                <input id="search-product" type="text" required placeholder="Type to search or add..." autocomplete="off"
+                                    onfocus="openCombo('product')" oninput="handleDynamicInput('product')"
+                                    class="w-full ap-input border rounded-lg px-3 py-2 text-sm">
+                                <input type="hidden" id="f-product" value="">
+                                <div id="list-product" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto ap-surface border rounded-lg shadow-2xl divide-y" style="border-color: var(--border-strong);"></div>
+                                <span id="preview-product" class="text-[11px] ap-code mt-1 block font-mono">URL code: —</span>
+                            </div>
 
-      document
-        .getElementById("sentinel-scan-all-btn")
-        .addEventListener("click", async (e) => {
-          const btn = e.currentTarget;
-          btn.disabled = true;
-          btn.textContent = "Scanning Domain...";
-          try {
-            await invokeSentinelCheck(null);
-          } finally {
-            btn.disabled = false;
-            btn.textContent = "Run Domain Scan Now";
-          }
-        });
+                            <div class="relative combo-wrapper" data-field="subproduct">
+                                <label class="block text-xs ap-text-muted mb-1">Sub-Product <span class="ap-danger">*</span> <span class="ap-code opacity-80">(Domain-only)</span></label>
+                                <input id="search-subproduct" type="text" required placeholder="Type to search or add..." autocomplete="off"
+                                    onfocus="openCombo('subproduct')" oninput="handleDynamicInput('subproduct')"
+                                    class="w-full ap-input border rounded-lg px-3 py-2 text-sm">
+                                <input type="hidden" id="f-subproduct" value="">
+                                <div id="list-subproduct" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto ap-surface border rounded-lg shadow-2xl divide-y" style="border-color: var(--border-strong);"></div>
+                                <span id="preview-subproduct" class="text-[11px] ap-code mt-1 block font-mono">URL code: —</span>
+                            </div>
 
-      document
-        .getElementById("sentinel-table-body")
-        .addEventListener("click", async (e) => {
-          const btn = e.target.closest("[data-check-link-id]");
-          if (!btn) return;
-          const linkId = btn.getAttribute("data-check-link-id");
-          btn.disabled = true;
-          btn.textContent = "Checking...";
-          try {
-            await invokeSentinelCheck(linkId);
-          } finally {
-            btn.disabled = false;
-            btn.textContent = "Check Now";
-          }
-        });
+                            <div class="relative combo-wrapper" data-field="placement">
+                                <label class="block text-xs ap-text-muted mb-1">Placement <span class="ap-danger">*</span> <span class="ap-code opacity-80">(Domain-only)</span></label>
+                                <input id="search-placement" type="text" required placeholder="Type to search or add..." autocomplete="off"
+                                    onfocus="openCombo('placement')" oninput="handleDynamicInput('placement')"
+                                    class="w-full ap-input border rounded-lg px-3 py-2 text-sm">
+                                <input type="hidden" id="f-placement" value="">
+                                <div id="list-placement" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto ap-surface border rounded-lg shadow-2xl divide-y" style="border-color: var(--border-strong);"></div>
+                                <span id="preview-placement" class="text-[11px] ap-code mt-1 block font-mono">URL code: —</span>
+                            </div>
 
-      // -------------------------------------------------------------------
-      // 10. DOMAIN ALERT RECIPIENTS SETTINGS CARD
-      // -------------------------------------------------------------------
-      let boundAlertDomain = "";
+                            <div class="relative combo-wrapper" data-field="objective">
+                                <label class="block text-xs ap-text-muted mb-1">Objective <span class="ap-danger">*</span> <span class="ap-code opacity-80">(Domain-only)</span></label>
+                                <input id="search-objective" type="text" required placeholder="Type to search or add..." autocomplete="off"
+                                    onfocus="openCombo('objective')" oninput="handleDynamicInput('objective')"
+                                    class="w-full ap-input border rounded-lg px-3 py-2 text-sm">
+                                <input type="hidden" id="f-objective" value="">
+                                <div id="list-objective" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto ap-surface border rounded-lg shadow-2xl divide-y" style="border-color: var(--border-strong);"></div>
+                                <span id="preview-objective" class="text-[11px] ap-code mt-1 block font-mono">URL code: —</span>
+                            </div>
 
-      function initDomainAlertSettings() {
-        if (!ownerDomain || boundAlertDomain === ownerDomain) return;
-        boundAlertDomain = ownerDomain;
+                            <div class="relative combo-wrapper" data-field="journey">
+                                <label class="block text-xs ap-text-muted mb-1">Journey <span class="ap-danger">*</span> <span class="ap-code opacity-80">(Domain-only)</span></label>
+                                <input id="search-journey" type="text" required placeholder="Type to search or add..." autocomplete="off"
+                                    onfocus="openCombo('journey')" oninput="handleDynamicInput('journey')"
+                                    class="w-full ap-input border rounded-lg px-3 py-2 text-sm">
+                                <input type="hidden" id="f-journey" value="">
+                                <div id="list-journey" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto ap-surface border rounded-lg shadow-2xl divide-y" style="border-color: var(--border-strong);"></div>
+                                <span id="preview-journey" class="text-[11px] ap-code mt-1 block font-mono">URL code: —</span>
+                            </div>
 
-        const domainBadge = document.getElementById("alert-settings-domain-badge");
-        const enabledCheckbox = document.getElementById("alert-digest-enabled");
-        const emailInput = document.getElementById("alert-recipient-input");
-        const addBtn = document.getElementById("alert-recipient-add-btn");
-        const chipsContainer = document.getElementById("alert-recipients-chips");
-        const saveBtn = document.getElementById("alert-settings-save-btn");
-        const errorEl = document.getElementById("alert-settings-error");
-        const statusEl = document.getElementById("alert-settings-status");
-        const lastDigestEl = document.getElementById("alert-settings-last-digest");
+                            <!-- LOCKED TAXONOMIES & FILTERED GEO/LANGUAGE -->
+                            <div class="relative combo-wrapper" data-field="funnel">
+                                <label class="block text-xs ap-text-muted mb-1">Funnel <span class="ap-danger">*</span></label>
+                                <input id="search-funnel" type="text" required readonly onfocus="openCombo('funnel')"
+                                    class="w-full ap-input border rounded-lg px-3 py-2 text-sm cursor-pointer">
+                                <input type="hidden" id="f-funnel" value="">
+                                <div id="list-funnel" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto ap-surface border rounded-lg shadow-2xl divide-y" style="border-color: var(--border-strong);"></div>
+                                <span id="preview-funnel" class="text-[11px] ap-code mt-1 block font-mono">URL code: —</span>
+                            </div>
 
-        domainBadge.textContent = ownerDomain;
-        let recipients = [];
+                            <div class="relative combo-wrapper" data-field="tactic">
+                                <label class="block text-xs ap-text-muted mb-1">Tactic <span class="ap-danger">*</span></label>
+                                <input id="search-tactic" type="text" required readonly onfocus="openCombo('tactic')"
+                                    class="w-full ap-input border rounded-lg px-3 py-2 text-sm cursor-pointer">
+                                <input type="hidden" id="f-tactic" value="">
+                                <div id="list-tactic" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto ap-surface border rounded-lg shadow-2xl divide-y" style="border-color: var(--border-strong);"></div>
+                                <span id="preview-tactic" class="text-[11px] ap-code mt-1 block font-mono">URL code: —</span>
+                            </div>
 
-        function showFeedback({ error = "", status = "" }) {
-          errorEl.textContent = error;
-          errorEl.classList.toggle("hidden", !error);
-          statusEl.textContent = status;
-          statusEl.classList.toggle("hidden", !status);
-        }
+                            <div class="relative combo-wrapper" data-field="medium">
+                                <label class="block text-xs ap-text-muted mb-1">Medium <span class="ap-danger">*</span></label>
+                                <input id="search-medium" type="text" required readonly onfocus="openCombo('medium')"
+                                    class="w-full ap-input border rounded-lg px-3 py-2 text-sm cursor-pointer">
+                                <input type="hidden" id="f-medium" value="">
+                                <div id="list-medium" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto ap-surface border rounded-lg shadow-2xl divide-y" style="border-color: var(--border-strong);"></div>
+                                <span id="preview-medium" class="text-[11px] ap-code mt-1 block font-mono">URL code: —</span>
+                            </div>
 
-        function renderChips() {
-          if (recipients.length === 0) {
-            chipsContainer.innerHTML = `
-              <span class="text-xs text-slate-400 italic">
-                No custom recipients configured (creator fallback active).
-              </span>
-            `;
-            return;
-          }
+                            <div class="relative combo-wrapper" data-field="region">
+                                <label class="block text-xs ap-text-muted mb-1">Country <span class="ap-danger">*</span></label>
+                                <input id="search-region" type="text" required placeholder="Search country..." autocomplete="off"
+                                    onfocus="openCombo('region')" oninput="filterCombo('region')"
+                                    class="w-full ap-input border rounded-lg px-3 py-2 text-sm">
+                                <input type="hidden" id="f-region" value="">
+                                <div id="list-region" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto ap-surface border rounded-lg shadow-2xl divide-y" style="border-color: var(--border-strong);"></div>
+                                <span id="preview-region" class="text-[11px] ap-code mt-1 block font-mono">URL code: —</span>
+                            </div>
 
-          chipsContainer.innerHTML = recipients
-            .map(
-              (email) => `
-              <span class="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 border border-indigo-200 px-3 py-1 text-xs font-medium text-indigo-800">
-                <span>${escapeHtml(email)}</span>
-                <button
-                  type="button"
-                  data-remove-email="${escapeHtml(email)}"
-                  aria-label="Remove ${escapeHtml(email)}"
-                  class="text-indigo-500 hover:text-indigo-900 font-bold leading-none"
-                >
-                  &times;
-                </button>
-              </span>
-            `
-            )
-            .join("");
-        }
+                            <div class="relative combo-wrapper" data-field="state">
+                                <label class="block text-xs ap-text-muted mb-1">State / Province <span class="ap-danger">*</span></label>
+                                <input id="search-state" type="text" required placeholder="Select country first..." autocomplete="off"
+                                    onfocus="openCombo('state')" oninput="filterCombo('state')"
+                                    class="w-full ap-input border rounded-lg px-3 py-2 text-sm">
+                                <input type="hidden" id="f-state" value="">
+                                <div id="list-state" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto ap-surface border rounded-lg shadow-2xl divide-y" style="border-color: var(--border-strong);"></div>
+                                <span id="preview-state" class="text-[11px] ap-code mt-1 block font-mono">URL code: —</span>
+                            </div>
 
-        function addEmailFromInput() {
-          showFeedback({});
-          const raw = emailInput.value.trim().toLowerCase();
-          if (!raw) return;
+                            <div class="relative combo-wrapper" data-field="lang">
+                                <label class="block text-xs ap-text-muted mb-1">Language <span class="ap-danger">*</span></label>
+                                <input id="search-lang" type="text" required placeholder="Search language..." autocomplete="off"
+                                    onfocus="openCombo('lang')" oninput="filterCombo('lang')"
+                                    class="w-full ap-input border rounded-lg px-3 py-2 text-sm">
+                                <input type="hidden" id="f-lang" value="">
+                                <div id="list-lang" class="combo-list hidden absolute z-40 mt-1 w-full max-h-56 overflow-y-auto ap-surface border rounded-lg shadow-2xl divide-y" style="border-color: var(--border-strong);"></div>
+                                <span id="preview-lang" class="text-[11px] ap-code mt-1 block font-mono">URL code: —</span>
+                            </div>
+                        </div>
+                    </section>
 
-          const candidates = raw
-            .split(/[\s,;]+/)
-            .map((e) => e.trim())
-            .filter(Boolean);
+                    <!-- CREATIVE ASSETS -->
+                    <section class="ap-surface border rounded-xl p-6 space-y-5 shadow-xl">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4" style="border-color: var(--border-subtle);">
+                            <div>
+                                <h2 class="text-xl font-bold tracking-tight">Creative Assets <span class="ap-danger">*</span></h2>
+                                <p class="text-xs ap-text-muted">Either check <span class="ap-text-secondary font-medium">Dynamic Creative</span> or upload/select at least one creative asset.</p>
+                            </div>
+                            <label class="inline-flex items-center gap-2.5 cursor-pointer select-none ap-subtle border px-3.5 py-2.5 rounded-lg">
+                                <input id="f-dynamic-creative" type="checkbox" onchange="toggleDynamicCreative()"
+                                    class="w-4 h-4 accent-emerald-500 rounded cursor-pointer">
+                                <span class="text-xs font-semibold ap-text-secondary">Dynamic Creative (No <code class="ap-code">utm_term</code> or <code class="ap-code">ck</code>)</span>
+                            </label>
+                        </div>
 
-          for (const candidate of candidates) {
-            if (!EMAIL_REGEX.test(candidate)) {
-              showFeedback({ error: `Invalid email address: ${candidate}` });
-              return;
+                        <div id="dcoBanner" class="hidden p-3.5 rounded-lg ap-pill border text-xs" style="border-color: var(--accent);">
+                            <strong>Dynamic Creative Enabled:</strong> Asset-level <code class="font-mono">utm_term</code> and <code class="font-mono">ck</code> keys are omitted from both Example URLs and Final URLs.
+                        </div>
+
+                        <div id="assetUploadControls" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <label class="flex flex-col items-center justify-center p-4 border-2 border-dashed hover:border-emerald-500 rounded-xl ap-subtle cursor-pointer transition-colors" style="border-color: var(--border-strong);">
+                                    <span class="text-xs font-semibold ap-text-secondary">Upload Individual Files or .ZIP Archive</span>
+                                    <span class="text-[11px] ap-text-muted mt-1">Select images, videos, HTML5 banners, or .zip packages</span>
+                                    <input id="creativeFileInput" type="file" multiple accept=".zip,image/*,video/*,.html,.pdf"
+                                        onchange="handleAssetFilesUpload(event)" class="hidden">
+                                </label>
+
+                                <div class="flex flex-col justify-center p-4 border rounded-xl ap-subtle space-y-2">
+                                    <label class="text-xs ap-text-muted">Or enter a creative asset name manually:</label>
+                                    <div class="flex gap-2">
+                                        <input id="manualCreativeInput" type="text" placeholder="e.g. hero_banner_300x250_v1"
+                                            onkeydown="if(event.key==='Enter'){event.preventDefault();addManualCreativeAsset();}"
+                                            class="flex-1 ap-input border rounded-lg px-3 py-2 text-xs">
+                                        <button type="button" onclick="addManualCreativeAsset()"
+                                            class="px-3.5 py-2 rounded-lg ap-surface ap-hover border ap-code text-xs font-semibold cursor-pointer" style="border-color: var(--border-strong);">
+                                            + Add
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between text-xs ap-text-muted">
+                                <span id="assetUploadStatus">No files uploaded yet. Select assets below or check Dynamic Creative.</span>
+                                <div class="flex gap-3">
+                                    <button type="button" onclick="setAllAssetsSelected(true)" class="ap-code hover:underline cursor-pointer">Select all</button>
+                                    <button type="button" onclick="setAllAssetsSelected(false)" class="ap-text-muted hover:underline cursor-pointer">Deselect all</button>
+                                </div>
+                            </div>
+
+                            <div id="creativeAssetsTable" class="divide-y border rounded-xl ap-subtle overflow-hidden" style="border-color: var(--border-subtle);"></div>
+                        </div>
+                    </section>
+
+                    <!-- EXAMPLE URLS -->
+                    <section class="ap-surface border rounded-xl p-6 space-y-4 shadow-xl">
+                        <div class="flex items-center justify-between border-b pb-4" style="border-color: var(--border-subtle);">
+                            <div>
+                                <h2 class="text-xl font-bold tracking-tight">Example URLs</h2>
+                                <p class="text-xs ap-text-muted">Lowercase expanded UTM query string preview (<code class="ap-code">utm_content</code> uses abbreviated workspace; <code class="ap-code">utm_term</code> included unless Dynamic Creative is checked).</p>
+                            </div>
+                            <span id="exampleCountBadge" class="text-xs font-mono ap-text-muted">0 URLs</span>
+                        </div>
+
+                        <div id="exampleUrlsList" class="space-y-2.5 max-h-72 overflow-y-auto pr-1"></div>
+                    </section>
+
+                    <!-- FINAL URLS + COMMIT & EXPORT BUTTON UNDER FINAL URLS BLOCK -->
+                    <section class="ap-surface border rounded-xl p-6 space-y-4 shadow-xl">
+                        <div class="border-b pb-4" style="border-color: var(--border-subtle);">
+                            <h2 class="text-xl font-bold tracking-tight">Final URLs</h2>
+                            <p class="text-xs ap-text-muted">Lowercase tokenized production URLs with campaign key (<code class="ap-code">k</code>) and creative key (<code class="ap-code">ck</code> when not Dynamic Creative).</p>
+                        </div>
+
+                        <div id="finalUrlsList" class="space-y-2.5 max-h-72 overflow-y-auto pr-1"></div>
+
+                        <div class="pt-3 border-t flex flex-col sm:flex-row sm:items-center justify-between gap-3" style="border-color: var(--border-subtle);">
+                            <p id="commitStatusMessage" class="text-xs ap-text-muted min-h-[1rem]"></p>
+                            <button type="button" id="commitAndCsvBtn" onclick="commitHistoryAndExportCsv()"
+                                class="px-5 py-2.5 rounded-lg ap-accent-btn font-semibold text-xs sm:text-sm transition-colors cursor-pointer shrink-0">
+                                Commit to Domain History &amp; Export CSV
+                            </button>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- CAMPAIGN HISTORY VIEW (ALL URLS) -->
+                <div id="view-history" class="space-y-6 hidden">
+                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                        <div>
+                            <h1 class="text-2xl font-bold tracking-tight">Campaign History</h1>
+                            <p class="text-sm ap-text-muted">
+                                Complete committed URL catalog across <span id="historyDomainLabel" class="font-mono ap-code">—</span>.
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2.5">
+                            <select id="historyHealthFilter" onchange="renderHistoryRows()"
+                                class="ap-surface border rounded-lg px-3 py-2 text-xs ap-text-secondary">
+                                <option value="all">All statuses</option>
+                                <option value="healthy">Healthy</option>
+                                <option value="param_stripped">Param Stripped</option>
+                                <option value="broken">Broken (4xx/5xx/Loop)</option>
+                                <option value="timeout">Timeout / Unreachable</option>
+                                <option value="pending">Pending</option>
+                            </select>
+                            <input id="historySearchInput" type="text" placeholder="Filter by brand, creator, key, or URL..."
+                                oninput="renderHistoryRows()"
+                                class="ap-surface border rounded-lg px-3 py-2 text-xs ap-text-secondary">
+                            <button type="button" onclick="exportFilteredHistoryCsv()"
+                                class="px-3.5 py-2 rounded-lg ap-subtle ap-hover border ap-text-secondary text-xs font-medium cursor-pointer" style="border-color: var(--border-strong);">
+                                ↓ Export Filtered CSV
+                            </button>
+                            <button type="button" onclick="loadDomainHistory()"
+                                class="px-3.5 py-2 rounded-lg ap-surface ap-hover border ap-text-secondary text-xs font-medium cursor-pointer" style="border-color: var(--border-strong);">
+                                ↻ Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="ap-surface border rounded-xl p-6 shadow-xl overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b text-xs ap-text-muted uppercase tracking-wider" style="border-color: var(--border-subtle);">
+                                    <th class="py-3 px-3">Brand &amp; Keys</th>
+                                    <th class="py-3 px-3">Creative / Mode</th>
+                                    <th class="py-3 px-3">Final URL &amp; Resolved Landing</th>
+                                    <th class="py-3 px-3">LinkRot Status</th>
+                                    <th class="py-3 px-3">Last Checked</th>
+                                    <th class="py-3 px-3 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody" class="divide-y text-xs" style="border-color: var(--border-subtle);">
+                                <tr>
+                                    <td colspan="6" class="py-6 text-center ap-text-muted">No history loaded yet.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- LINKROT SENTINEL VIEW -->
+                <div id="view-linkrot" class="space-y-6 hidden">
+                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                        <div>
+                            <h1 class="text-2xl font-bold tracking-tight">LinkRot Sentinel</h1>
+                            <p class="text-sm ap-text-muted">
+                                Server-side redirect &amp; parameter integrity monitor for <span id="linkrotDomainLabel" class="font-mono ap-code">—</span>.
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2.5">
+                            <select id="linkrotHealthFilter" onchange="renderLinkRotRows()"
+                                class="ap-surface border rounded-lg px-3 py-2 text-xs ap-text-secondary">
+                                <option value="all">All statuses</option>
+                                <option value="healthy">Healthy</option>
+                                <option value="param_stripped">Param Stripped</option>
+                                <option value="broken">Broken (4xx/5xx/Loop)</option>
+                                <option value="timeout">Timeout / Unreachable</option>
+                                <option value="pending">Pending</option>
+                            </select>
+                            <input id="linkrotSearchInput" type="text" placeholder="Filter by brand, creator, key, or URL..."
+                                oninput="renderLinkRotRows()"
+                                class="ap-surface border rounded-lg px-3 py-2 text-xs ap-text-secondary">
+                            <button type="button" id="checkAllDomainBtn" onclick="runDomainLinkRotSweep()"
+                                class="px-4 py-2 rounded-lg ap-accent-btn font-semibold text-xs cursor-pointer">
+                                ⚡ Check All Domain Links
+                            </button>
+                            <button type="button" onclick="loadDomainHistory()"
+                                class="px-3.5 py-2 rounded-lg ap-surface ap-hover border ap-text-secondary text-xs font-medium cursor-pointer" style="border-color: var(--border-strong);">
+                                ↻ Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- LinkRot KPI Summary Strip -->
+                    <div id="linkrotSummaryStrip" class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                        <div class="ap-surface border rounded-xl p-3.5">
+                            <p class="text-[11px] ap-text-muted uppercase">Total Links</p>
+                            <p id="stat-total" class="text-xl font-bold mt-1">0</p>
+                        </div>
+                        <div class="ap-surface border rounded-xl p-3.5">
+                            <p class="text-[11px] ap-code uppercase">Healthy</p>
+                            <p id="stat-healthy" class="text-xl font-bold ap-code mt-1">0</p>
+                        </div>
+                        <div class="ap-surface border rounded-xl p-3.5">
+                            <p class="text-[11px] ap-warn uppercase">Param Stripped</p>
+                            <p id="stat-stripped" class="text-xl font-bold ap-warn mt-1">0</p>
+                        </div>
+                        <div class="ap-surface border rounded-xl p-3.5">
+                            <p class="text-[11px] ap-danger uppercase">Broken</p>
+                            <p id="stat-broken" class="text-xl font-bold ap-danger mt-1">0</p>
+                        </div>
+                        <div class="ap-surface border rounded-xl p-3.5">
+                            <p class="text-[11px] ap-text-muted uppercase">Unchecked</p>
+                            <p id="stat-pending" class="text-xl font-bold ap-text-secondary mt-1">0</p>
+                        </div>
+                    </div>
+
+                    <p id="linkrotSweepStatus" class="text-xs ap-text-muted min-h-[1rem]"></p>
+
+                    <div class="ap-surface border rounded-xl p-6 shadow-xl overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b text-xs ap-text-muted uppercase tracking-wider" style="border-color: var(--border-subtle);">
+                                    <th class="py-3 px-3">Brand &amp; Keys</th>
+                                    <th class="py-3 px-3">Creative / Mode</th>
+                                    <th class="py-3 px-3">Final URL &amp; Resolved Landing</th>
+                                    <th class="py-3 px-3">LinkRot Status</th>
+                                    <th class="py-3 px-3">Last Checked</th>
+                                    <th class="py-3 px-3 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="linkrotTableBody" class="divide-y text-xs" style="border-color: var(--border-subtle);">
+                                <tr>
+                                    <td colspan="6" class="py-6 text-center ap-text-muted">No links loaded yet.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://stouegbesuceggnegeie.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_QUglOE6uDThXZRZ48kEPhA_ifXTfUok';
+        const LINKROT_FUNCTION_NAME = 'linkrot-sentinel';
+
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const DOMAIN_SCOPED_FIELDS = new Set(['brand', 'product', 'subproduct', 'placement', 'objective', 'journey']);
+        const DYNAMIC_ADD_FIELDS = new Set(['brand', 'source', 'product', 'subproduct', 'placement', 'objective', 'journey']);
+        const LOCKED_PREPOPULATED_FIELDS = ['funnel', 'tactic', 'medium', 'region', 'lang'];
+        const VOWELS = new Set(['a', 'e', 'i', 'o', 'u']);
+
+        let TAXONOMY = {
+            brand: [],
+            source: [],
+            product: [],
+            subproduct: [],
+            placement: [],
+            objective: [],
+            journey: [],
+            funnel: [],
+            tactic: [],
+            medium: [],
+            region: [],
+            state: [],
+            lang: []
+        };
+
+        let uploadedCreativeAssets = [];
+        let activeUser = null;
+        let activeDomain = '';
+        let historyRecords = [];
+
+        function applyMode(mode) {
+            const normalized = mode === 'light' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-mode', normalized);
+            document.documentElement.classList.toggle('dark', normalized === 'dark');
+            localStorage.setItem('adpulse_mode', normalized);
+            const btn = document.getElementById('themeToggleBtn');
+            if (btn) {
+                btn.textContent = normalized === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
             }
-            if (!recipients.includes(candidate)) {
-              recipients.push(candidate);
+        }
+
+        function toggleMode() {
+            const current = document.documentElement.getAttribute('data-mode') || 'dark';
+            applyMode(current === 'dark' ? 'light' : 'dark');
+        }
+
+        applyMode(localStorage.getItem('adpulse_mode') || 'dark');
+
+        function escapeHtml(str) {
+            return String(str ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function abbreviate4PlusDigits(rawName) {
+            const clean = String(rawName || '').toLowerCase().trim();
+            if (!clean) return '';
+
+            const startsWithVowel = VOWELS.has(clean[0]);
+            const digits = (clean.match(/[0-9]/g) || []).join('');
+            const lettersOnly = clean.replace(/[^a-z]/g, '');
+
+            let processedLetters = '';
+            if (startsWithVowel) {
+                processedLetters = lettersOnly;
+            } else {
+                processedLetters = lettersOnly
+                    .split('')
+                    .filter((ch, idx) => idx === 0 || !VOWELS.has(ch))
+                    .join('');
             }
-          }
 
-          emailInput.value = "";
-          renderChips();
+            const base4 = processedLetters.slice(0, 4);
+            return `${base4}${digits}` || digits || 'item';
         }
 
-        chipsContainer.addEventListener("click", (e) => {
-          const btn = e.target.closest("[data-remove-email]");
-          if (!btn) return;
-          const targetEmail = btn.getAttribute("data-remove-email");
-          recipients = recipients.filter((item) => item !== targetEmail);
-          showFeedback({});
-          renderChips();
-        });
-
-        addBtn.addEventListener("click", addEmailFromInput);
-        emailInput.addEventListener("keydown", (e) => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            addEmailFromInput();
-          }
-        });
-
-        async function loadAlertSettings() {
-          const [{ data: settings, error: settingsErr }, { data: latestLog }] =
-            await Promise.all([
-              supabase
-                .from("domain_alert_settings")
-                .select("alert_emails, digest_enabled, updated_at")
-                .eq("owner_domain", ownerDomain)
-                .maybeSingle(),
-              supabase
-                .from("linkrot_digest_logs")
-                .select("sent_at, link_count, recipients")
-                .eq("owner_domain", ownerDomain)
-                .order("sent_at", { ascending: false })
-                .limit(1)
-                .maybeSingle(),
-            ]);
-
-          if (settingsErr) {
-            showFeedback({
-              error: `Failed to load alert settings: ${settingsErr.message}`,
-            });
-            return;
-          }
-
-          if (settings) {
-            recipients = Array.isArray(settings.alert_emails)
-              ? settings.alert_emails
-                  .map((e) => String(e).trim().toLowerCase())
-                  .filter(Boolean)
-              : [];
-            enabledCheckbox.checked = settings.digest_enabled !== false;
-          } else {
-            recipients = [];
-            enabledCheckbox.checked = true;
-          }
-
-          if (latestLog?.sent_at) {
-            const formattedDate = new Date(latestLog.sent_at).toLocaleString(
-              undefined,
-              {
-                dateStyle: "medium",
-                timeStyle: "short",
-              }
-            );
-            lastDigestEl.textContent = `Last digest sent: ${formattedDate} (${latestLog.link_count} link${
-              latestLog.link_count === 1 ? "" : "s"
-            } to ${latestLog.recipients.join(", ")})`;
-          } else {
-            lastDigestEl.textContent = "Last digest sent: No digests sent yet";
-          }
-
-          renderChips();
+        function stripExtension(filename) {
+            return String(filename || '').replace(/\.[^/.]+$/, '');
         }
 
-        saveBtn.addEventListener("click", async () => {
-          if (emailInput.value.trim()) {
-            addEmailFromInput();
-            if (!errorEl.classList.contains("hidden")) return;
-          }
-
-          saveBtn.disabled = true;
-          saveBtn.textContent = "Saving...";
-          showFeedback({});
-
-          try {
-            const payload = {
-              owner_domain: ownerDomain,
-              alert_emails: recipients,
-              digest_enabled: enabledCheckbox.checked,
-              updated_by_email: currentUser.email.trim().toLowerCase(),
-              updated_at: new Date().toISOString(),
+        function parseStateRow(row) {
+            const parts = String(row.display_name || '').split('|');
+            const countryCode = parts.length > 1 ? parts[0].trim().toLowerCase() : '';
+            const cleanName = parts.length > 1 ? parts.slice(1).join('|').trim() : String(row.display_name || '').trim();
+            const cleanCode = String(row.abbreviation || '').toLowerCase().replace(/^[a-z]{2}[-_]/, '');
+            return {
+                countryCode,
+                displayName: cleanName,
+                abbreviation: cleanCode
             };
-
-            const { error } = await supabase
-              .from("domain_alert_settings")
-              .upsert(payload, { onConflict: "owner_domain" });
-
-            if (error) throw error;
-
-            showFeedback({
-              status: enabledCheckbox.checked
-                ? "Alert recipients saved."
-                : "Hourly digest paused for this domain.",
-            });
-          } catch (err) {
-            showFeedback({
-              error: err?.message || "Unable to save domain alert settings.",
-            });
-          } finally {
-            saveBtn.disabled = false;
-            saveBtn.textContent = "Save Alert Settings";
-          }
-        });
-
-        loadAlertSettings();
-      }
-
-      // -------------------------------------------------------------------
-      // 11. SESSION BOOTSTRAP
-      // -------------------------------------------------------------------
-      async function handleSession(session) {
-        if (!session?.user?.email) {
-          currentUser = null;
-          ownerDomain = "";
-          boundAlertDomain = "";
-          appShell.classList.add("hidden");
-          authView.classList.remove("hidden");
-          return;
         }
 
-        currentUser = session.user;
-        ownerDomain = currentUser.email.trim().toLowerCase().split("@")[1];
+        function getStatesForSelectedCountry() {
+            const selectedCountry = (document.getElementById('f-region')?.value || '').trim().toLowerCase();
+            if (!selectedCountry) return [];
+            return (TAXONOMY.state || [])
+                .map(parseStateRow)
+                .filter(s => s.countryCode === selectedCountry);
+        }
 
-        document.getElementById("header-domain-pill").textContent = ownerDomain;
-        document.getElementById("header-user-email").textContent =
-          currentUser.email.toLowerCase();
+        function updateWorkspacePreview() {
+            const ws = (document.getElementById('f-workspace')?.value || '').trim();
+            const code = ws ? abbreviate4PlusDigits(ws).toLowerCase() : '—';
+            document.getElementById('preview-workspace').textContent = `utm_content code: ${code}`;
+        }
 
-        authView.classList.add("hidden");
-        appShell.classList.remove("hidden");
+        function getFieldCode(field) {
+            const hiddenVal = (document.getElementById(`f-${field}`)?.value || '').trim().toLowerCase();
+            if (hiddenVal) return hiddenVal;
+            if (DYNAMIC_ADD_FIELDS.has(field)) {
+                const typedVal = (document.getElementById(`search-${field}`)?.value || '').trim();
+                if (typedVal) return abbreviate4PlusDigits(typedVal).toLowerCase();
+            }
+            return '';
+        }
 
-        initDomainAlertSettings();
-        await loadDomainLinks();
-      }
+        function handleDynamicInput(field) {
+            const rawVal = document.getElementById(`search-${field}`).value;
+            const trimmed = rawVal.trim();
+            const q = trimmed.toLowerCase();
 
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        handleSession(session);
-      });
+            if (field === 'state') {
+                const countryStates = getStatesForSelectedCountry();
+                const exactState = countryStates.find(s => s.displayName.toLowerCase() === q);
+                if (exactState) {
+                    document.getElementById('f-state').value = exactState.abbreviation;
+                    document.getElementById('preview-state').textContent = `URL code: ${exactState.abbreviation}`;
+                } else {
+                    document.getElementById('f-state').value = '';
+                    document.getElementById('preview-state').textContent = 'URL code: —';
+                }
+                const matches = countryStates.filter(
+                    s => s.displayName.toLowerCase().includes(q) || s.abbreviation.toLowerCase().includes(q)
+                );
+                renderStateList(matches);
+                document.getElementById('list-state').classList.remove('hidden');
+                renderAllOutputs();
+                return;
+            }
 
-      supabase.auth.onAuthStateChange((_event, session) => {
-        handleSession(session);
-      });
+            const exactMatch = (TAXONOMY[field] || []).find(
+                item => item.display_name.trim().toLowerCase() === q
+            );
+
+            if (exactMatch) {
+                const abbr = String(exactMatch.abbreviation || '').toLowerCase();
+                document.getElementById(`f-${field}`).value = abbr;
+                document.getElementById(`preview-${field}`).textContent = `URL code: ${abbr}`;
+            } else if (trimmed && DYNAMIC_ADD_FIELDS.has(field)) {
+                const liveCode = abbreviate4PlusDigits(trimmed).toLowerCase();
+                document.getElementById(`f-${field}`).value = '';
+                document.getElementById(`preview-${field}`).textContent = `URL code: ${liveCode} (unsaved)`;
+            } else {
+                document.getElementById(`f-${field}`).value = '';
+                document.getElementById(`preview-${field}`).textContent = 'URL code: —';
+            }
+
+            const matches = (TAXONOMY[field] || []).filter(item =>
+                item.display_name.toLowerCase().includes(q) || String(item.abbreviation || '').toLowerCase().includes(q)
+            );
+            renderComboList(field, matches, trimmed);
+            document.getElementById(`list-${field}`).classList.remove('hidden');
+            renderAllOutputs();
+        }
+
+        async function handleSignIn(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const errEl = document.getElementById('loginError');
+            const btn = document.getElementById('loginSubmitBtn');
+
+            errEl.textContent = '';
+            btn.disabled = true;
+            btn.textContent = 'Signing in...';
+
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+            btn.disabled = false;
+            btn.textContent = 'Sign in';
+
+            if (error) {
+                errEl.textContent = error.message;
+                return;
+            }
+            await onAuthenticated(data.user);
+        }
+
+        async function handleSignOut() {
+            await supabaseClient.auth.signOut();
+            activeUser = null;
+            activeDomain = '';
+            historyRecords = [];
+            document.getElementById('appShell').classList.add('hidden');
+            document.getElementById('authGate').classList.remove('hidden');
+        }
+
+        async function onAuthenticated(user) {
+            if (!user || !user.email) return;
+            activeUser = user;
+            activeDomain = user.email.toLowerCase().split('@')[1] || '';
+
+            document.getElementById('headerUserEmail').textContent = user.email;
+            document.getElementById('sidebarDomain').textContent = activeDomain;
+            document.getElementById('builderDomainInline').textContent = activeDomain;
+            document.getElementById('authGate').classList.add('hidden');
+            document.getElementById('appShell').classList.remove('hidden');
+
+            updateWorkspacePreview();
+            renderCreativeAssetsTable();
+            await loadTaxonomyFromSupabase();
+            await loadDomainHistory();
+        }
+
+        async function loadTaxonomyFromSupabase() {
+            const statusEl = document.getElementById('vocabLoadStatus');
+            statusEl.textContent = 'Loading controlled_vocab...';
+
+            const { data, error } = await supabaseClient
+                .from('controlled_vocab')
+                .select('category, display_name, abbreviation, is_locked_dropdown, created_by_domain')
+                .order('display_name', { ascending: true });
+
+            if (error) {
+                statusEl.textContent = `Error: ${error.message}`;
+                return;
+            }
+
+            Object.keys(TAXONOMY).forEach(k => { TAXONOMY[k] = []; });
+
+            for (const row of (data || [])) {
+                if (!TAXONOMY[row.category]) continue;
+                if (DOMAIN_SCOPED_FIELDS.has(row.category)) {
+                    if ((row.created_by_domain || '').toLowerCase() === activeDomain) {
+                        TAXONOMY[row.category].push(row);
+                    }
+                } else {
+                    TAXONOMY[row.category].push(row);
+                }
+            }
+
+            LOCKED_PREPOPULATED_FIELDS.forEach(field => {
+                const first = TAXONOMY[field][0];
+                if (first) {
+                    selectComboItem(field, first.display_name, String(first.abbreviation || '').toLowerCase(), false);
+                }
+            });
+
+            syncStateFieldForCountry();
+            statusEl.textContent = `Loaded ${(data || []).length} vocab rows • Domain: ${activeDomain}`;
+            renderAllOutputs();
+        }
+
+        function syncStateFieldForCountry() {
+            const countryCode = (document.getElementById('f-region')?.value || '').trim().toLowerCase();
+            const searchStateEl = document.getElementById('search-state');
+            const fStateEl = document.getElementById('f-state');
+            const previewStateEl = document.getElementById('preview-state');
+
+            if (!countryCode) {
+                searchStateEl.value = '';
+                searchStateEl.placeholder = 'Select country first...';
+                fStateEl.value = '';
+                previewStateEl.textContent = 'URL code: —';
+                return;
+            }
+
+            const countryStates = getStatesForSelectedCountry();
+            if (countryStates.length) {
+                searchStateEl.placeholder = 'Select state / province...';
+                selectStateItem(countryStates[0].displayName, countryStates[0].abbreviation, false);
+            } else {
+                searchStateEl.value = 'Not Applicable';
+                searchStateEl.placeholder = 'No states/provinces for country';
+                fStateEl.value = 'na';
+                previewStateEl.textContent = 'URL code: na';
+            }
+        }
+
+        function openCombo(field) {
+            document.querySelectorAll('.combo-list').forEach(el => el.classList.add('hidden'));
+            if (field === 'state') {
+                const q = (document.getElementById('search-state').value || '').trim().toLowerCase();
+                const countryStates = getStatesForSelectedCountry();
+                const filtered = q && q !== 'not applicable'
+                    ? countryStates.filter(s => s.displayName.toLowerCase().includes(q) || s.abbreviation.includes(q))
+                    : countryStates;
+                renderStateList(filtered);
+                document.getElementById('list-state').classList.remove('hidden');
+                return;
+            }
+            const rawVal = document.getElementById(`search-${field}`).value;
+            renderComboList(field, TAXONOMY[field] || [], rawVal.trim());
+            document.getElementById(`list-${field}`).classList.remove('hidden');
+        }
+
+        function filterCombo(field) {
+            handleDynamicInput(field);
+        }
+
+        function renderStateList(states) {
+            const listEl = document.getElementById('list-state');
+            const countryCode = (document.getElementById('f-region')?.value || '').trim().toLowerCase();
+
+            if (!countryCode) {
+                listEl.innerHTML = `<div class="px-3 py-2 text-xs ap-text-muted">Select a Country first.</div>`;
+                return;
+            }
+            if (!states.length) {
+                listEl.innerHTML = `
+                    <button type="button" onclick="selectStateItem('Not Applicable', 'na', true)"
+                        class="w-full px-3 py-2 text-left text-xs ap-hover flex items-center justify-between cursor-pointer">
+                        <span class="ap-text-secondary">Not Applicable</span>
+                        <span class="ap-code font-mono ml-2">na</span>
+                    </button>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = states.map(s => `
+                <button type="button"
+                    onclick="selectStateItem('${s.displayName.replace(/'/g, "\\'")}', '${s.abbreviation.replace(/'/g, "\\'")}', true)"
+                    class="w-full px-3 py-2 text-left text-xs ap-hover flex items-center justify-between cursor-pointer">
+                    <span class="ap-text-secondary truncate">${escapeHtml(s.displayName)}</span>
+                    <span class="ap-code font-mono ml-2">${escapeHtml(s.abbreviation)}</span>
+                </button>
+            `).join('');
+        }
+
+        function selectStateItem(displayName, abbreviation, shouldRender = true) {
+            const code = String(abbreviation || '').toLowerCase();
+            document.getElementById('search-state').value = displayName;
+            document.getElementById('f-state').value = code;
+            document.getElementById('preview-state').textContent = `URL code: ${code}`;
+            document.getElementById('list-state').classList.add('hidden');
+            if (shouldRender) renderAllOutputs();
+        }
+
+        function renderComboList(field, items, rawQuery) {
+            const listEl = document.getElementById(`list-${field}`);
+            let html = items.map(item => {
+                const abbr = String(item.abbreviation || '').toLowerCase();
+                return `
+                    <button type="button"
+                        onclick="selectComboItem('${field}', '${item.display_name.replace(/'/g, "\\'")}', '${abbr.replace(/'/g, "\\'")}', true)"
+                        class="w-full px-3 py-2 text-left text-xs ap-hover flex items-center justify-between cursor-pointer">
+                        <span class="ap-text-secondary truncate">${escapeHtml(item.display_name)}</span>
+                        <span class="ap-code font-mono ml-2">${escapeHtml(abbr)}</span>
+                    </button>
+                `;
+            }).join('');
+
+            if (!items.length && !rawQuery) {
+                const scopeMsg = DOMAIN_SCOPED_FIELDS.has(field)
+                    ? `Empty for ${escapeHtml(activeDomain)} — type a value to add.`
+                    : 'No matching options.';
+                html += `<div class="px-3 py-2 text-xs ap-text-muted">${scopeMsg}</div>`;
+            }
+
+            if (DYNAMIC_ADD_FIELDS.has(field) && rawQuery) {
+                const exists = (TAXONOMY[field] || []).some(
+                    i => i.display_name.trim().toLowerCase() === rawQuery.toLowerCase()
+                );
+                if (!exists) {
+                    const abbr = abbreviate4PlusDigits(rawQuery).toLowerCase();
+                    const domainParam = DOMAIN_SCOPED_FIELDS.has(field) ? activeDomain : '';
+                    html += `
+                        <button type="button"
+                            onclick="saveDynamicVocab('${field}', '${rawQuery.replace(/'/g, "\\'")}', '${abbr}', '${domainParam}')"
+                            class="w-full px-3 py-2 text-left text-xs ap-pill ap-hover border-t cursor-pointer" style="border-color: var(--border-strong);">
+                            + Save "${escapeHtml(rawQuery)}" → code: <span class="font-mono">${escapeHtml(abbr)}</span>
+                        </button>
+                    `;
+                }
+            }
+
+            listEl.innerHTML = html;
+        }
+
+        async function saveDynamicVocab(field, displayName, abbreviation, createdByDomain) {
+            const { data, error } = await supabaseClient
+                .from('controlled_vocab')
+                .insert({
+                    category: field,
+                    display_name: displayName,
+                    abbreviation: abbreviation.toLowerCase(),
+                    is_locked_dropdown: false,
+                    created_by_domain: createdByDomain || null
+                })
+                .select()
+                .single();
+
+            if (error) {
+                alert(`Could not save ${field}: ${error.message}`);
+                return;
+            }
+
+            TAXONOMY[field].unshift(data);
+            selectComboItem(field, data.display_name, String(data.abbreviation || '').toLowerCase(), true);
+        }
+
+        function selectComboItem(field, displayName, abbreviation, shouldRender = true) {
+            const code = String(abbreviation || '').toLowerCase();
+            document.getElementById(`search-${field}`).value = displayName;
+            document.getElementById(`f-${field}`).value = code;
+            document.getElementById(`preview-${field}`).textContent = `URL code: ${code}`;
+            document.getElementById(`list-${field}`).classList.add('hidden');
+            if (field === 'region') {
+                syncStateFieldForCountry();
+            }
+            if (shouldRender) renderAllOutputs();
+        }
+
+        function toggleDynamicCreative() {
+            const isDco = document.getElementById('f-dynamic-creative').checked;
+            document.getElementById('dcoBanner').classList.toggle('hidden', !isDco);
+            document.getElementById('assetUploadControls').classList.toggle('hidden', isDco);
+            renderAllOutputs();
+        }
+
+        async function handleAssetFilesUpload(event) {
+            const files = Array.from(event.target.files || []);
+            if (!files.length) return;
+
+            const statusEl = document.getElementById('assetUploadStatus');
+            statusEl.textContent = 'Processing uploaded files...';
+            let addedCount = 0;
+
+            for (const file of files) {
+                if (file.name.toLowerCase().endsWith('.zip')) {
+                    try {
+                        const zip = await JSZip.loadAsync(file);
+                        const entries = Object.values(zip.files);
+                        for (const entry of entries) {
+                            if (entry.dir) continue;
+                            const cleanPath = entry.name;
+                            const baseName = cleanPath.split('/').pop() || '';
+                            if (!baseName || baseName.startsWith('.') || cleanPath.includes('__MACOSX')) continue;
+
+                            const stem = stripExtension(baseName).toLowerCase();
+                            uploadedCreativeAssets.push({
+                                id: `asset-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                                fileName: baseName.toLowerCase(),
+                                creativeName: stem,
+                                sourceArchive: file.name.toLowerCase(),
+                                selected: true
+                            });
+                            addedCount++;
+                        }
+                    } catch (err) {
+                        alert(`Could not unzip ${file.name}: ${err.message}`);
+                    }
+                } else {
+                    const stem = stripExtension(file.name).toLowerCase();
+                    uploadedCreativeAssets.push({
+                        id: `asset-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                        fileName: file.name.toLowerCase(),
+                        creativeName: stem,
+                        sourceArchive: 'direct file',
+                        selected: true
+                    });
+                    addedCount++;
+                }
+            }
+
+            event.target.value = '';
+            statusEl.textContent = `Added ${addedCount} asset(s). Check or uncheck assets below to generate URLs.`;
+            renderCreativeAssetsTable();
+            renderAllOutputs();
+        }
+
+        function addManualCreativeAsset() {
+            const input = document.getElementById('manualCreativeInput');
+            const name = input.value.trim().toLowerCase();
+            if (!name) return;
+
+            uploadedCreativeAssets.push({
+                id: `asset-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                fileName: name,
+                creativeName: stripExtension(name),
+                sourceArchive: 'manual entry',
+                selected: true
+            });
+            input.value = '';
+            renderCreativeAssetsTable();
+            renderAllOutputs();
+        }
+
+        function toggleAssetSelection(id, isChecked) {
+            const item = uploadedCreativeAssets.find(a => a.id === id);
+            if (item) {
+                item.selected = isChecked;
+                renderAllOutputs();
+            }
+        }
+
+        function setAllAssetsSelected(flag) {
+            uploadedCreativeAssets.forEach(a => { a.selected = flag; });
+            renderCreativeAssetsTable();
+            renderAllOutputs();
+        }
+
+        function removeCreativeAsset(id) {
+            uploadedCreativeAssets = uploadedCreativeAssets.filter(a => a.id !== id);
+            renderCreativeAssetsTable();
+            renderAllOutputs();
+        }
+
+        function renderCreativeAssetsTable() {
+            const container = document.getElementById('creativeAssetsTable');
+            if (!uploadedCreativeAssets.length) {
+                container.innerHTML = `<div class="p-4 text-xs ap-text-muted text-center">No creative assets loaded. Upload individual files, a .zip archive, or enter an asset name above.</div>`;
+                return;
+            }
+
+            container.innerHTML = uploadedCreativeAssets.map(asset => {
+                const ck = (abbreviate4PlusDigits(asset.creativeName) || 'crtv').toLowerCase();
+                return `
+                    <div class="flex items-center justify-between gap-3 px-4 py-2.5 ap-hover">
+                        <label class="flex items-center gap-3 min-w-0 flex-1 cursor-pointer">
+                            <input type="checkbox" ${asset.selected ? 'checked' : ''}
+                                onchange="toggleAssetSelection('${asset.id}', this.checked)"
+                                class="w-4 h-4 accent-emerald-500 rounded cursor-pointer">
+                            <div class="min-w-0">
+                                <p class="text-xs font-medium ap-text-secondary truncate">${escapeHtml(asset.fileName)}</p>
+                                <p class="text-[11px] ap-text-muted">Origin: ${escapeHtml(asset.sourceArchive)}</p>
+                            </div>
+                        </label>
+                        <span class="text-[11px] font-mono ap-pill px-2 py-0.5 rounded shrink-0">ck=${escapeHtml(ck)}</span>
+                        <button type="button" onclick="removeCreativeAsset('${asset.id}')"
+                            class="text-xs ap-text-muted hover:text-rose-400 px-1.5 cursor-pointer" title="Remove asset">✕</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function buildGeneratedRecords() {
+            const workspace = (document.getElementById('f-workspace').value || '').trim();
+            const workspaceCode = workspace ? abbreviate4PlusDigits(workspace).toLowerCase() : '';
+            const rawDest = (document.getElementById('f-dest').value || '').trim().toLowerCase() || 'https://example.com/landing';
+            const normalizedDest = (/^https?:\/\//i.test(rawDest) ? rawDest : `https://${rawDest}`).toLowerCase();
+
+            const brand = getFieldCode('brand');
+            const src = getFieldCode('source');
+            const product = getFieldCode('product');
+            const subproduct = getFieldCode('subproduct');
+            const placement = getFieldCode('placement');
+            const obj = getFieldCode('objective');
+            const journey = getFieldCode('journey');
+            const funnel = getFieldCode('funnel');
+            const tactic = getFieldCode('tactic');
+            const medium = getFieldCode('medium');
+            const region = getFieldCode('region');
+            const state = getFieldCode('state');
+            const lang = getFieldCode('lang');
+            const isDco = document.getElementById('f-dynamic-creative').checked;
+
+            const hashSource = `${activeDomain}|${brand}|${workspaceCode}|${src}|${medium}|${product}|${subproduct}|${placement}|${funnel}|${obj}|${tactic}|${journey}|${region}|${state}|${lang}`;
+            let hash = 0;
+            for (let i = 0; i < hashSource.length; i++) {
+                hash = ((hash << 5) - hash) + hashSource.charCodeAt(i);
+                hash |= 0;
+            }
+            const baseHash = Math.abs(hash).toString(36).toLowerCase();
+            const k = `${brand ? `${brand}-` : ''}${baseHash}`;
+
+            const campaignSlug = [brand, funnel, obj, tactic, journey, product, subproduct, placement, region, state, lang]
+                .filter(Boolean)
+                .join('-')
+                .toLowerCase();
+
+            let targets = [];
+            if (isDco) {
+                targets = [{ creativeName: 'dynamic creative (dco)', ck: 'dco', isDynamic: true, isPreviewOnly: false }];
+            } else {
+                const selected = uploadedCreativeAssets.filter(a => a.selected);
+                if (selected.length) {
+                    targets = selected.map((a, idx) => ({
+                        creativeName: (a.creativeName || `asset_${idx + 1}`).toLowerCase(),
+                        ck: (abbreviate4PlusDigits(a.creativeName) || `crtv${idx + 1}`).toLowerCase(),
+                        isDynamic: false,
+                        isPreviewOnly: false
+                    }));
+                } else {
+                    targets = [{ creativeName: 'campaign preview (select asset or dynamic creative)', ck: 'prvw', isDynamic: false, isPreviewOnly: true }];
+                }
+            }
+
+            return targets.map(target => {
+                let exampleUtmUrl = normalizedDest;
+                let finalKeyedUrl = normalizedDest;
+
+                try {
+                    const utmObj = new URL(normalizedDest);
+                    if (src) utmObj.searchParams.set('utm_source', src);
+                    if (medium) utmObj.searchParams.set('utm_medium', medium);
+                    if (campaignSlug) utmObj.searchParams.set('utm_campaign', campaignSlug);
+                    if (workspaceCode) utmObj.searchParams.set('utm_content', workspaceCode);
+                    if (!target.isDynamic) {
+                        utmObj.searchParams.set('utm_term', target.ck);
+                    }
+                    exampleUtmUrl = utmObj.toString().toLowerCase();
+
+                    const keyObj = new URL(normalizedDest);
+                    keyObj.searchParams.set('k', k);
+                    if (!target.isDynamic) {
+                        keyObj.searchParams.set('ck', target.ck);
+                    }
+                    finalKeyedUrl = keyObj.toString().toLowerCase();
+                } catch {
+                    const sep = normalizedDest.includes('?') ? '&' : '?';
+                    finalKeyedUrl = (target.isDynamic
+                        ? `${normalizedDest}${sep}k=${k}`
+                        : `${normalizedDest}${sep}k=${k}&ck=${target.ck}`).toLowerCase();
+                }
+
+                return {
+                    owner_domain: activeDomain,
+                    created_by_email: activeUser ? activeUser.email.toLowerCase() : '',
+                    campaign_workspace: workspace,
+                    url_key: k,
+                    creative_key: target.ck,
+                    destination_url: normalizedDest,
+                    final_shortened_url: finalKeyedUrl,
+                    full_utm_url: exampleUtmUrl,
+                    brand,
+                    source: src,
+                    product,
+                    subproduct,
+                    placement,
+                    funnel,
+                    objective: obj,
+                    tactic,
+                    journey,
+                    medium,
+                    region,
+                    state_province: state,
+                    language: lang,
+                    creative_name: target.creativeName,
+                    is_dynamic_creative: target.isDynamic,
+                    _isPreviewOnly: target.isPreviewOnly
+                };
+            });
+        }
+
+        function renderAllOutputs() {
+            const records = buildGeneratedRecords();
+            document.getElementById('exampleCountBadge').textContent = `${records.length} URL${records.length === 1 ? '' : 's'}`;
+
+            const exampleEl = document.getElementById('exampleUrlsList');
+            const finalEl = document.getElementById('finalUrlsList');
+
+            exampleEl.innerHTML = records.map(r => `
+                <div class="p-3 rounded-lg ap-subtle border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div class="min-w-0 space-y-1">
+                        <span class="text-[11px] font-medium ${r._isPreviewOnly ? 'ap-warn' : 'ap-text-secondary'}">${escapeHtml(r.creative_name)}</span>
+                        <p class="font-mono text-xs ap-url break-all">${escapeHtml(r.full_utm_url)}</p>
+                    </div>
+                    <button type="button" onclick="copyText('${r.full_utm_url.replace(/'/g, "\\'")}', this)"
+                        class="shrink-0 px-3 py-1.5 rounded ap-surface ap-hover border ap-text-secondary text-xs cursor-pointer" style="border-color: var(--border-strong);">
+                        Copy UTM
+                    </button>
+                </div>
+            `).join('');
+
+            finalEl.innerHTML = records.map(r => `
+                <div class="p-3 rounded-lg ap-subtle border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div class="min-w-0 space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[11px] font-medium ${r._isPreviewOnly ? 'ap-warn' : 'ap-text-secondary'}">${escapeHtml(r.creative_name)}</span>
+                            <span class="text-[11px] font-mono ap-pill px-1.5 py-0.5 rounded">
+                                ${r.is_dynamic_creative ? `k=${escapeHtml(r.url_key)} (dco)` : `k=${escapeHtml(r.url_key)} &amp; ck=${escapeHtml(r.creative_key)}`}
+                            </span>
+                        </div>
+                        <p class="font-mono text-xs ap-code break-all">${escapeHtml(r.final_shortened_url)}</p>
+                    </div>
+                    <button type="button" onclick="copyText('${r.final_shortened_url.replace(/'/g, "\\'")}', this)"
+                        class="shrink-0 px-3 py-1.5 rounded ap-surface ap-hover border ap-text-secondary text-xs cursor-pointer" style="border-color: var(--border-strong);">
+                        Copy Final URL
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        async function copyText(text, btnEl) {
+            try {
+                await navigator.clipboard.writeText(text);
+                const prev = btnEl.textContent;
+                btnEl.textContent = 'Copied!';
+                setTimeout(() => { btnEl.textContent = prev; }, 1200);
+            } catch {
+                alert('Copy failed — please copy manually.');
+            }
+        }
+
+        function validateMandatoryInputs() {
+            const workspaceVal = (document.getElementById('f-workspace').value || '').trim();
+            if (!workspaceVal) return 'Campaign Workspace / Label is required.';
+
+            const destVal = (document.getElementById('f-dest').value || '').trim();
+            if (!destVal) return 'Destination URL is required.';
+
+            const requiredFields = [
+                { key: 'brand', label: 'Brand' },
+                { key: 'source', label: 'Source' },
+                { key: 'product', label: 'Product' },
+                { key: 'subproduct', label: 'Sub-Product' },
+                { key: 'placement', label: 'Placement' },
+                { key: 'objective', label: 'Objective' },
+                { key: 'journey', label: 'Journey' },
+                { key: 'funnel', label: 'Funnel' },
+                { key: 'tactic', label: 'Tactic' },
+                { key: 'medium', label: 'Medium' },
+                { key: 'region', label: 'Country' },
+                { key: 'state', label: 'State / Province' },
+                { key: 'lang', label: 'Language' }
+            ];
+
+            for (const rf of requiredFields) {
+                if (!getFieldCode(rf.key)) {
+                    return `${rf.label} is mandatory.`;
+                }
+            }
+
+            const isDco = document.getElementById('f-dynamic-creative').checked;
+            const selectedAssets = uploadedCreativeAssets.filter(a => a.selected);
+            if (!isDco && !selectedAssets.length) {
+                return 'Either check Dynamic Creative or select at least one creative asset.';
+            }
+
+            return '';
+        }
+
+        async function commitHistoryAndExportCsv() {
+            const statusEl = document.getElementById('commitStatusMessage');
+            const btn = document.getElementById('commitAndCsvBtn');
+
+            if (!activeUser || !activeDomain) {
+                statusEl.textContent = 'You must be signed in to commit URLs.';
+                statusEl.className = 'text-xs ap-danger';
+                return;
+            }
+
+            const validationError = validateMandatoryInputs();
+            if (validationError) {
+                statusEl.textContent = validationError;
+                statusEl.className = 'text-xs ap-danger';
+                return;
+            }
+
+            const records = buildGeneratedRecords().map(({ _isPreviewOnly, ...dbRow }) => dbRow);
+
+            btn.disabled = true;
+            statusEl.textContent = `Committing ${records.length} URL(s) to domain history (${activeDomain})...`;
+            statusEl.className = 'text-xs ap-text-muted';
+
+            const { error } = await supabaseClient
+                .from('campaign_links')
+                .upsert(records, { onConflict: 'owner_domain,url_key,creative_key' });
+
+            btn.disabled = false;
+
+            if (error) {
+                statusEl.textContent = `Database commit failed: ${error.message}`;
+                statusEl.className = 'text-xs ap-danger';
+                return;
+            }
+
+            downloadCampaignCsv(records, `adpulse-${activeDomain}-${records[0].url_key}.csv`);
+            statusEl.textContent = `Committed ${records.length} URL(s) to ${activeDomain} history and downloaded CSV.`;
+            statusEl.className = 'text-xs ap-code';
+            await loadDomainHistory();
+        }
+
+        function downloadCampaignCsv(records, filename) {
+            if (!records || !records.length) return;
+            const csvRows = records.map(r => ({
+                owner_domain: r.owner_domain,
+                created_by: r.created_by_email,
+                workspace: r.campaign_workspace,
+                destination_url: r.destination_url,
+                brand: r.brand,
+                source: r.source,
+                medium: r.medium,
+                product: r.product,
+                subproduct: r.subproduct,
+                placement: r.placement,
+                funnel: r.funnel,
+                objective: r.objective,
+                tactic: r.tactic,
+                journey: r.journey,
+                region: r.region,
+                state_province: r.state_province,
+                language: r.language,
+                creative_name: r.creative_name,
+                dynamic_creative: r.is_dynamic_creative,
+                campaign_key_k: r.url_key,
+                creative_key_ck: r.is_dynamic_creative ? '' : r.creative_key,
+                example_utm_url: r.full_utm_url,
+                final_keyed_url: r.final_shortened_url,
+                link_health_status: r.link_health_status || 'pending',
+                http_status: r.http_status || '',
+                final_resolved_url: r.final_resolved_url || '',
+                last_checked_at: r.last_checked_at || ''
+            }));
+
+            const headers = Object.keys(csvRows[0]);
+            const escapeCsv = (val) => `"${String(val ?? '').replace(/"/g, '""')}"`;
+            const csvString = [
+                headers.join(','),
+                ...csvRows.map(row => headers.map(h => escapeCsv(row[h])).join(','))
+            ].join('\n');
+
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename || `adpulse-${activeDomain}-export.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function filterRecordsByControls(searchInputId, healthFilterId) {
+            const q = (document.getElementById(searchInputId)?.value || '').trim().toLowerCase();
+            const healthFilter = document.getElementById(healthFilterId)?.value || 'all';
+
+            return historyRecords.filter(r => {
+                const statusVal = r.link_health_status || 'pending';
+                if (healthFilter !== 'all') {
+                    if (healthFilter === 'broken') {
+                        if (!['broken', 'timeout', 'unreachable'].includes(statusVal)) return false;
+                    } else if (statusVal !== healthFilter) {
+                        return false;
+                    }
+                }
+                if (!q) return true;
+                return (
+                    String(r.brand || '').toLowerCase().includes(q) ||
+                    String(r.created_by_email || '').toLowerCase().includes(q) ||
+                    String(r.final_shortened_url || '').toLowerCase().includes(q) ||
+                    String(r.final_resolved_url || '').toLowerCase().includes(q) ||
+                    String(r.creative_name || '').toLowerCase().includes(q) ||
+                    String(r.url_key || '').toLowerCase().includes(q) ||
+                    String(r.creative_key || '').toLowerCase().includes(q)
+                );
+            });
+        }
+
+        function exportFilteredHistoryCsv() {
+            const filtered = filterRecordsByControls('historySearchInput', 'historyHealthFilter');
+            if (!filtered.length) {
+                alert('No rows match the current filter to export.');
+                return;
+            }
+            downloadCampaignCsv(filtered, `adpulse-${activeDomain}-campaign-history.csv`);
+        }
+
+        async function loadDomainHistory() {
+            const domainText = activeDomain || '—';
+            document.getElementById('historyDomainLabel').textContent = domainText;
+            document.getElementById('linkrotDomainLabel').textContent = domainText;
+
+            const historyBody = document.getElementById('historyTableBody');
+            const linkrotBody = document.getElementById('linkrotTableBody');
+            const loadingRow = `<tr><td colspan="6" class="py-6 text-center ap-text-muted">Loading domain URLs...</td></tr>`;
+
+            historyBody.innerHTML = loadingRow;
+            linkrotBody.innerHTML = loadingRow;
+
+            // Fetch all committed domain URLs using paginated range requests so Campaign History shows every URL
+            const pageSize = 1000;
+            let allRows = [];
+            let from = 0;
+
+            while (true) {
+                const { data, error } = await supabaseClient
+                    .from('campaign_links')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .range(from, from + pageSize - 1);
+
+                if (error) {
+                    const errRow = `<tr><td colspan="6" class="py-6 text-center ap-danger">${escapeHtml(error.message)}</td></tr>`;
+                    historyBody.innerHTML = errRow;
+                    linkrotBody.innerHTML = errRow;
+                    return;
+                }
+
+                const batch = data || [];
+                allRows = allRows.concat(batch);
+                if (batch.length < pageSize) break;
+                from += pageSize;
+            }
+
+            historyRecords = allRows;
+            updateLinkRotSummaryStats();
+            renderHistoryRows();
+            renderLinkRotRows();
+        }
+
+        function updateLinkRotSummaryStats() {
+            const total = historyRecords.length;
+            const healthy = historyRecords.filter(r => r.link_health_status === 'healthy').length;
+            const stripped = historyRecords.filter(r => r.link_health_status === 'param_stripped').length;
+            const broken = historyRecords.filter(r => ['broken', 'timeout', 'unreachable'].includes(r.link_health_status)).length;
+            const pending = historyRecords.filter(r => !r.link_health_status || r.link_health_status === 'pending').length;
+
+            document.getElementById('stat-total').textContent = total;
+            document.getElementById('stat-healthy').textContent = healthy;
+            document.getElementById('stat-stripped').textContent = stripped;
+            document.getElementById('stat-broken').textContent = broken;
+            document.getElementById('stat-pending').textContent = pending;
+        }
+
+        function getStatusBadgeStyle(statusVal) {
+            if (statusVal === 'healthy') {
+                return 'color: var(--code-fg); background-color: var(--accent-soft);';
+            }
+            if (statusVal === 'param_stripped') {
+                return 'color: var(--warn-fg); background-color: var(--warn-soft);';
+            }
+            if (['broken', 'timeout', 'unreachable'].includes(statusVal)) {
+                return 'color: var(--danger-fg); background-color: var(--danger-soft);';
+            }
+            return 'color: var(--text-muted); background-color: var(--bg-subtle);';
+        }
+
+        function buildTableRowsHtml(records) {
+            return records.map(row => {
+                const statusVal = row.link_health_status || 'pending';
+                const badgeStyle = getStatusBadgeStyle(statusVal);
+
+                const keyDisplay = row.is_dynamic_creative
+                    ? `?k=${escapeHtml(row.url_key)}`
+                    : `?k=${escapeHtml(row.url_key)}&amp;ck=${escapeHtml(row.creative_key)}`;
+
+                const modeBadge = row.is_dynamic_creative
+                    ? `<span class="px-1.5 py-0.5 rounded font-mono" style="color: var(--purple-fg); background-color: var(--purple-soft);">Dynamic Creative</span>`
+                    : `<span class="ap-text-secondary">${escapeHtml(row.creative_name || '—')}</span>`;
+
+                const hopsText = typeof row.redirect_count === 'number' && row.redirect_count > 0
+                    ? ` • ${row.redirect_count} hop${row.redirect_count === 1 ? '' : 's'}`
+                    : '';
+
+                const resolvedLine = row.final_resolved_url && row.final_resolved_url !== row.final_shortened_url
+                    ? `<p class="font-mono text-[11px] ap-text-muted truncate max-w-md" title="${escapeHtml(row.final_resolved_url)}">→ ${escapeHtml(row.final_resolved_url)}</p>`
+                    : '';
+
+                const errorLine = row.last_error_message
+                    ? `<p class="text-[11px] ap-danger mt-1">${escapeHtml(row.last_error_message)}</p>`
+                    : '';
+
+                return `
+                    <tr class="ap-hover">
+                        <td class="py-3 px-3">
+                            <div class="font-mono ap-code">${keyDisplay}</div>
+                            <div class="text-[11px] ap-text-muted mt-0.5">Brand: <span class="font-mono ap-text-secondary">${escapeHtml(row.brand || '—')}</span></div>
+                        </td>
+                        <td class="py-3 px-3">
+                            <div>${modeBadge}</div>
+                            <div class="text-[11px] ap-text-muted mt-0.5">${escapeHtml(row.created_by_email || '')}</div>
+                        </td>
+                        <td class="py-3 px-3">
+                            <p class="font-mono ap-text-secondary truncate max-w-md" title="${escapeHtml(row.final_shortened_url)}">${escapeHtml(row.final_shortened_url)}</p>
+                            ${resolvedLine}
+                        </td>
+                        <td class="py-3 px-3">
+                            <span class="px-2 py-0.5 rounded font-mono" style="${badgeStyle}">${escapeHtml(statusVal)}${row.http_status ? ` (${row.http_status})` : ''}${escapeHtml(hopsText)}</span>
+                            ${errorLine}
+                        </td>
+                        <td class="py-3 px-3 ap-text-muted">${row.last_checked_at ? escapeHtml(new Date(row.last_checked_at).toLocaleString()) : 'Never'}</td>
+                        <td class="py-3 px-3 text-right">
+                            <button type="button" onclick="runLinkRotCheck('${row.id}', this)"
+                                class="px-2.5 py-1 rounded ap-subtle ap-hover ap-text-secondary border cursor-pointer" style="border-color: var(--border-strong);">
+                                Check link
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderHistoryRows() {
+            const tbody = document.getElementById('historyTableBody');
+            const filtered = filterRecordsByControls('historySearchInput', 'historyHealthFilter');
+
+            if (!filtered.length) {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center ap-text-muted">No links match the current filter for ${escapeHtml(activeDomain || 'your domain')}.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = buildTableRowsHtml(filtered);
+        }
+
+        function renderLinkRotRows() {
+            const tbody = document.getElementById('linkrotTableBody');
+            const filtered = filterRecordsByControls('linkrotSearchInput', 'linkrotHealthFilter');
+
+            if (!filtered.length) {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center ap-text-muted">No links match the current filter for ${escapeHtml(activeDomain || 'your domain')}.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = buildTableRowsHtml(filtered);
+        }
+
+        async function invokeLinkRotSentinel(payload) {
+            const { data, error } = await supabaseClient.functions.invoke(LINKROT_FUNCTION_NAME, {
+                body: payload
+            });
+            if (error) {
+                throw new Error(error.message || 'Edge function invocation failed');
+            }
+            return data;
+        }
+
+        async function runLinkRotCheck(rowId, btnEl) {
+            const statusEl = document.getElementById('linkrotSweepStatus');
+            const prevLabel = btnEl ? btnEl.textContent : 'Check link';
+            if (btnEl) {
+                btnEl.disabled = true;
+                btnEl.textContent = 'Checking...';
+            }
+            if (statusEl) {
+                statusEl.textContent = 'Running server-side LinkRot check...';
+                statusEl.className = 'text-xs ap-text-muted';
+            }
+
+            try {
+                await invokeLinkRotSentinel({ link_id: rowId });
+                await loadDomainHistory();
+                if (statusEl) {
+                    statusEl.textContent = 'LinkRot check completed.';
+                    statusEl.className = 'text-xs ap-code';
+                }
+            } catch (err) {
+                if (statusEl) {
+                    statusEl.textContent = `LinkRot check error: ${err.message}`;
+                    statusEl.className = 'text-xs ap-danger';
+                } else {
+                    alert(`LinkRot check error: ${err.message}`);
+                }
+            } finally {
+                if (btnEl) {
+                    btnEl.disabled = false;
+                    btnEl.textContent = prevLabel;
+                }
+            }
+        }
+
+        async function runDomainLinkRotSweep() {
+            const statusEl = document.getElementById('linkrotSweepStatus');
+            const btn = document.getElementById('checkAllDomainBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Sweeping domain links...';
+            statusEl.textContent = `Running server-side LinkRot sweep for ${activeDomain}...`;
+            statusEl.className = 'text-xs ap-text-muted';
+
+            try {
+                const res = await invokeLinkRotSentinel({ check_all_domain: true });
+                await loadDomainHistory();
+                statusEl.textContent = `Sweep complete: checked ${res?.checked ?? 0} link(s) for ${activeDomain}.`;
+                statusEl.className = 'text-xs ap-code';
+            } catch (err) {
+                statusEl.textContent = `Domain sweep failed: ${err.message}`;
+                statusEl.className = 'text-xs ap-danger';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '⚡ Check All Domain Links';
+            }
+        }
+
+        function switchView(viewName) {
+            ['builder', 'history', 'linkrot'].forEach(v => {
+                document.getElementById(`view-${v}`).classList.toggle('hidden', v !== viewName);
+                const nav = document.getElementById(`nav-${v}`);
+                if (nav) {
+                    nav.className = v === viewName
+                        ? 'w-full flex items-center gap-3 px-3 py-2 rounded-lg ap-nav-active text-left cursor-pointer'
+                        : 'w-full flex items-center gap-3 px-3 py-2 rounded-lg ap-text-muted ap-hover text-left cursor-pointer';
+                }
+            });
+
+            const labels = {
+                builder: 'Campaign builder',
+                history: 'Campaign History',
+                linkrot: 'LinkRot Sentinel'
+            };
+            document.getElementById('breadcrumb-current').textContent = labels[viewName] || 'Campaign builder';
+
+            if (viewName === 'history' || viewName === 'linkrot') {
+                loadDomainHistory();
+            }
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.combo-wrapper')) {
+                document.querySelectorAll('.combo-list').forEach(el => el.classList.add('hidden'));
+            }
+        });
+
+        (async () => {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session?.user) {
+                await onAuthenticated(session.user);
+            }
+        })();
     </script>
-  </body>
+</body>
 </html>
