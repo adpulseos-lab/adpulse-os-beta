@@ -515,6 +515,49 @@
                         </div>
                     </div>
 
+                    <!-- Domain Alert Recipients Settings Card -->
+                    <section id="domainAlertSettingsCard" class="ap-surface border rounded-xl p-6 space-y-4 shadow-xl">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-4" style="border-color: var(--border-subtle);">
+                            <div>
+                                <div class="flex items-center gap-2.5">
+                                    <h2 class="text-base font-bold tracking-tight">Domain Alert Recipients</h2>
+                                    <span id="alertSettingsDomainBadge" class="px-2 py-0.5 rounded font-mono text-xs ap-pill">—</span>
+                                </div>
+                                <p class="text-xs ap-text-muted mt-1">
+                                    Recipients for hourly LinkRot digests on your email domain. Leave empty to notify domain link creators automatically.
+                                </p>
+                            </div>
+                            <label class="inline-flex items-center gap-2.5 cursor-pointer select-none ap-subtle border px-3.5 py-2 rounded-lg">
+                                <input id="alertDigestEnabled" type="checkbox" checked
+                                    class="w-4 h-4 accent-emerald-500 rounded cursor-pointer">
+                                <span class="text-xs font-semibold ap-text-secondary">Hourly digest enabled</span>
+                            </label>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row gap-2.5">
+                            <input id="alertRecipientInput" type="email" placeholder="Add alert email (press Enter or comma-separate)"
+                                onkeydown="if(event.key==='Enter'){event.preventDefault();addAlertRecipient();}"
+                                class="flex-1 ap-input border rounded-lg px-3 py-2 text-xs">
+                            <button type="button" onclick="addAlertRecipient()"
+                                class="px-4 py-2 rounded-lg ap-subtle ap-hover border ap-code text-xs font-semibold cursor-pointer" style="border-color: var(--border-strong);">
+                                + Add Recipient
+                            </button>
+                        </div>
+
+                        <div id="alertRecipientsChips" class="flex flex-wrap gap-2 min-h-[2rem] items-center"></div>
+
+                        <div class="pt-3 border-t flex flex-col sm:flex-row sm:items-center justify-between gap-3" style="border-color: var(--border-subtle);">
+                            <div class="space-y-0.5">
+                                <p id="alertSettingsStatus" class="text-xs ap-text-muted min-h-[1rem]"></p>
+                                <p id="alertLastDigestInfo" class="text-[11px] font-mono ap-text-muted">Last digest: —</p>
+                            </div>
+                            <button type="button" id="saveAlertSettingsBtn" onclick="saveDomainAlertSettings()"
+                                class="px-4 py-2 rounded-lg ap-accent-btn font-semibold text-xs cursor-pointer shrink-0">
+                                Save Alert Settings
+                            </button>
+                        </div>
+                    </section>
+
                     <!-- LinkRot KPI Summary Strip -->
                     <div id="linkrotSummaryStrip" class="grid grid-cols-2 sm:grid-cols-5 gap-3">
                         <div class="ap-surface border rounded-xl p-3.5">
@@ -568,7 +611,7 @@
     <script>
         const SUPABASE_URL = 'https://stouegbesuceggnegeie.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_QUglOE6uDThXZRZ48kEPhA_ifXTfUok';
-        const LINKROT_FUNCTION_NAME = 'linkrot-sentinel-index-ts';
+        const LINKROT_FUNCTION_NAME = 'linkrot-sentinel';
 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -576,6 +619,7 @@
         const DYNAMIC_ADD_FIELDS = new Set(['brand', 'source', 'product', 'subproduct', 'placement', 'objective', 'journey']);
         const LOCKED_PREPOPULATED_FIELDS = ['funnel', 'tactic', 'medium', 'region', 'lang'];
         const VOWELS = new Set(['a', 'e', 'i', 'o', 'u']);
+        const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
         let TAXONOMY = {
             brand: [],
@@ -597,6 +641,7 @@
         let activeUser = null;
         let activeDomain = '';
         let historyRecords = [];
+        let alertRecipients = [];
 
         function applyMode(mode) {
             const normalized = mode === 'light' ? 'light' : 'dark';
@@ -763,6 +808,7 @@
             activeUser = null;
             activeDomain = '';
             historyRecords = [];
+            alertRecipients = [];
             document.getElementById('appShell').classList.add('hidden');
             document.getElementById('authGate').classList.remove('hidden');
         }
@@ -775,13 +821,158 @@
             document.getElementById('headerUserEmail').textContent = user.email;
             document.getElementById('sidebarDomain').textContent = activeDomain;
             document.getElementById('builderDomainInline').textContent = activeDomain;
+            document.getElementById('alertSettingsDomainBadge').textContent = activeDomain || '—';
             document.getElementById('authGate').classList.add('hidden');
             document.getElementById('appShell').classList.remove('hidden');
 
             updateWorkspacePreview();
             renderCreativeAssetsTable();
+            await loadDomainAlertSettings();
             await loadTaxonomyFromSupabase();
             await loadDomainHistory();
+        }
+
+        // -------------------------------------------------------------------
+        // DOMAIN ALERT RECIPIENTS SETTINGS
+        // -------------------------------------------------------------------
+        function renderAlertRecipientChips() {
+            const container = document.getElementById('alertRecipientsChips');
+            if (!container) return;
+
+            if (!alertRecipients.length) {
+                container.innerHTML = `<span class="text-xs ap-text-muted italic">No custom recipients set — falling back to domain link creators.</span>`;
+                return;
+            }
+
+            container.innerHTML = alertRecipients.map(addr => `
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono ap-pill border" style="border-color: var(--accent);">
+                    <span>${escapeHtml(addr)}</span>
+                    <button type="button" onclick="removeAlertRecipient('${addr.replace(/'/g, "\\'")}')"
+                        aria-label="Remove ${escapeHtml(addr)}"
+                        class="ap-danger hover:opacity-80 font-bold leading-none cursor-pointer">&times;</button>
+                </span>
+            `).join('');
+        }
+
+        function addAlertRecipient() {
+            const input = document.getElementById('alertRecipientInput');
+            const statusEl = document.getElementById('alertSettingsStatus');
+            const raw = (input?.value || '').trim().toLowerCase();
+            if (!raw) return;
+
+            const candidates = raw.split(/[\s,;]+/).map(s => s.trim()).filter(Boolean);
+            for (const candidate of candidates) {
+                if (!EMAIL_REGEX.test(candidate)) {
+                    statusEl.textContent = `Invalid email address: ${candidate}`;
+                    statusEl.className = 'text-xs ap-danger min-h-[1rem]';
+                    return;
+                }
+                if (!alertRecipients.includes(candidate)) {
+                    alertRecipients.push(candidate);
+                }
+            }
+
+            input.value = '';
+            statusEl.textContent = '';
+            renderAlertRecipientChips();
+        }
+
+        function removeAlertRecipient(emailToRemove) {
+            alertRecipients = alertRecipients.filter(addr => addr !== emailToRemove);
+            renderAlertRecipientChips();
+        }
+
+        async function loadDomainAlertSettings() {
+            if (!activeDomain) return;
+            const statusEl = document.getElementById('alertSettingsStatus');
+            const lastInfoEl = document.getElementById('alertLastDigestInfo');
+            const enabledEl = document.getElementById('alertDigestEnabled');
+
+            const [{ data: settings, error: settingsErr }, { data: latestLog }] = await Promise.all([
+                supabaseClient
+                    .from('domain_alert_settings')
+                    .select('alert_emails, digest_enabled, updated_at')
+                    .eq('owner_domain', activeDomain)
+                    .maybeSingle(),
+                supabaseClient
+                    .from('linkrot_digest_logs')
+                    .select('sent_at, link_count, recipients')
+                    .eq('owner_domain', activeDomain)
+                    .order('sent_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle()
+            ]);
+
+            if (settingsErr) {
+                statusEl.textContent = `Could not load alert settings: ${settingsErr.message}`;
+                statusEl.className = 'text-xs ap-danger min-h-[1rem]';
+                alertRecipients = [];
+                renderAlertRecipientChips();
+                return;
+            }
+
+            if (settings) {
+                alertRecipients = Array.isArray(settings.alert_emails)
+                    ? settings.alert_emails.map(e => String(e).trim().toLowerCase()).filter(Boolean)
+                    : [];
+                if (enabledEl) enabledEl.checked = settings.digest_enabled !== false;
+            } else {
+                alertRecipients = [];
+                if (enabledEl) enabledEl.checked = true;
+            }
+
+            if (lastInfoEl) {
+                if (latestLog?.sent_at) {
+                    const recips = Array.isArray(latestLog.recipients) ? latestLog.recipients.join(', ') : '';
+                    lastInfoEl.textContent = `Last digest: ${new Date(latestLog.sent_at).toLocaleString()} • ${latestLog.link_count} link(s)${recips ? ` → ${recips}` : ''}`;
+                } else {
+                    lastInfoEl.textContent = 'Last digest: None recorded yet';
+                }
+            }
+
+            renderAlertRecipientChips();
+        }
+
+        async function saveDomainAlertSettings() {
+            const input = document.getElementById('alertRecipientInput');
+            const statusEl = document.getElementById('alertSettingsStatus');
+            const btn = document.getElementById('saveAlertSettingsBtn');
+            const enabledEl = document.getElementById('alertDigestEnabled');
+
+            if (!activeUser || !activeDomain) return;
+
+            if (input && input.value.trim()) {
+                addAlertRecipient();
+                if (statusEl.className.includes('ap-danger')) return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+            statusEl.textContent = '';
+
+            const { error } = await supabaseClient
+                .from('domain_alert_settings')
+                .upsert({
+                    owner_domain: activeDomain,
+                    alert_emails: alertRecipients,
+                    digest_enabled: enabledEl ? enabledEl.checked : true,
+                    updated_by_email: activeUser.email.toLowerCase(),
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'owner_domain' });
+
+            btn.disabled = false;
+            btn.textContent = 'Save Alert Settings';
+
+            if (error) {
+                statusEl.textContent = `Save failed: ${error.message}`;
+                statusEl.className = 'text-xs ap-danger min-h-[1rem]';
+                return;
+            }
+
+            statusEl.textContent = enabledEl?.checked
+                ? `Saved ${alertRecipients.length} recipient(s) for ${activeDomain}.`
+                : `Hourly digest paused for ${activeDomain}.`;
+            statusEl.className = 'text-xs ap-code min-h-[1rem]';
         }
 
         async function loadTaxonomyFromSupabase() {
@@ -1441,7 +1632,6 @@
             historyBody.innerHTML = loadingRow;
             linkrotBody.innerHTML = loadingRow;
 
-            // Fetch all committed domain URLs using paginated range requests so Campaign History shows every URL
             const pageSize = 1000;
             let allRows = [];
             let from = 0;
@@ -1662,6 +1852,9 @@
 
             if (viewName === 'history' || viewName === 'linkrot') {
                 loadDomainHistory();
+                if (viewName === 'linkrot') {
+                    loadDomainAlertSettings();
+                }
             }
         }
 
