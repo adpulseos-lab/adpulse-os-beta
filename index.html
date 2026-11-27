@@ -888,20 +888,14 @@
             const lastInfoEl = document.getElementById('alertLastDigestInfo');
             const enabledEl = document.getElementById('alertDigestEnabled');
 
-            const [{ data: settings, error: settingsErr }, { data: latestLog }] = await Promise.all([
-                supabaseClient
-                    .from('domain_alert_settings')
-                    .select('alert_emails, digest_enabled, updated_at')
-                    .eq('owner_domain', activeDomain)
-                    .maybeSingle(),
-                supabaseClient
-                    .from('linkrot_digest_logs')
-                    .select('sent_at, link_count, recipients')
-                    .eq('owner_domain', activeDomain)
-                    .order('sent_at', { ascending: false })
-                    .limit(1)
-                    .maybeSingle()
-            ]);
+            const { error } = await supabaseClient
+    .from('domain_alert_settings')
+    .upsert({
+        owner_domain: activeDomain,
+        alert_emails: alertRecipients,
+        digest_enabled: enabledEl ? enabledEl.checked : true,
+        updated_at: new Date().toISOString()
+    }, { onConflict: 'owner_domain' });
 
             if (settingsErr) {
                 statusEl.textContent = `Could not load alert settings: ${settingsErr.message}`;
